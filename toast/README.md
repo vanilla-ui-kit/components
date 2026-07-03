@@ -10,7 +10,7 @@ light/dark theme automatically, in the same visual family as
 ## Quick start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/toast/toast.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/toast/toast.js"></script>
 <script>
   Toast.success('Saved')
   Toast.error('Something broke', { title: 'Upload failed' })

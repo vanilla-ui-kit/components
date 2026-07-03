@@ -20,7 +20,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "node tools/build.js"
+    "build": "node tools/build.js",
+    "test": "node --test"
   },
   "sideEffects": true,
   "keywords": [
@@ -35,7 +36,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/abdallahk/vanilla-components.git"
+    "url": "https://github.com/vanilla-ui-kit/components.git"
   },
   "license": "MIT"
 }

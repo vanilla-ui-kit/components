@@ -1,0 +1,79 @@
+name: Release
+
+# Tag a version (v1.2.3) to cut a release. jsDelivr serves straight from
+# GitHub, so the release itself is the CDN publish:
+#
+#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1.2.3/dist/vanilla-ui-kit.js
+#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1/dist/vanilla-ui-kit.js  (latest 1.x)
+#
+# The workflow verifies the tag matches package.json, proves dist/ was built
+# from these sources, runs the tests, publishes a GitHub Release with the
+# dist files attached, and purges jsDelivr's cache for the un-versioned URLs
+# used in the docs.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tag matches package.json version
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION" >&2
+            exit 1
+          fi
+
+      - name: Build dist/
+        run: npm run build
+
+      - name: dist/ committed in sync with sources
+        run: git diff --exit-code -- dist
+
+      - name: Run tests
+        run: npm test
+
+      - name: Create GitHub Release with CDN assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/vanilla-ui-kit.js \
+            dist/vanilla-ui-kit.css \
+            dist/datepicker.css \
+            dist/toast.css \
+            --title "vanilla-ui-kit $GITHUB_REF_NAME" \
+            --generate-notes
+
+      - name: Purge jsDelivr cache for un-versioned URLs
+        run: |
+          # The docs use branch-pinned (un-versioned) CDN URLs, which jsDelivr
+          # caches for up to 12 hours. Purge them so a new release is live
+          # immediately. Versioned URLs are immutable and need no purge.
+          for f in \
+            dist/vanilla-ui-kit.js \
+            dist/vanilla-ui-kit.css \
+            dist/datepicker.css \
+            dist/toast.css \
+            core/core.js \
+            datepicker/datepicker.js \
+            toast/toast.js
+          do
+            echo "purge $f"
+            curl -fsS "https://purge.jsdelivr.net/gh/vanilla-ui-kit/components/$f" || true
+            curl -fsS "https://purge.jsdelivr.net/gh/vanilla-ui-kit/components@1/$f" || true
+            echo
+          done
