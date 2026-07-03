@@ -1,7 +1,7 @@
 /*!
- * Broadside Toast v1.0.0
+ * Vanilla UI Kit Toast v1.0.0
  * A single-file, zero-dependency toast/notification stack for vanilla JS.
- * Part of the Broadside family — standalone, or converges with
+ * Part of the Vanilla UI Kit family — standalone, or converges with
  * the VC core when it is present.
  *
  * Quick start:

@@ -1,4 +1,4 @@
-# Broadside
+# Vanilla UI Kit
 
 Single-file, zero-dependency UI components for vanilla JavaScript. Each one is
 a standalone file you can drop into any page — no build step, no framework, no
@@ -6,8 +6,8 @@ CSS imports — and they **converge** when used together: load the bundle (or th
 optional core) and they share one theme engine, one positioning engine, and one
 line of unified theming.
 
-*A broadside is a single printed sheet — which is exactly what each component
-is: one self-contained file, typeset with care.*
+*Exactly what it says: a UI kit for vanilla JavaScript — the script tag, the
+global, the single file, the way the web has always worked.*
 
 Beautiful by default, automatic light/dark, fully keyboard-accessible — and
 **headless when you want**: every component can run with zero injected CSS so
@@ -19,7 +19,7 @@ you bring your own design.
 |---|---|---|---|
 | Date picker (single, range, multi-pane, presets) | `DatePicker` | [`datepicker/datepicker.js`](./datepicker/datepicker.js) | [README](./datepicker/README.md) |
 | Toasts / notifications | `Toast` | [`toast/toast.js`](./toast/toast.js) | [README](./toast/README.md) |
-| Convergence core (optional) | `Broadside` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
+| Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
 Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
 
@@ -28,7 +28,7 @@ Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
 **CDN, the whole family (one file):**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/dist/broadside.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/dist/vanilla-ui-kit.js"></script>
 <script>
   new DatePicker('#date')
   Toast.success('Saved')
@@ -45,10 +45,10 @@ this is still just one file with zero dependencies:
 **npm:**
 
 ```js
-// npm i broadside  (or: npm i github:abdallahk/vanilla-components)
-const { DatePicker, Toast, VC } = require('broadside')  // bundle
-const DatePicker = require('broadside/datepicker')      // one atom
-const Toast = require('broadside/toast')
+// npm i vanilla-ui-kit  (or: npm i github:abdallahk/vanilla-components)
+const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle
+const DatePicker = require('vanilla-ui-kit/datepicker')      // one atom
+const Toast = require('vanilla-ui-kit/toast')
 ```
 
 All files are UMD (browser global, CommonJS, AMD) and SSR-safe — importing in
@@ -57,7 +57,7 @@ Node is a no-op until used in a browser.
 ## Convergence: what the core gives you
 
 Components never *require* the core — but when it is on the page (via
-`core/core.js` or the bundle, as global `Broadside` with `VC` as the short
+`core/core.js` or the bundle, as global `VanillaUI` with `VC` as the short
 alias used below), they register with it and share its services:
 
 ```js

@@ -1,9 +1,9 @@
-# Broadside Toast
+# Vanilla UI Kit Toast
 
 A single-file, zero-dependency toast/notification stack for vanilla
 JavaScript. One `<script>` tag, one line of JS. Follows your page's
 light/dark theme automatically, in the same visual family as
-[Broadside DatePicker](../datepicker/README.md).
+[Vanilla UI Kit DatePicker](../datepicker/README.md).
 
 **[Live examples →](./examples.html)**
 
@@ -17,8 +17,8 @@ light/dark theme automatically, in the same visual family as
 </script>
 ```
 
-Also available via the family bundle (`dist/broadside.js`), npm
-(`broadside/toast`), or by copying this one file. CommonJS/AMD
+Also available via the family bundle (`dist/vanilla-ui-kit.js`), npm
+(`vanilla-ui-kit/toast`), or by copying this one file. CommonJS/AMD
 supported; SSR-safe (no-op without a DOM).
 
 ## API

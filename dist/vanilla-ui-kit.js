@@ -1,5 +1,5 @@
 /*!
- * broadside v1.0.0 — single-file, zero-dependency UI components
+ * vanilla-ui-kit v1.0.0 — single-file, zero-dependency UI components
  * Bundle of: core/core.js, datepicker/datepicker.js, toast/toast.js
  * https://github.com/abdallahk/vanilla-components
  * License: MIT
@@ -8,9 +8,9 @@
 var define, module, exports;
 /* ==== core/core.js ==== */
 /*!
- * Broadside Core v1.0.0
- * The optional convergence layer for the Broadside family.
- * Browser globals: `Broadside`, with `VC` as the short alias.
+ * Vanilla UI Kit Core v1.0.0
+ * The optional convergence layer for the Vanilla UI Kit family.
+ * Browser globals: `VanillaUI`, with `VC` as the short alias.
  *
  * Every component in the family works standalone — load this file (or the
  * dist bundle) when you use several of them and want shared services:
@@ -30,7 +30,7 @@ var define, module, exports;
   } else if (typeof module === 'object' && module.exports) {
     module.exports = factory();
   } else {
-    root.Broadside = root.VC = factory();
+    root.VanillaUI = root.VC = factory();
   }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
@@ -272,7 +272,7 @@ var define, module, exports;
 
 /* ==== datepicker/datepicker.js ==== */
 /*!
- * Broadside DatePicker v1.0.0
+ * Vanilla UI Kit DatePicker v1.0.0
  * A single-file, zero-dependency date picker for vanilla JS.
  * https://github.com/abdallahk/vanilla-components
  *
@@ -2112,9 +2112,9 @@ var define, module, exports;
 
 /* ==== toast/toast.js ==== */
 /*!
- * Broadside Toast v1.0.0
+ * Vanilla UI Kit Toast v1.0.0
  * A single-file, zero-dependency toast/notification stack for vanilla JS.
- * Part of the Broadside family — standalone, or converges with
+ * Part of the Vanilla UI Kit family — standalone, or converges with
  * the VC core when it is present.
  *
  * Quick start:
@@ -2637,7 +2637,7 @@ var define, module, exports;
 if (cjsModule) {
   cjsModule.exports = {
     VC: global.VC,
-    Broadside: global.Broadside,
+    VanillaUI: global.VanillaUI,
     DatePicker: global.DatePicker,
     Toast: global.Toast
   };

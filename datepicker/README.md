@@ -1,4 +1,4 @@
-# Broadside DatePicker
+# Vanilla UI Kit DatePicker
 
 A single-file, zero-dependency date picker for vanilla JavaScript. One `<script>`
 tag, one line of JS (or none), and you have a beautiful calendar that follows your
@@ -176,9 +176,9 @@ starting point via `DatePicker.css` (string) or
 [`dist/datepicker.css`](../dist/datepicker.css) (file). Injection is deduped
 page-wide, so keep `styles: false` on every instance when going headless.
 
-This component is part of the [Broadside family](../README.md) —
-also available via the all-in-one bundle (`dist/broadside.js`) or
-npm (`broadside/datepicker`), and it converges with the optional
+This component is part of the [Vanilla UI Kit family](../README.md) —
+also available via the all-in-one bundle (`dist/vanilla-ui-kit.js`) or
+npm (`vanilla-ui-kit/datepicker`), and it converges with the optional
 `VC` core for one-call family theming: `VC.config({ accent: '#0f766e' })`.
 
 ## Keyboard & accessibility

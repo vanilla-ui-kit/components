@@ -1,4 +1,4 @@
-# Broadside DatePicker — Design Spec (2026-07-03)
+# Vanilla UI Kit DatePicker — Design Spec (2026-07-03)
 
 ## Goal
 A single-file, zero-dependency, CDN-ready date picker for vanilla JS. Dead simple to

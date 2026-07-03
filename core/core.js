@@ -1,7 +1,7 @@
 /*!
- * Broadside Core v1.0.0
- * The optional convergence layer for the Broadside family.
- * Browser globals: `Broadside`, with `VC` as the short alias.
+ * Vanilla UI Kit Core v1.0.0
+ * The optional convergence layer for the Vanilla UI Kit family.
+ * Browser globals: `VanillaUI`, with `VC` as the short alias.
  *
  * Every component in the family works standalone — load this file (or the
  * dist bundle) when you use several of them and want shared services:
@@ -21,7 +21,7 @@
   } else if (typeof module === 'object' && module.exports) {
     module.exports = factory();
   } else {
-    root.Broadside = root.VC = factory();
+    root.VanillaUI = root.VC = factory();
   }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';

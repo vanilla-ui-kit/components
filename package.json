@@ -1,16 +1,16 @@
 {
-  "name": "broadside",
+  "name": "vanilla-ui-kit",
   "version": "1.0.0",
   "description": "Single-file, zero-dependency UI components for vanilla JavaScript — beautiful by default, headless when you want, usable together or standalone.",
-  "main": "dist/broadside.js",
+  "main": "dist/vanilla-ui-kit.js",
   "exports": {
-    ".": "./dist/broadside.js",
+    ".": "./dist/vanilla-ui-kit.js",
     "./core": "./core/core.js",
     "./datepicker": "./datepicker/datepicker.js",
     "./toast": "./toast/toast.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
-    "./broadside.css": "./dist/broadside.css",
+    "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -24,7 +24,7 @@
   },
   "sideEffects": true,
   "keywords": [
-    "broadside",
+    "vanillakit",
     "vanilla",
     "components",
     "datepicker",

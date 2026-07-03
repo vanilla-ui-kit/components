@@ -1,4 +1,4 @@
-# Broadside Core (`VC`) — Design Spec (2026-07-03)
+# Vanilla UI Kit Core (`VC`) — Design Spec (2026-07-03)
 
 ## Goal
 An umbrella library where the atomic components (datepicker, toast, and future
@@ -9,10 +9,10 @@ file**. The core is optional glue, not a required runtime.
 ## Architecture: standalone atoms + optional core
 
 ```
-core/core.js            → global `Broadside` / `VC` (the convergence layer)
+core/core.js            → global `VanillaUI` / `VC` (the convergence layer)
 datepicker/datepicker.js → global `DatePicker`  (works alone, converges if VC exists)
 toast/toast.js           → global `Toast`       (works alone, converges if VC exists)
-dist/broadside.js → core + all components in one CDN file
+dist/vanilla-ui-kit.js → core + all components in one CDN file
 ```
 
 Convergence is bidirectional and load-order independent:
@@ -88,9 +88,9 @@ Toast.defaults = { position: 'bottom-right', duration: 4000, … }
 ## Bundle
 
 `tools/build.js` (Node, zero dependencies) concatenates core + components into
-`dist/broadside.js` inside a wrapper that neutralizes each file's
+`dist/vanilla-ui-kit.js` inside a wrapper that neutralizes each file's
 AMD/CJS detection, so in a browser every part attaches its global, and in
-Node the bundle exports `{ Broadside, VC, DatePicker, Toast }`. No minification — the
+Node the bundle exports `{ VanillaUI, VC, DatePicker, Toast }`. No minification — the
 files are small and CDNs gzip; a `.min.js` can come later without changing
 the architecture.
 
@@ -100,9 +100,9 @@ The bundle is committed so the CDN path works straight from the repo.
 
 | Channel | How |
 |---|---|
-| CDN, whole family | `<script src="…/dist/broadside.js">` (one file: core + all atoms) |
+| CDN, whole family | `<script src="…/dist/vanilla-ui-kit.js">` (one file: core + all atoms) |
 | CDN, one atom | `<script src="…/datepicker/datepicker.js">` (unchanged single-file story) |
-| npm | `npm i broadside` → `require('broadside')` for `{VC, DatePicker, Toast}`, or deep imports `broadside/datepicker`, `broadside/toast`, `broadside/core` |
+| npm | `npm i vanilla-ui-kit` → `require('vanilla-ui-kit')` for `{VC, DatePicker, Toast}`, or deep imports `vanilla-ui-kit/datepicker`, `vanilla-ui-kit/toast`, `vanilla-ui-kit/core` |
 | Local file | copy any single component file into the project — no build step, no deps |
 
 A root `package.json` maps the entry points (`main` → bundle, `exports` → per-
@@ -122,7 +122,7 @@ Every component's CSS is a **separable layer**, not a hard dependency:
    all ARIA/keyboard behavior. Users style it entirely from their own CSS.
 3. **Own-the-stylesheet middle path** — the raw CSS is exposed as a static
    (`DatePicker.css`, `Toast.css`) and the build extracts real files
-   (`dist/datepicker.css`, `dist/toast.css`, `dist/broadside.css`),
+   (`dist/datepicker.css`, `dist/toast.css`, `dist/vanilla-ui-kit.css`),
    so users can `<link>` a copy, edit it, or run it through their pipeline
    while keeping `styles: false` in JS.
 
