@@ -1,7 +1,7 @@
 /*!
- * VanillaDatePicker v1.0.0
+ * Broadside DatePicker v1.0.0
  * A single-file, zero-dependency date picker for vanilla JS.
- * https://github.com/vanilla-components/datepicker
+ * https://github.com/abdallahk/vanilla-components
  *
  * Quick start:
  *   <script src="datepicker.js"></script>

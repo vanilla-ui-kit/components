@@ -2,14 +2,14 @@
 /*
  * Builds dist/ from the source files. Node only, zero dependencies.
  *
- *   dist/vanilla-components.js   core + every component, one CDN file
+ *   dist/broadside.js   core + every component, one CDN file
  *   dist/datepicker.css          extracted stylesheet (for <link> / headless)
  *   dist/toast.css
- *   dist/vanilla-components.css  all extracted stylesheets concatenated
+ *   dist/broadside.css  all extracted stylesheets concatenated
  *
  * The JS bundle wraps each UMD file in a scope where `define`/`module` are
  * shadowed, so every part takes its browser branch and attaches its global;
- * a footer then exports { VC, DatePicker, Toast } for CJS consumers.
+ * a footer then exports { Broadside, VC, DatePicker, Toast } for CJS consumers.
  */
 'use strict';
 
@@ -27,7 +27,7 @@ var FILES = [
 ];
 
 var banner = '/*!\n' +
-  ' * vanilla-components v' + VERSION + ' — single-file, zero-dependency UI components\n' +
+  ' * broadside v' + VERSION + ' — single-file, zero-dependency UI components\n' +
   ' * Bundle of: ' + FILES.join(', ') + '\n' +
   ' * https://github.com/abdallahk/vanilla-components\n' +
   ' * License: MIT\n' +
@@ -44,7 +44,7 @@ var bundle = banner +
   'if (cjsModule) {\n' +
   '  cjsModule.exports = {\n' +
   '    VC: global.VC,\n' +
-  '    VanillaComponents: global.VanillaComponents,\n' +
+  '    Broadside: global.Broadside,\n' +
   '    DatePicker: global.DatePicker,\n' +
   '    Toast: global.Toast\n' +
   '  };\n' +
@@ -54,7 +54,7 @@ var bundle = banner +
   '   typeof module === \'object\' && module.exports ? module : null);\n';
 
 fs.mkdirSync(DIST, { recursive: true });
-fs.writeFileSync(path.join(DIST, 'vanilla-components.js'), bundle);
+fs.writeFileSync(path.join(DIST, 'broadside.js'), bundle);
 
 // Extracted stylesheets — each component exposes its CSS as `Ctor.css`.
 var cssBanner = function (name) {
@@ -77,9 +77,9 @@ sheets.forEach(function (s) {
   fs.writeFileSync(path.join(DIST, s[0]), text);
   all += text;
 });
-fs.writeFileSync(path.join(DIST, 'vanilla-components.css'), all);
+fs.writeFileSync(path.join(DIST, 'broadside.css'), all);
 
-sheets.concat([['vanilla-components.js']]).forEach(function (s) {
+sheets.concat([['broadside.js']]).forEach(function (s) {
   var p = path.join(DIST, s[0]);
   console.log('  dist/' + s[0] + '  (' + fs.statSync(p).size + ' bytes)');
 });

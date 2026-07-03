@@ -1,4 +1,4 @@
-# VanillaDatePicker
+# Broadside DatePicker
 
 A single-file, zero-dependency date picker for vanilla JavaScript. One `<script>`
 tag, one line of JS (or none), and you have a beautiful calendar that follows your
@@ -9,7 +9,7 @@ page's light/dark theme automatically.
 ## Quick start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdullah-life/vanilla-components/datepicker/datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/datepicker/datepicker.js"></script>
 
 <input id="date">
 <script>new DatePicker('#date')</script>
@@ -176,9 +176,9 @@ starting point via `DatePicker.css` (string) or
 [`dist/datepicker.css`](../dist/datepicker.css) (file). Injection is deduped
 page-wide, so keep `styles: false` on every instance when going headless.
 
-This component is part of the [vanilla-components family](../README.md) —
-also available via the all-in-one bundle (`dist/vanilla-components.js`) or
-npm (`vanilla-components/datepicker`), and it converges with the optional
+This component is part of the [Broadside family](../README.md) —
+also available via the all-in-one bundle (`dist/broadside.js`) or
+npm (`broadside/datepicker`), and it converges with the optional
 `VC` core for one-call family theming: `VC.config({ accent: '#0f766e' })`.
 
 ## Keyboard & accessibility
