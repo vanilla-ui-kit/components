@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VanillaDatePicker — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='2' width='14' height='13' rx='3' fill='%235b5bd6'/%3E%3Crect x='1' y='2' width='14' height='4' rx='2' fill='%234646b8'/%3E%3Ccircle cx='11' cy='10' r='2.2' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --surface: #ffffff;
+    --surface-2: #f2f2f5;
+    --text: #1c1d21;
+    --muted: #72747e;
+    --faint: #e7e7ec;
+    --accent: #5b5bd6;
+    --accent-soft: rgba(91, 91, 214, .12);
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c;
+      --surface: #1b1d24;
+      --surface-2: #272a33;
+      --text: #e9eaf0;
+      --muted: #989aa6;
+      --faint: #31343f;
+      --accent: #7b7bea;
+      --accent-soft: rgba(123, 123, 234, .14);
+      --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --accent-soft: rgba(91,91,214,.12); --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea;
+    --accent-soft: rgba(123,123,234,.14); --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ---- header / hero ---- */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .theme-switch {
+    display: flex; gap: 2px; background: var(--surface-2);
+    border-radius: 10px; padding: 3px;
+  }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+
+  .hero { display: flex; gap: 48px; align-items: center; padding: 72px 0 64px; flex-wrap: wrap; }
+  .hero-copy { flex: 1 1 380px; min-width: 0; }
+  .hero h1 {
+    font-family: var(--display); font-size: clamp(38px, 6vw, 58px);
+    font-weight: 600; line-height: 1.05; letter-spacing: -.01em; margin: 0 0 18px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p.lede { font-size: 17px; color: var(--muted); margin: 0 0 26px; max-width: 46ch; }
+  .hero-demo { flex: 0 0 auto; }
+  .cdn {
+    display: block; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 12px; padding: 14px 16px; font-family: var(--mono);
+    font-size: 13px; overflow-x: auto; white-space: pre; color: var(--text);
+  }
+
+  /* ---- example cards ---- */
+  h2.section {
+    font-family: var(--display); font-size: 28px; font-weight: 600;
+    margin: 64px 0 8px; letter-spacing: -.005em;
+  }
+  p.section-note { color: var(--muted); margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 24px; }
+  @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .card input[type="text"] {
+    font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--faint); border-radius: 10px;
+    padding: 9px 12px; width: 230px; max-width: 100%;
+  }
+  .card input[type="text"]:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent;
+  }
+  .card pre {
+    margin: auto 0 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; overflow-x: auto;
+  }
+  .card code { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  .out { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .out strong { color: var(--accent); }
+  .btn {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    color: var(--accent); background: var(--accent-soft);
+    border: 0; border-radius: 10px; padding: 9px 14px;
+  }
+
+  footer { margin-top: 88px; padding-top: 24px; border-top: 1px solid var(--faint);
+    color: var(--muted); font-size: 13px; display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">VanillaDatePicker <small>v1.0.0</small></div>
+    <div class="theme-switch" role="group" aria-label="Page theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-copy">
+      <h1>One file.<br>Every <em>date</em>.</h1>
+      <p class="lede">A zero-dependency date picker for vanilla JavaScript.
+        Drop in one script tag, point it at an input, done. It follows your
+        page's light or dark theme on its own — flip the switch above and watch.</p>
+      <code class="cdn">&lt;script src="https://cdn.jsdelivr.net/gh/you/vanilla-components/datepicker/datepicker.js"&gt;&lt;/script&gt;
+&lt;input id="date"&gt;
+&lt;script&gt;new DatePicker('#date')&lt;/script&gt;</code>
+    </div>
+    <div class="hero-demo" id="hero-calendar"></div>
+  </div>
+
+  <h2 class="section">Examples</h2>
+  <p class="section-note">Every card is live — click into the inputs.</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <h3>Basic</h3>
+      <p>Defaults: ISO format, browser locale, automatic theme.</p>
+      <div class="demo"><input type="text" id="ex-basic" placeholder="Pick a date"></div>
+      <pre><code>new DatePicker('#ex-basic')</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Format &amp; locale</h3>
+      <p>Token formats, month names from <code>Intl</code> — no locale bundles.</p>
+      <div class="demo">
+        <input type="text" id="ex-format" placeholder="MMMM D, YYYY">
+        <input type="text" id="ex-locale" placeholder="fr — DD/MM/YYYY">
+      </div>
+      <pre><code>new DatePicker('#ex-format', { format: 'MMMM D, YYYY' })
+new DatePicker('#ex-locale', { format: 'DD/MM/YYYY', locale: 'fr' })</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Range selection</h3>
+      <p>Two clicks, hover preview, one input.</p>
+      <div class="demo"><input type="text" id="ex-range" placeholder="Start – end"></div>
+      <pre><code>new DatePicker('#ex-range', { range: true })</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Two panes &amp; presets</h3>
+      <p>Side-by-side months with a quick-select rail — the booking-site classic.</p>
+      <div class="demo"><input type="text" id="ex-multipane" placeholder="Start – end"></div>
+      <pre><code>new DatePicker('#ex-multipane', {
+  range: true,
+  panes: 2,
+  presets: true   // or your own [{label, range}]
+})</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Zero-JS range picker</h3>
+      <p>The whole thing — range, two panes, presets — from attributes alone.</p>
+      <div class="demo">
+        <input type="text" data-datepicker data-range data-panes="2"
+               data-presets="last7,last30,thisMonth,lastMonth"
+               placeholder="data-range + data-presets">
+      </div>
+      <pre><code>&lt;input data-datepicker data-range
+       data-panes="2"
+       data-presets="last7,last30,thisMonth,lastMonth"&gt;</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Constraints</h3>
+      <p>Bookable window: today through +90 days, weekends off.</p>
+      <div class="demo"><input type="text" id="ex-min" placeholder="Weekdays only"></div>
+      <pre><code>new DatePicker('#ex-min', {
+  min: 'today',
+  max: new Date(Date.now() + 90 * 864e5),
+  disabledDays: [0, 6]
+})</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Week numbers, Monday first</h3>
+      <p>ISO-8601 week numbers in the left rail.</p>
+      <div class="demo"><input type="text" id="ex-weeks" placeholder="Pick a date"></div>
+      <pre><code>new DatePicker('#ex-weeks', { weekNumbers: true, firstDay: 1 })</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Theme override &amp; accent</h3>
+      <p>Pin a theme regardless of the page, or restyle the accent.</p>
+      <div class="demo">
+        <input type="text" id="ex-dark" placeholder="Always dark">
+        <input type="text" id="ex-accent" placeholder="Pine accent">
+      </div>
+      <pre><code>new DatePicker('#ex-dark', { theme: 'dark' })
+new DatePicker('#ex-accent', { accent: '#0f766e' })</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Zero-JS auto-init</h3>
+      <p>Data attributes only — no script written for this input.</p>
+      <div class="demo">
+        <input type="text" data-datepicker data-format="DD MMM YYYY" data-min="today"
+               placeholder="data-datepicker">
+      </div>
+      <pre><code>&lt;input data-datepicker
+       data-format="DD MMM YYYY"
+       data-min="today"&gt;</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Events &amp; API</h3>
+      <p>Callbacks, custom events, and instance methods.</p>
+      <div class="demo">
+        <input type="text" id="ex-events" placeholder="Pick a date">
+        <button type="button" class="btn" id="ex-open">Open</button>
+        <button type="button" class="btn" id="ex-today">Set today</button>
+        <span class="out" id="ex-out">Nothing selected yet</span>
+      </div>
+      <pre><code>const dp = new DatePicker('#ex-events', {
+  onSelect: (date, text) => show(text)
+})
+dp.open()
+dp.setDate('today')
+dp.getDate() // Date object</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Inline calendar</h3>
+      <p>Point it at a container instead of an input.</p>
+      <div class="demo"><div id="ex-inline"></div></div>
+      <pre><code>&lt;div id="ex-inline"&gt;&lt;/div&gt;
+new DatePicker('#ex-inline', {
+  onSelect: (d, text) => console.log(text)
+})</code></pre>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>VanillaDatePicker — MIT license</span>
+    <span>No dependencies · No build step · ~14 KB gzipped</span>
+  </footer>
+</div>
+
+<script src="./datepicker.js"></script>
+<script>
+  // Hero: inline calendar with a value so the design reads immediately.
+  new DatePicker('#hero-calendar', { value: 'today' });
+
+  new DatePicker('#ex-basic');
+  new DatePicker('#ex-format', { format: 'MMMM D, YYYY' });
+  new DatePicker('#ex-locale', { format: 'DD/MM/YYYY', locale: 'fr' });
+  new DatePicker('#ex-range', { range: true });
+  new DatePicker('#ex-multipane', { range: true, panes: 2, presets: true });
+  new DatePicker('#ex-min', {
+    min: 'today',
+    max: new Date(Date.now() + 90 * 864e5),
+    disabledDays: [0, 6]
+  });
+  new DatePicker('#ex-weeks', { weekNumbers: true, firstDay: 1 });
+  new DatePicker('#ex-dark', { theme: 'dark' });
+  new DatePicker('#ex-accent', { accent: '#0f766e' });
+
+  var out = document.getElementById('ex-out');
+  var dpEvents = new DatePicker('#ex-events', {
+    onSelect: function (date, text) {
+      out.innerHTML = 'Selected <strong>' + text + '</strong>';
+    }
+  });
+  document.getElementById('ex-open').addEventListener('click', function (e) {
+    e.stopPropagation();
+    dpEvents.open();
+  });
+  document.getElementById('ex-today').addEventListener('click', function () {
+    dpEvents.setDate('today');
+  });
+
+  new DatePicker('#ex-inline');
+
+  // Page theme switcher — sets data-theme on <html>; the pickers follow it live.
+  var switchBtns = document.querySelectorAll('[data-set-theme]');
+  switchBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var t = btn.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      switchBtns.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+    });
+  });
+</script>
+</body>
+</html>
