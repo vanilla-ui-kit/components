@@ -20,7 +20,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "node tools/build.js"
+    "build": "node tools/build.js",
+    "test": "node --test"
   },
   "sideEffects": true,
   "keywords": [
