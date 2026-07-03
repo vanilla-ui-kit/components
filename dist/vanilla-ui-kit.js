@@ -1,7 +1,7 @@
 /*!
  * vanilla-ui-kit v1.0.0 — single-file, zero-dependency UI components
  * Bundle of: core/core.js, datepicker/datepicker.js, toast/toast.js
- * https://github.com/abdallahk/vanilla-components
+ * https://github.com/vanilla-ui-kit/components
  * License: MIT
  */
 (function (global, cjsModule) {
@@ -274,7 +274,7 @@ var define, module, exports;
 /*!
  * Vanilla UI Kit DatePicker v1.0.0
  * A single-file, zero-dependency date picker for vanilla JS.
- * https://github.com/abdallahk/vanilla-components
+ * https://github.com/vanilla-ui-kit/components
  *
  * Quick start:
  *   <script src="datepicker.js"></script>

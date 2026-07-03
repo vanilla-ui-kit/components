@@ -28,7 +28,7 @@ Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
 **CDN, the whole family (one file):**
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/dist/vanilla-ui-kit.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/vanilla-ui-kit.js"></script>
 <script>
   new DatePicker('#date')
   Toast.success('Saved')
@@ -39,13 +39,13 @@ Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
 this is still just one file with zero dependencies:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/toast/toast.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/toast/toast.js"></script>
 ```
 
 **npm:**
 
 ```js
-// npm i vanilla-ui-kit  (or: npm i github:abdallahk/vanilla-components)
+// npm i vanilla-ui-kit  (or: npm i github:vanilla-ui-kit/components)
 const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle
 const DatePicker = require('vanilla-ui-kit/datepicker')      // one atom
 const Toast = require('vanilla-ui-kit/toast')

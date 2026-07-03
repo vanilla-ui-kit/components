@@ -29,7 +29,7 @@ var FILES = [
 var banner = '/*!\n' +
   ' * vanilla-ui-kit v' + VERSION + ' — single-file, zero-dependency UI components\n' +
   ' * Bundle of: ' + FILES.join(', ') + '\n' +
-  ' * https://github.com/abdallahk/vanilla-components\n' +
+  ' * https://github.com/vanilla-ui-kit/components\n' +
   ' * License: MIT\n' +
   ' */\n';
 
