@@ -9,7 +9,7 @@ page's light/dark theme automatically.
 ## Quick start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/you/vanilla-components@1/datepicker/datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/abdullah-life/vanilla-components/datepicker/datepicker.js"></script>
 
 <input id="date">
 <script>new DatePicker('#date')</script>
