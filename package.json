@@ -1,0 +1,41 @@
+{
+  "name": "vanilla-ui-kit",
+  "version": "1.0.0",
+  "description": "Single-file, zero-dependency UI components for vanilla JavaScript — beautiful by default, headless when you want, usable together or standalone.",
+  "main": "dist/vanilla-ui-kit.js",
+  "exports": {
+    ".": "./dist/vanilla-ui-kit.js",
+    "./core": "./core/core.js",
+    "./datepicker": "./datepicker/datepicker.js",
+    "./toast": "./toast/toast.js",
+    "./datepicker.css": "./dist/datepicker.css",
+    "./toast.css": "./dist/toast.css",
+    "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "core",
+    "datepicker",
+    "toast",
+    "dist"
+  ],
+  "scripts": {
+    "build": "node tools/build.js"
+  },
+  "sideEffects": true,
+  "keywords": [
+    "vanillakit",
+    "vanilla",
+    "components",
+    "datepicker",
+    "toast",
+    "zero-dependency",
+    "headless",
+    "dark-mode"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdallahk/vanilla-components.git"
+  },
+  "license": "MIT"
+}

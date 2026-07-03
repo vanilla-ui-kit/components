@@ -1,4 +1,4 @@
-# VanillaDatePicker
+# Vanilla UI Kit DatePicker
 
 A single-file, zero-dependency date picker for vanilla JavaScript. One `<script>`
 tag, one line of JS (or none), and you have a beautiful calendar that follows your
@@ -9,7 +9,7 @@ page's light/dark theme automatically.
 ## Quick start
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/abdullah-life/vanilla-components/datepicker/datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/abdallahk/vanilla-components/datepicker/datepicker.js"></script>
 
 <input id="date">
 <script>new DatePicker('#date')</script>
@@ -44,6 +44,7 @@ new DatePicker('#date', {
   firstDay: 1,                     // 0-6; defaults to the locale's first weekday
   weekNumbers: false,              // ISO-8601 week number column
   theme: 'auto',                   // 'auto' | 'light' | 'dark'
+  styles: true,                    // false = headless: no CSS injected (see below)
   accent: '#0f766e',               // any CSS color
   todayButton: true,
   clearButton: true,
@@ -153,6 +154,32 @@ All colors are CSS custom properties, so you can restyle from your own CSS:
 ```
 
 Scope overrides per theme with `.vdp[data-theme="dark"] { … }`.
+
+### CSS isolation (salt namespace)
+
+The panel renders as `class="vdp vc1"` and all structural rules ship salted
+(`.vdp.vc1 .vdp-day { … }`), so global resets and generic state classes from
+other design systems (`button {}`, `.is-selected`, `.is-disabled`) can't
+override the widget. Variable definitions stay unsalted, so the `--vdp-*`
+overrides above work unchanged. Set your own token with
+`DatePicker.salt = 'acme'` (before the first picker) or disable with
+`DatePicker.salt = false`; `DatePicker.css` always renders with the current
+salt.
+
+### Headless — bring your own design
+
+Pass `styles: false` (or `data-styles="false"`) and no CSS is ever injected:
+you keep the full markup, behavior, keyboard handling, and ARIA, with stable
+`.vdp-*` class hooks and state classes (`is-selected`, `is-disabled`,
+`in-range`, …) to style from your own stylesheet. Our CSS is available as a
+starting point via `DatePicker.css` (string) or
+[`dist/datepicker.css`](../dist/datepicker.css) (file). Injection is deduped
+page-wide, so keep `styles: false` on every instance when going headless.
+
+This component is part of the [Vanilla UI Kit family](../README.md) —
+also available via the all-in-one bundle (`dist/vanilla-ui-kit.js`) or
+npm (`vanilla-ui-kit/datepicker`), and it converges with the optional
+`VC` core for one-call family theming: `VC.config({ accent: '#0f766e' })`.
 
 ## Keyboard & accessibility
 
