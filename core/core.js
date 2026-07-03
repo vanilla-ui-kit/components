@@ -177,6 +177,8 @@
     if (!name || !ctor) return VC;
     VC.components[name] = ctor;
     VC[ctor.displayName || (typeof ctor === 'function' && ctor.name) || pascal(name)] = ctor;
+    // A family-wide salt set before this component loaded still applies to it.
+    if (configState.salt !== undefined) ctor.salt = configState.salt;
     applyBridge();
     return VC;
   };
@@ -192,16 +194,20 @@
     return created;
   };
 
-  // VC.config({ theme, accent, radius, font }) — one call, every component.
-  // `theme` stamps <html data-theme>; the visual keys are mapped onto each
-  // registered component's own CSS variables via a single bridge stylesheet
-  // appended to the END of <head> so it outranks the components' defaults
-  // (same specificity, later source order). Per-instance options still win —
-  // they are inline styles.
+  // VC.config({ theme, accent, radius, font, salt }) — one call, every
+  // component. `theme` stamps <html data-theme>; `salt` sets every
+  // component's CSS isolation namespace (set it BEFORE first render — styles
+  // inject once); the visual keys are mapped onto each registered component's
+  // own CSS variables via a single bridge stylesheet appended to the END of
+  // <head> so it outranks the components' defaults (same specificity, later
+  // source order). Per-instance options still win — they are inline styles.
   VC.config = function (opts) {
     if (!opts) return configState;
     for (var k in opts) configState[k] = opts[k];
     if ('theme' in opts) VC.theme.set(opts.theme);
+    if ('salt' in opts) {
+      for (var name in VC.components) VC.components[name].salt = opts.salt;
+    }
     applyBridge();
     return VC;
   };
@@ -216,7 +222,10 @@
       for (var key in c.themeVars) {
         if (configState[key] != null) decl += c.themeVars[key] + ':' + configState[key] + ';';
       }
-      if (decl) css += '.' + c.rootClass + '{' + decl + '}';
+      // Write to every scope where the component defines its vars (light AND
+      // dark), so a bridge accent isn't shadowed by the dark-theme defaults.
+      var scopes = (c.varScopes && c.varScopes.length) ? c.varScopes : ['.' + c.rootClass];
+      if (decl) css += scopes.join(',') + '{' + decl + '}';
     }
     var el = document.getElementById('vc-bridge-styles');
     if (!css) {

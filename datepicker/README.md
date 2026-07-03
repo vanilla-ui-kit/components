@@ -155,6 +155,17 @@ All colors are CSS custom properties, so you can restyle from your own CSS:
 
 Scope overrides per theme with `.vdp[data-theme="dark"] { … }`.
 
+### CSS isolation (salt namespace)
+
+The panel renders as `class="vdp vc1"` and all structural rules ship salted
+(`.vdp.vc1 .vdp-day { … }`), so global resets and generic state classes from
+other design systems (`button {}`, `.is-selected`, `.is-disabled`) can't
+override the widget. Variable definitions stay unsalted, so the `--vdp-*`
+overrides above work unchanged. Set your own token with
+`DatePicker.salt = 'acme'` (before the first picker) or disable with
+`DatePicker.salt = false`; `DatePicker.css` always renders with the current
+salt.
+
 ### Headless — bring your own design
 
 Pass `styles: false` (or `data-styles="false"`) and no CSS is ever injected:

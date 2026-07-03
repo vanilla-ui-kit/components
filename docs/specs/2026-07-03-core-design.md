@@ -130,6 +130,41 @@ Because injection is deduped by style-element id, headless pages must keep
 `styles: false` on every instance (any one styled instance injects for all —
 documented).
 
+## Salt namespace — isolation from host-page CSS
+
+Threat model: host design systems ship global element resets (`button{}`) and
+generic state classes (`.is-selected`, `.is-disabled`) that would override the
+widgets; conversely our selectors must not leak out.
+
+Mechanism: structural CSS is authored against a `.SALT` placeholder on the
+component's root class and rendered at inject time —
+`.vdp.SALT .vdp-day.is-selected` → `.vdp.vc1 .vdp-day.is-selected` — and the
+salt class is stamped on the root element (`class="vdp vc1"`). The added
+specificity (root class + salt class + hook class) outranks any realistic
+generic page rule, and a nonstandard token makes accidental selector
+collisions impossible.
+
+Deliberately **unsalted**: custom-property *definitions* (`.vdp{--vdp-*}`,
+dark-theme var rules). Var names are already namespaced, and these rules are
+the documented override surface — salting them would break
+`.vdp { --vdp-accent: … }` page theming.
+
+Salt policy: deterministic default `vc1` (dist/*.css must match the DOM across
+loads; snapshots stay stable), per-component override (`Ctor.salt = 'acme'`),
+family-wide via `VC.config({salt})` (also applied to late-registering
+components), `false` to disable. Must be set before first render — styles
+inject once. `Ctor.css` is a live getter rendered with the current salt, so
+builds pick up custom salts.
+
+Contract addition: `Ctor.varScopes` lists the selectors where a component
+*defines* its theme vars (light and dark scopes). The `VC.config()` bridge
+writes to all of them, so e.g. a bridge accent also wins inside
+`[data-theme=dark]` scopes instead of being shadowed by dark defaults.
+
+Known limits (accepted): `!important` page rules and inherited properties we
+never set can still reach in. True hard isolation is Shadow DOM territory —
+out of scope; `styles:false` + own CSS remains the escape hatch.
+
 ## Out of scope
 - A framework: no base classes, no lifecycle, no virtual DOM. Core is ~small
   utilities + a registry; components never *require* it.

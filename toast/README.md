@@ -82,6 +82,12 @@ All colors are CSS custom properties:
 With the VC core loaded, `VC.config({ accent: '#b45309' })` themes toasts
 and every other family component in one call.
 
+**CSS isolation:** stacks render as `class="vt-stack vc1"` and all structural
+rules ship salted (`.vt-stack.vc1 .vt { … }`), so host-page design systems
+can't override the toasts — while the `--vt-*` variable overrides above keep
+working (var definitions are deliberately unsalted). Custom token:
+`Toast.salt = 'acme'` before the first toast; disable with `Toast.salt = false`.
+
 ## Headless
 
 ```js

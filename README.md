@@ -121,6 +121,46 @@ Note: style injection is deduped globally — one styled instance injects for
 the whole page, so headless pages should pass `styles: false` everywhere
 (or set it once via `DatePicker.defaults` / `Toast.defaults`).
 
+## CSS isolation: the salt namespace
+
+Host pages are hostile territory: design systems ship global `button {}`
+resets and generic state classes (`.is-selected`, `.is-disabled`, `.is-active`)
+that would otherwise bleed into the widgets. Every component therefore renders
+under a **salt namespace** — an extra class on its root (`vc1` by default)
+that is baked into every *structural* selector at inject time:
+
+```css
+/* what actually ships */
+.vdp.vc1 .vdp-day.is-selected { … }   /* not .vdp-day.is-selected */
+.vt-stack.vc1 .vt { … }               /* not .vt */
+```
+
+That extra specificity means a page rule like `body .is-disabled { display:
+none }` or `button { background: red }` can't touch the components, while the
+components' own selectors (all `.vdp-*` / `.vt-*` prefixed, now salted) can't
+leak out. **CSS variable definitions stay unsalted on purpose** — vars are
+already namespaced by name (`--vdp-*`, `--vt-*`), and they're the intended
+override surface, so `.vdp { --vdp-accent: … }` from your CSS keeps working
+exactly as documented.
+
+The default salt is deterministic (`vc1`) so the extracted `dist/*.css` files
+always match the DOM. Configure it **before the first render** (styles inject
+once):
+
+```js
+DatePicker.salt = 'acme'        // per component…
+VC.config({ salt: 'acme' })     // …or once for the whole family
+DatePicker.salt = false         // opt out: plain unsalted selectors
+```
+
+If you set a custom salt and use the extracted CSS files, regenerate them
+(`npm run build` reads the live `Ctor.css`, which always renders with the
+current salt). Headless mode is unaffected — with `styles: false` nothing is
+injected and you target the bare `.vdp-*`/`.vt-*` hooks yourself. Limits, for
+honesty: `!important` page rules and inherited properties we don't set can
+still reach in — full hard isolation would need Shadow DOM, which is out of
+scope by design.
+
 ## Theming (styled mode)
 
 Every color/metric is a CSS custom property (`--vdp-*` for the datepicker,
@@ -150,13 +190,19 @@ A new atom joins the family by exposing four statics and self-registering —
 no imports, no coupling (see [the spec](./docs/specs/2026-07-03-core-design.md)):
 
 ```js
-MyThing.css       = CSS_STRING;                   // separable stylesheet
+MyThing.css       = CSS_STRING;                   // separable stylesheet (rendered with the current salt)
+MyThing.salt      = 'vc1';                        // salt namespace token (false to disable)
 MyThing.rootClass = 'vx';                         // its CSS scope class
 MyThing.themeVars = { accent: '--vx-accent' };    // shared keys → its vars
+MyThing.varScopes = ['.vx', '.vx[data-theme=dark]']; // where vars are DEFINED (unsalted)
 MyThing.autoInit  = function (root) { … };        // optional data-attr init
 
 if (window.VC && typeof VC.register === 'function') VC.register('mything', MyThing);
 ```
+
+Structural CSS should be authored against a `.SALT` placeholder on the root
+class and rendered at inject time; var definitions stay unsalted (see the
+datepicker/toast sources for the pattern).
 
 ## License
 

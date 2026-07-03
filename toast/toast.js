@@ -33,15 +33,13 @@
    * `styles: false`; also exposed raw as `Toast.css`.
    * ------------------------------------------------------------------ */
 
+  // '.SALT' is a placeholder replaced at inject time with the active salt
+  // namespace class ('.vc1' by default, '' when Toast.salt === false).
+  // Structural rules carry the salt so host-page design systems cannot
+  // override the toasts; custom-property DEFINITIONS stay unsalted at their
+  // documented specificity so `.vt{--vt-accent:…}` page overrides keep
+  // working (var names are already namespaced — they need no armor).
   var CSS = '' +
-    '.vt-stack{position:fixed;z-index:100000;display:flex;flex-direction:column;' +
-      'gap:10px;padding:16px;pointer-events:none;box-sizing:border-box;' +
-      'max-height:100vh;overflow:hidden;}' +
-    '.vt-stack[data-pos^=top]{top:0;}' +
-    '.vt-stack[data-pos^=bottom]{bottom:0;justify-content:flex-end;}' +
-    '.vt-stack[data-pos$=right]{right:0;align-items:flex-end;}' +
-    '.vt-stack[data-pos$=left]{left:0;align-items:flex-start;}' +
-    '.vt-stack[data-pos$=center]{left:50%;transform:translateX(-50%);align-items:center;}' +
     '.vt{' +
       '--vt-accent:#5b5bd6;' +
       '--vt-success:#1f9d5b;' +
@@ -54,18 +52,7 @@
       '--vt-shadow:0 10px 28px rgba(24,25,32,.14),0 2px 8px rgba(24,25,32,.08);' +
       '--vt-radius:12px;' +
       '--vt-font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;' +
-      'pointer-events:auto;display:flex;align-items:flex-start;gap:10px;' +
-      'box-sizing:border-box;min-width:240px;max-width:min(420px,calc(100vw - 32px));' +
-      'background:var(--vt-bg);color:var(--vt-text);' +
-      'font-family:var(--vt-font);font-size:14px;line-height:1.45;' +
-      'border:1px solid var(--vt-faint);border-radius:var(--vt-radius);' +
-      'box-shadow:var(--vt-shadow);padding:12px 14px;' +
-      'opacity:0;transform:translateY(8px) scale(.98);' +
-      'transition:opacity .16s ease,transform .18s cubic-bezier(.2,.9,.3,1.1);}' +
-    '.vt *,.vt *::before,.vt *::after{box-sizing:border-box;}' +
-    '.vt-stack[data-pos^=top] .vt{transform:translateY(-8px) scale(.98);}' +
-    '.vt.vt-in{opacity:1;transform:none;}' +
-    '.vt.vt-out{opacity:0;transform:scale(.97);transition-duration:.14s,.14s;}' +
+    '}' +
     '.vt-stack[data-theme=dark] .vt{' +
       '--vt-accent:#7b7bea;' +
       '--vt-success:#4ccb8f;' +
@@ -76,34 +63,78 @@
       '--vt-muted:#989aa6;' +
       '--vt-faint:#31343f;' +
       '--vt-shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);}' +
-    '.vt-icon{flex:none;width:18px;height:18px;display:grid;place-items:center;' +
+    '.vt-stack.SALT{position:fixed;z-index:100000;display:flex;flex-direction:column;' +
+      'gap:10px;padding:16px;pointer-events:none;box-sizing:border-box;' +
+      'max-height:100vh;overflow:hidden;}' +
+    '.vt-stack.SALT[data-pos^=top]{top:0;}' +
+    '.vt-stack.SALT[data-pos^=bottom]{bottom:0;justify-content:flex-end;}' +
+    '.vt-stack.SALT[data-pos$=right]{right:0;align-items:flex-end;}' +
+    '.vt-stack.SALT[data-pos$=left]{left:0;align-items:flex-start;}' +
+    '.vt-stack.SALT[data-pos$=center]{left:50%;transform:translateX(-50%);align-items:center;}' +
+    '.vt-stack.SALT .vt{' +
+      'pointer-events:auto;display:flex;align-items:flex-start;gap:10px;' +
+      'box-sizing:border-box;min-width:240px;max-width:min(420px,calc(100vw - 32px));' +
+      'background:var(--vt-bg);color:var(--vt-text);' +
+      'font-family:var(--vt-font);font-size:14px;line-height:1.45;' +
+      'border:1px solid var(--vt-faint);border-radius:var(--vt-radius);' +
+      'box-shadow:var(--vt-shadow);padding:12px 14px;' +
+      'opacity:0;transform:translateY(8px) scale(.98);' +
+      'transition:opacity .16s ease,transform .18s cubic-bezier(.2,.9,.3,1.1);}' +
+    '.vt-stack.SALT .vt *,.vt-stack.SALT .vt *::before,.vt-stack.SALT .vt *::after{' +
+      'box-sizing:border-box;}' +
+    '.vt-stack.SALT[data-pos^=top] .vt{transform:translateY(-8px) scale(.98);}' +
+    '.vt-stack.SALT .vt.vt-in{opacity:1;transform:none;}' +
+    '.vt-stack.SALT .vt.vt-out{opacity:0;transform:scale(.97);transition-duration:.14s,.14s;}' +
+    '.vt-stack.SALT .vt-icon{flex:none;width:18px;height:18px;display:grid;place-items:center;' +
       'margin-top:1px;color:var(--vt-accent);}' +
-    '.vt-success .vt-icon{color:var(--vt-success);}' +
-    '.vt-error .vt-icon{color:var(--vt-error);}' +
-    '.vt-warning .vt-icon{color:var(--vt-warning);}' +
-    '.vt-icon svg{display:block;}' +
-    '.vt-spin{animation:vt-spin .8s linear infinite;}' +
+    '.vt-stack.SALT .vt-success .vt-icon{color:var(--vt-success);}' +
+    '.vt-stack.SALT .vt-error .vt-icon{color:var(--vt-error);}' +
+    '.vt-stack.SALT .vt-warning .vt-icon{color:var(--vt-warning);}' +
+    '.vt-stack.SALT .vt-icon svg{display:block;}' +
+    '.vt-stack.SALT .vt-spin{animation:vt-spin .8s linear infinite;}' +
     '@keyframes vt-spin{to{transform:rotate(360deg);}}' +
-    '.vt-body{flex:1;min-width:0;overflow-wrap:break-word;}' +
-    '.vt-title{font-weight:650;}' +
-    '.vt-title~.vt-msg{color:var(--vt-muted);margin-top:1px;}' +
-    '.vt-action{flex:none;font:inherit;font-weight:600;font-size:13px;' +
+    '.vt-stack.SALT .vt-body{flex:1;min-width:0;overflow-wrap:break-word;}' +
+    '.vt-stack.SALT .vt-title{font-weight:650;}' +
+    '.vt-stack.SALT .vt-title~.vt-msg{color:var(--vt-muted);margin-top:1px;}' +
+    '.vt-stack.SALT .vt-action{flex:none;font:inherit;font-weight:600;font-size:13px;' +
       'color:var(--vt-accent);background:none;border:0;border-radius:8px;' +
       'padding:4px 8px;margin:-3px -4px -3px 0;cursor:pointer;' +
       'transition:background .12s ease;-webkit-tap-highlight-color:transparent;}' +
-    '.vt-action:hover{background:var(--vt-faint);}' +
-    '.vt-close{flex:none;width:22px;height:22px;display:grid;place-items:center;' +
+    '.vt-stack.SALT .vt-action:hover{background:var(--vt-faint);}' +
+    '.vt-stack.SALT .vt-close{flex:none;width:22px;height:22px;display:grid;place-items:center;' +
       'color:var(--vt-muted);background:none;border:0;border-radius:6px;padding:0;' +
       'margin:-2px -6px -2px 0;cursor:pointer;transition:background .12s ease,' +
       'color .12s ease;-webkit-tap-highlight-color:transparent;}' +
-    '.vt-close:hover{background:var(--vt-faint);color:var(--vt-text);}' +
-    '.vt-close svg{display:block;}' +
-    '.vt-action:focus,.vt-close:focus{outline:none;}' +
-    '.vt-action:focus-visible,.vt-close:focus-visible{outline:2px solid var(--vt-accent);' +
-      'outline-offset:1px;}' +
+    '.vt-stack.SALT .vt-close:hover{background:var(--vt-faint);color:var(--vt-text);}' +
+    '.vt-stack.SALT .vt-close svg{display:block;}' +
+    '.vt-stack.SALT .vt-action:focus,.vt-stack.SALT .vt-close:focus{outline:none;}' +
+    '.vt-stack.SALT .vt-action:focus-visible,.vt-stack.SALT .vt-close:focus-visible{' +
+      'outline:2px solid var(--vt-accent);outline-offset:1px;}' +
     '@media (prefers-reduced-motion:reduce){' +
-      '.vt,.vt *{transition:none!important;animation:none!important;}' +
+      '.vt-stack.SALT .vt,.vt-stack.SALT .vt *{transition:none!important;animation:none!important;}' +
     '}';
+
+  // Salt namespace — same defaults and semantics as the datepicker: 'vc1'
+  // (deterministic, matches dist/toast.css), or set Toast.salt to your own
+  // token / false BEFORE the first toast is shown.
+  var DEFAULT_SALT = 'vc1';
+
+  function saltToken() {
+    var s = Toast.salt;
+    if (s === false) return '';
+    s = s == null ? DEFAULT_SALT : String(s).replace(/[^\w-]/g, '');
+    return s || DEFAULT_SALT;
+  }
+
+  function saltClass() {
+    var s = saltToken();
+    return s ? ' ' + s : '';
+  }
+
+  function renderCss() {
+    var s = saltToken();
+    return CSS.split('.SALT').join(s ? '.' + s : '');
+  }
 
   var ICONS = {
     info: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
@@ -201,7 +232,7 @@
   function getStack(pos) {
     if (stacks[pos]) return stacks[pos];
     var el = document.createElement('div');
-    el.className = 'vt-stack';
+    el.className = 'vt-stack' + saltClass();
     el.setAttribute('data-pos', pos);
     el.setAttribute('data-theme', resolveTheme());
     var stack = { el: el, items: [] };
@@ -334,7 +365,15 @@
   var Toast = {};
 
   Toast.version = '1.0.0';
-  Toast.css = CSS;
+  Toast.salt = DEFAULT_SALT;
+  try {
+    // Live view: always rendered with the CURRENT salt.
+    Object.defineProperty(Toast, 'css', {
+      get: renderCss, enumerable: true, configurable: true
+    });
+  } catch (err) {
+    Toast.css = renderCss();
+  }
 
   Toast.defaults = {
     position: 'bottom-right', // top|bottom - left|center|right
@@ -351,7 +390,7 @@
     if (!HAS_DOM) return dummyHandle;
     opts = mergedOpts(opts);
     if (opts.styles !== false) {
-      if (window.VC && window.VC.injectStyles) window.VC.injectStyles(STYLE_ID, CSS);
+      if (window.VC && window.VC.injectStyles) window.VC.injectStyles(STYLE_ID, renderCss());
       else injectOwnStyles();
     }
     ensureThemeWatch();
@@ -413,7 +452,7 @@
     if (document.getElementById(STYLE_ID)) return;
     var style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = CSS;
+    style.textContent = renderCss();
     var firstSheet = document.head.querySelector('link[rel="stylesheet"],style');
     if (firstSheet) document.head.insertBefore(style, firstSheet);
     else document.head.appendChild(style);
@@ -471,6 +510,9 @@
     radius: '--vt-radius',
     font: '--vt-font'
   };
+  // Where theme vars are DEFINED (unsalted on purpose) — VC.config() writes
+  // its bridge overrides to these scopes so they apply in dark mode too.
+  Toast.varScopes = ['.vt', '.vt-stack[data-theme=dark] .vt'];
 
   if (HAS_DOM && window.VC && typeof window.VC.register === 'function') {
     window.VC.register('toast', Toast);

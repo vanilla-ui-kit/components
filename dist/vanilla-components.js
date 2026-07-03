@@ -186,6 +186,8 @@ var define, module, exports;
     if (!name || !ctor) return VC;
     VC.components[name] = ctor;
     VC[ctor.displayName || (typeof ctor === 'function' && ctor.name) || pascal(name)] = ctor;
+    // A family-wide salt set before this component loaded still applies to it.
+    if (configState.salt !== undefined) ctor.salt = configState.salt;
     applyBridge();
     return VC;
   };
@@ -201,16 +203,20 @@ var define, module, exports;
     return created;
   };
 
-  // VC.config({ theme, accent, radius, font }) — one call, every component.
-  // `theme` stamps <html data-theme>; the visual keys are mapped onto each
-  // registered component's own CSS variables via a single bridge stylesheet
-  // appended to the END of <head> so it outranks the components' defaults
-  // (same specificity, later source order). Per-instance options still win —
-  // they are inline styles.
+  // VC.config({ theme, accent, radius, font, salt }) — one call, every
+  // component. `theme` stamps <html data-theme>; `salt` sets every
+  // component's CSS isolation namespace (set it BEFORE first render — styles
+  // inject once); the visual keys are mapped onto each registered component's
+  // own CSS variables via a single bridge stylesheet appended to the END of
+  // <head> so it outranks the components' defaults (same specificity, later
+  // source order). Per-instance options still win — they are inline styles.
   VC.config = function (opts) {
     if (!opts) return configState;
     for (var k in opts) configState[k] = opts[k];
     if ('theme' in opts) VC.theme.set(opts.theme);
+    if ('salt' in opts) {
+      for (var name in VC.components) VC.components[name].salt = opts.salt;
+    }
     applyBridge();
     return VC;
   };
@@ -225,7 +231,10 @@ var define, module, exports;
       for (var key in c.themeVars) {
         if (configState[key] != null) decl += c.themeVars[key] + ':' + configState[key] + ';';
       }
-      if (decl) css += '.' + c.rootClass + '{' + decl + '}';
+      // Write to every scope where the component defines its vars (light AND
+      // dark), so a bridge accent isn't shadowed by the dark-theme defaults.
+      var scopes = (c.varScopes && c.varScopes.length) ? c.varScopes : ['.' + c.rootClass];
+      if (decl) css += scopes.join(',') + '{' + decl + '}';
     }
     var el = document.getElementById('vc-bridge-styles');
     if (!css) {
@@ -506,6 +515,13 @@ var define, module, exports;
    * Embedded stylesheet, injected once.
    * ------------------------------------------------------------------ */
 
+  // '.SALT' is a placeholder replaced at inject time with the active salt
+  // namespace class ('.vc1' by default, '' when DatePicker.salt === false).
+  // Structural rules carry the salt so selectors from other design systems
+  // (global `button{}`, `.is-disabled{}`, …) cannot override the widget.
+  // Custom-property DEFINITIONS stay unsalted at their documented specificity
+  // so page overrides like `.vdp{--vdp-accent:…}` keep working — var names
+  // are already namespaced, so they need no armor.
   var CSS = '' +
     '.vdp{' +
       '--vdp-accent:#5b5bd6;' +
@@ -522,6 +538,8 @@ var define, module, exports;
       '--vdp-cell:40px;' +
       '--vdp-font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;' +
       '--vdp-display-font:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;' +
+    '}' +
+    '.vdp.SALT{' +
       'position:absolute;z-index:99999;box-sizing:border-box;' +
       'display:flex;align-items:stretch;' +
       'background:var(--vdp-bg);color:var(--vdp-text);' +
@@ -532,7 +550,7 @@ var define, module, exports;
       'opacity:0;transform:scale(.96);' +
       'transition:opacity .13s ease,transform .16s cubic-bezier(.2,.9,.3,1.2);' +
     '}' +
-    '.vdp *,.vdp *::before,.vdp *::after{box-sizing:border-box;}' +
+    '.vdp.SALT *,.vdp.SALT *::before,.vdp.SALT *::after{box-sizing:border-box;}' +
     '@supports (color:color-mix(in srgb,red 10%,white)){.vdp{' +
       '--vdp-accent-soft:color-mix(in srgb,var(--vdp-accent) 14%,transparent);' +
       '--vdp-accent-mist:color-mix(in srgb,var(--vdp-accent) 7%,transparent);' +
@@ -547,112 +565,140 @@ var define, module, exports;
       '--vdp-faint:#31343f;' +
       '--vdp-shadow:0 14px 36px rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.35);' +
     '}' +
-    '.vdp.vdp-open{opacity:1;transform:none;}' +
-    '.vdp.vdp-inline{position:static;display:inline-flex;opacity:1;transform:none;' +
+    '.vdp.SALT.vdp-open{opacity:1;transform:none;}' +
+    '.vdp.SALT.vdp-inline{position:static;display:inline-flex;opacity:1;transform:none;' +
       'box-shadow:none;transition:none;}' +
-    /* :where() keeps the reset at minimal specificity, and it must precede every
-       single-class component rule so those win on source order */
-    '.vdp :where(button){font:inherit;color:inherit;background:none;border:0;margin:0;' +
+    /* :where() keeps the reset at minimal specificity within the component, and
+       it must precede every component rule so those win on source order */
+    '.vdp.SALT :where(button){font:inherit;color:inherit;background:none;border:0;margin:0;' +
       'padding:0;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent;}' +
-    '.vdp :where(button):focus{outline:none;}' +
-    '.vdp :where(button):focus-visible{outline:2px solid var(--vdp-accent);outline-offset:2px;}' +
-    '.vdp-main{min-width:0;}' +
+    '.vdp.SALT :where(button):focus{outline:none;}' +
+    '.vdp.SALT :where(button):focus-visible{outline:2px solid var(--vdp-accent);outline-offset:2px;}' +
+    '.vdp.SALT .vdp-main{min-width:0;}' +
     /* presets: full-height sidebar tied to the panel by a hairline, not a floating card */
-    '.vdp-presets{display:flex;flex-direction:column;align-items:stretch;gap:2px;' +
+    '.vdp.SALT .vdp-presets{display:flex;flex-direction:column;align-items:stretch;gap:2px;' +
       'padding:2px 14px 2px 2px;margin-right:16px;min-width:132px;align-self:stretch;' +
       'border-right:1px solid var(--vdp-faint);}' +
-    '.vdp-presets-label{font-size:10.5px;font-weight:650;letter-spacing:.08em;' +
+    '.vdp.SALT .vdp-presets-label{font-size:10.5px;font-weight:650;letter-spacing:.08em;' +
       'text-transform:uppercase;color:var(--vdp-muted);padding:8px 10px 10px;}' +
-    '.vdp-preset{font-size:13px;text-align:left;padding:8px 10px;border-radius:8px;' +
+    '.vdp.SALT .vdp-preset{font-size:13px;text-align:left;padding:8px 10px;border-radius:8px;' +
       'white-space:nowrap;transition:background .1s ease;}' +
-    '.vdp-preset:hover{background:var(--vdp-surface);}' +
-    '.vdp-preset.is-active{color:var(--vdp-accent);font-weight:600;' +
+    '.vdp.SALT .vdp-preset:hover{background:var(--vdp-surface);}' +
+    '.vdp.SALT .vdp-preset.is-active{color:var(--vdp-accent);font-weight:600;' +
       'background:var(--vdp-accent-soft);}' +
-    '.vdp-body{display:flex;gap:18px;align-items:flex-start;}' +
-    '.vdp-day.is-empty{pointer-events:none;}' +
+    '.vdp.SALT .vdp-body{display:flex;gap:18px;align-items:flex-start;}' +
+    '.vdp.SALT .vdp-day.is-empty{pointer-events:none;}' +
     /* multi-pane: the masthead is a label, not a control — center it, drop affordance */
-    '.vdp-multi .vdp-title{justify-content:center;cursor:default;}' +
-    '.vdp-multi .vdp-title:hover{background:none;}' +
+    '.vdp.SALT.vdp-multi .vdp-title{justify-content:center;cursor:default;}' +
+    '.vdp.SALT.vdp-multi .vdp-title:hover{background:none;}' +
     /* header */
-    '.vdp-header{display:flex;align-items:center;gap:4px;padding:2px 2px 10px;}' +
-    '.vdp-title{flex:1;display:flex;align-items:baseline;gap:8px;padding:6px 8px;' +
+    '.vdp.SALT .vdp-header{display:flex;align-items:center;gap:4px;padding:2px 2px 10px;}' +
+    '.vdp.SALT .vdp-title{flex:1;display:flex;align-items:baseline;gap:8px;padding:6px 8px;' +
       'text-align:left;min-width:0;transition:background .12s ease;}' +
-    '.vdp-title:hover{background:var(--vdp-surface);}' +
-    '.vdp-title-month{font-family:var(--vdp-display-font);font-size:22px;font-weight:600;' +
+    '.vdp.SALT .vdp-title:hover{background:var(--vdp-surface);}' +
+    '.vdp.SALT .vdp-title-month{font-family:var(--vdp-display-font);font-size:22px;font-weight:600;' +
       'letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
-    '.vdp-title-year{font-size:14px;color:var(--vdp-muted);font-variant-numeric:tabular-nums;}' +
-    '.vdp-nav{flex:none;width:34px;height:34px;display:grid;place-items:center;' +
+    '.vdp.SALT .vdp-title-year{font-size:14px;color:var(--vdp-muted);font-variant-numeric:tabular-nums;}' +
+    '.vdp.SALT .vdp-nav{flex:none;width:34px;height:34px;display:grid;place-items:center;' +
       'color:var(--vdp-muted);transition:background .12s ease,color .12s ease;}' +
-    '.vdp-nav:hover{background:var(--vdp-surface);color:var(--vdp-text);}' +
-    '.vdp-nav[disabled]{opacity:.3;cursor:default;background:none;}' +
-    '.vdp-nav svg{display:block;}' +
+    '.vdp.SALT .vdp-nav:hover{background:var(--vdp-surface);color:var(--vdp-text);}' +
+    '.vdp.SALT .vdp-nav[disabled]{opacity:.3;cursor:default;background:none;}' +
+    '.vdp.SALT .vdp-nav svg{display:block;}' +
     /* day grid */
     /* rows are real grid containers (display:contents can drop row semantics from the a11y tree) */
-    '.vdp-grid{display:block;}' +
-    '.vdp-row{display:grid;grid-template-columns:repeat(7,var(--vdp-cell));column-gap:0;}' +
-    '.vdp-row+.vdp-row{margin-top:2px;}' +
-    '.vdp-grid.vdp-has-wn .vdp-row{grid-template-columns:32px repeat(7,var(--vdp-cell));}' +
-    '.vdp-head{height:28px;display:grid;place-items:center;font-size:10.5px;' +
+    '.vdp.SALT .vdp-grid{display:block;}' +
+    '.vdp.SALT .vdp-row{display:grid;grid-template-columns:repeat(7,var(--vdp-cell));column-gap:0;}' +
+    '.vdp.SALT .vdp-row+.vdp-row{margin-top:2px;}' +
+    '.vdp.SALT .vdp-grid.vdp-has-wn .vdp-row{grid-template-columns:32px repeat(7,var(--vdp-cell));}' +
+    '.vdp.SALT .vdp-head{height:28px;display:grid;place-items:center;font-size:10.5px;' +
       'font-weight:650;letter-spacing:.08em;text-transform:uppercase;' +
       'color:var(--vdp-muted);}' +
-    '.vdp-wn{display:grid;place-items:center;font-size:11px;color:var(--vdp-muted);' +
+    '.vdp.SALT .vdp-wn{display:grid;place-items:center;font-size:11px;color:var(--vdp-muted);' +
       'font-variant-numeric:tabular-nums;}' +
-    '.vdp-day{position:relative;width:var(--vdp-cell);height:var(--vdp-cell);' +
+    '.vdp.SALT .vdp-day{position:relative;width:var(--vdp-cell);height:var(--vdp-cell);' +
       'display:grid;place-items:center;font-variant-numeric:tabular-nums;' +
       'transition:background .1s ease;}' +
-    '.vdp-day:hover{background:var(--vdp-surface);}' +
-    '.vdp-day.is-outside{color:var(--vdp-muted);}' +
-    '.vdp-day.is-today{color:var(--vdp-accent);font-weight:650;}' +
-    '.vdp-day.is-today::after{content:"";position:absolute;left:50%;bottom:6px;' +
+    '.vdp.SALT .vdp-day:hover{background:var(--vdp-surface);}' +
+    '.vdp.SALT .vdp-day.is-outside{color:var(--vdp-muted);}' +
+    '.vdp.SALT .vdp-day.is-today{color:var(--vdp-accent);font-weight:650;}' +
+    '.vdp.SALT .vdp-day.is-today::after{content:"";position:absolute;left:50%;bottom:6px;' +
       'width:4px;height:4px;border-radius:50%;background:var(--vdp-accent);' +
       'transform:translateX(-50%);}' +
-    '.vdp-day.is-disabled{opacity:.28;cursor:not-allowed;background:none;}' +
-    '.vdp-day.in-preview{background:var(--vdp-accent-mist);border-radius:0;}' +
-    '.vdp-day.in-range{background:var(--vdp-accent-soft);border-radius:0;}' +
-    '.vdp-day.is-selected{background:var(--vdp-accent);color:var(--vdp-on-accent);' +
+    '.vdp.SALT .vdp-day.is-disabled{opacity:.28;cursor:not-allowed;background:none;}' +
+    '.vdp.SALT .vdp-day.in-preview{background:var(--vdp-accent-mist);border-radius:0;}' +
+    '.vdp.SALT .vdp-day.in-range{background:var(--vdp-accent-soft);border-radius:0;}' +
+    '.vdp.SALT .vdp-day.is-selected{background:var(--vdp-accent);color:var(--vdp-on-accent);' +
       'font-weight:650;}' +
-    '.vdp-day.is-selected.is-today{color:var(--vdp-on-accent);}' +
-    '.vdp-day.is-selected.is-today::after{background:var(--vdp-on-accent);}' +
-    '.vdp-day.is-range-start{border-radius:10px 0 0 10px;}' +
-    '.vdp-day.is-range-end{border-radius:0 10px 10px 0;}' +
-    '.vdp-day.is-range-start.is-range-end{border-radius:10px;}' +
-    '.vdp-stamp{animation:vdp-stamp .3s cubic-bezier(.34,1.56,.64,1);}' +
+    '.vdp.SALT .vdp-day.is-selected.is-today{color:var(--vdp-on-accent);}' +
+    '.vdp.SALT .vdp-day.is-selected.is-today::after{background:var(--vdp-on-accent);}' +
+    '.vdp.SALT .vdp-day.is-range-start{border-radius:10px 0 0 10px;}' +
+    '.vdp.SALT .vdp-day.is-range-end{border-radius:0 10px 10px 0;}' +
+    '.vdp.SALT .vdp-day.is-range-start.is-range-end{border-radius:10px;}' +
+    '.vdp.SALT .vdp-stamp{animation:vdp-stamp .3s cubic-bezier(.34,1.56,.64,1);}' +
     '@keyframes vdp-stamp{0%{transform:scale(.7);}100%{transform:scale(1);}}' +
     /* month / year grids */
-    '.vdp-months,.vdp-years{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;' +
+    '.vdp.SALT .vdp-months,.vdp.SALT .vdp-years{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;' +
       'width:calc(7*var(--vdp-cell));padding:2px 0;}' +
-    '.vdp-month,.vdp-year{height:46px;font-size:14px;font-variant-numeric:tabular-nums;' +
+    '.vdp.SALT .vdp-month,.vdp.SALT .vdp-year{height:46px;font-size:14px;font-variant-numeric:tabular-nums;' +
       'transition:background .1s ease;}' +
-    '.vdp-month:hover,.vdp-year:hover{background:var(--vdp-surface);}' +
-    '.vdp-month.is-now,.vdp-year.is-now{color:var(--vdp-accent);font-weight:650;}' +
-    '.vdp-month.is-selected,.vdp-year.is-selected{background:var(--vdp-accent);' +
+    '.vdp.SALT .vdp-month:hover,.vdp.SALT .vdp-year:hover{background:var(--vdp-surface);}' +
+    '.vdp.SALT .vdp-month.is-now,.vdp.SALT .vdp-year.is-now{color:var(--vdp-accent);font-weight:650;}' +
+    '.vdp.SALT .vdp-month.is-selected,.vdp.SALT .vdp-year.is-selected{background:var(--vdp-accent);' +
       'color:var(--vdp-on-accent);font-weight:650;}' +
-    '.vdp-month.is-disabled,.vdp-year.is-disabled{opacity:.28;cursor:not-allowed;' +
+    '.vdp.SALT .vdp-month.is-disabled,.vdp.SALT .vdp-year.is-disabled{opacity:.28;cursor:not-allowed;' +
       'background:none;}' +
     /* footer */
-    '.vdp-footer{display:flex;justify-content:space-between;gap:8px;' +
+    '.vdp.SALT .vdp-footer{display:flex;justify-content:space-between;gap:8px;' +
       'margin-top:8px;padding:10px 2px 0;border-top:1px solid var(--vdp-faint);}' +
-    '.vdp-btn{color:var(--vdp-accent);font-weight:600;font-size:13px;' +
+    '.vdp.SALT .vdp-btn{color:var(--vdp-accent);font-weight:600;font-size:13px;' +
       'padding:7px 10px;border-radius:8px;transition:background .12s ease;}' +
-    '.vdp-btn:hover{background:var(--vdp-accent-soft);}' +
+    '.vdp.SALT .vdp-btn:hover{background:var(--vdp-accent-soft);}' +
     '@media (max-width:719px){' +
-      '.vdp{flex-direction:column;}' +
-      '.vdp-body{flex-direction:column;gap:8px;}' +
-      '.vdp-presets{flex-direction:row;flex-wrap:wrap;align-items:center;min-width:0;' +
+      '.vdp.SALT{flex-direction:column;}' +
+      '.vdp.SALT .vdp-body{flex-direction:column;gap:8px;}' +
+      '.vdp.SALT .vdp-presets{flex-direction:row;flex-wrap:wrap;align-items:center;min-width:0;' +
         'align-self:auto;border-right:0;border-bottom:1px solid var(--vdp-faint);' +
         'margin:0 0 12px;padding:0 0 10px;}' +
-      '.vdp-presets-label{width:100%;padding:2px 10px 6px;}' +
+      '.vdp.SALT .vdp-presets-label{width:100%;padding:2px 10px 6px;}' +
     '}' +
-    '@media (max-width:359px){.vdp{--vdp-cell:36px;padding:10px;}}' +
+    /* --vdp-cell stays a low-specificity var definition here; only the
+       structural padding gets the salt */
+    '@media (max-width:359px){.vdp{--vdp-cell:36px;}.vdp.SALT{padding:10px;}}' +
     '@media (prefers-reduced-motion:reduce){' +
-      '.vdp,.vdp *{transition:none!important;animation:none!important;}' +
+      '.vdp.SALT,.vdp.SALT *{transition:none!important;animation:none!important;}' +
     '}';
+
+  // The salt namespace: a class stamped on every panel root and baked into
+  // every structural selector, so host-page CSS (other design systems,
+  // generic `.is-selected`/`.is-disabled` rules, `button{}` resets) cannot
+  // accidentally override the widget. Deterministic by default so the
+  // extracted dist/datepicker.css always matches the DOM; teams can set
+  // their own token (DatePicker.salt = 'acme') or disable it entirely
+  // (DatePicker.salt = false) BEFORE the first picker is created.
+  var DEFAULT_SALT = 'vc1';
+
+  function saltToken() {
+    var s = DatePicker.salt;
+    if (s === false) return '';
+    s = s == null ? DEFAULT_SALT : String(s).replace(/[^\w-]/g, '');
+    return s || DEFAULT_SALT;
+  }
+
+  function saltClass() {
+    var s = saltToken();
+    return s ? ' ' + s : '';
+  }
+
+  function renderCss() {
+    var s = saltToken();
+    return CSS.split('.SALT').join(s ? '.' + s : '');
+  }
 
   function injectStyles() {
     if (!HAS_DOM || document.getElementById(STYLE_ID)) return;
     var style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = CSS;
+    style.textContent = renderCss();
     // Insert before the page's own CSS so `.vdp { --vdp-* }` overrides win the cascade.
     var firstSheet = document.head.querySelector('link[rel="stylesheet"],style');
     if (firstSheet) document.head.insertBefore(style, firstSheet);
@@ -1112,7 +1158,7 @@ var define, module, exports;
       var L = this.opts.labels;
       var multi = this._paneCount() > 1;
       var p = document.createElement('div');
-      p.className = 'vdp' + (multi ? ' vdp-multi' : '');
+      p.className = 'vdp' + saltClass() + (multi ? ' vdp-multi' : '');
       p.setAttribute('role', this.inline ? 'group' : 'dialog');
       p.setAttribute('aria-label', L.dialog);
       var presetsHtml = '';
@@ -2037,13 +2083,24 @@ var define, module, exports;
   }
 
   /* ---- convergence contract (see docs/specs/2026-07-03-core-design.md) ---- */
-  DatePicker.css = CSS;
+  DatePicker.salt = DEFAULT_SALT;
+  try {
+    // Live view: always rendered with the CURRENT salt.
+    Object.defineProperty(DatePicker, 'css', {
+      get: renderCss, enumerable: true, configurable: true
+    });
+  } catch (err) {
+    DatePicker.css = renderCss();
+  }
   DatePicker.rootClass = 'vdp';
   DatePicker.themeVars = {
     accent: '--vdp-accent',
     radius: '--vdp-radius',
     font: '--vdp-font'
   };
+  // Where theme vars are DEFINED (unsalted on purpose) — VC.config() writes
+  // its bridge overrides to these scopes so they apply in dark mode too.
+  DatePicker.varScopes = ['.vdp', '.vdp[data-theme=dark]'];
 
   if (HAS_DOM && window.VC && typeof window.VC.register === 'function') {
     window.VC.register('datepicker', DatePicker);
@@ -2088,15 +2145,13 @@ var define, module, exports;
    * `styles: false`; also exposed raw as `Toast.css`.
    * ------------------------------------------------------------------ */
 
+  // '.SALT' is a placeholder replaced at inject time with the active salt
+  // namespace class ('.vc1' by default, '' when Toast.salt === false).
+  // Structural rules carry the salt so host-page design systems cannot
+  // override the toasts; custom-property DEFINITIONS stay unsalted at their
+  // documented specificity so `.vt{--vt-accent:…}` page overrides keep
+  // working (var names are already namespaced — they need no armor).
   var CSS = '' +
-    '.vt-stack{position:fixed;z-index:100000;display:flex;flex-direction:column;' +
-      'gap:10px;padding:16px;pointer-events:none;box-sizing:border-box;' +
-      'max-height:100vh;overflow:hidden;}' +
-    '.vt-stack[data-pos^=top]{top:0;}' +
-    '.vt-stack[data-pos^=bottom]{bottom:0;justify-content:flex-end;}' +
-    '.vt-stack[data-pos$=right]{right:0;align-items:flex-end;}' +
-    '.vt-stack[data-pos$=left]{left:0;align-items:flex-start;}' +
-    '.vt-stack[data-pos$=center]{left:50%;transform:translateX(-50%);align-items:center;}' +
     '.vt{' +
       '--vt-accent:#5b5bd6;' +
       '--vt-success:#1f9d5b;' +
@@ -2109,18 +2164,7 @@ var define, module, exports;
       '--vt-shadow:0 10px 28px rgba(24,25,32,.14),0 2px 8px rgba(24,25,32,.08);' +
       '--vt-radius:12px;' +
       '--vt-font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;' +
-      'pointer-events:auto;display:flex;align-items:flex-start;gap:10px;' +
-      'box-sizing:border-box;min-width:240px;max-width:min(420px,calc(100vw - 32px));' +
-      'background:var(--vt-bg);color:var(--vt-text);' +
-      'font-family:var(--vt-font);font-size:14px;line-height:1.45;' +
-      'border:1px solid var(--vt-faint);border-radius:var(--vt-radius);' +
-      'box-shadow:var(--vt-shadow);padding:12px 14px;' +
-      'opacity:0;transform:translateY(8px) scale(.98);' +
-      'transition:opacity .16s ease,transform .18s cubic-bezier(.2,.9,.3,1.1);}' +
-    '.vt *,.vt *::before,.vt *::after{box-sizing:border-box;}' +
-    '.vt-stack[data-pos^=top] .vt{transform:translateY(-8px) scale(.98);}' +
-    '.vt.vt-in{opacity:1;transform:none;}' +
-    '.vt.vt-out{opacity:0;transform:scale(.97);transition-duration:.14s,.14s;}' +
+    '}' +
     '.vt-stack[data-theme=dark] .vt{' +
       '--vt-accent:#7b7bea;' +
       '--vt-success:#4ccb8f;' +
@@ -2131,34 +2175,78 @@ var define, module, exports;
       '--vt-muted:#989aa6;' +
       '--vt-faint:#31343f;' +
       '--vt-shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);}' +
-    '.vt-icon{flex:none;width:18px;height:18px;display:grid;place-items:center;' +
+    '.vt-stack.SALT{position:fixed;z-index:100000;display:flex;flex-direction:column;' +
+      'gap:10px;padding:16px;pointer-events:none;box-sizing:border-box;' +
+      'max-height:100vh;overflow:hidden;}' +
+    '.vt-stack.SALT[data-pos^=top]{top:0;}' +
+    '.vt-stack.SALT[data-pos^=bottom]{bottom:0;justify-content:flex-end;}' +
+    '.vt-stack.SALT[data-pos$=right]{right:0;align-items:flex-end;}' +
+    '.vt-stack.SALT[data-pos$=left]{left:0;align-items:flex-start;}' +
+    '.vt-stack.SALT[data-pos$=center]{left:50%;transform:translateX(-50%);align-items:center;}' +
+    '.vt-stack.SALT .vt{' +
+      'pointer-events:auto;display:flex;align-items:flex-start;gap:10px;' +
+      'box-sizing:border-box;min-width:240px;max-width:min(420px,calc(100vw - 32px));' +
+      'background:var(--vt-bg);color:var(--vt-text);' +
+      'font-family:var(--vt-font);font-size:14px;line-height:1.45;' +
+      'border:1px solid var(--vt-faint);border-radius:var(--vt-radius);' +
+      'box-shadow:var(--vt-shadow);padding:12px 14px;' +
+      'opacity:0;transform:translateY(8px) scale(.98);' +
+      'transition:opacity .16s ease,transform .18s cubic-bezier(.2,.9,.3,1.1);}' +
+    '.vt-stack.SALT .vt *,.vt-stack.SALT .vt *::before,.vt-stack.SALT .vt *::after{' +
+      'box-sizing:border-box;}' +
+    '.vt-stack.SALT[data-pos^=top] .vt{transform:translateY(-8px) scale(.98);}' +
+    '.vt-stack.SALT .vt.vt-in{opacity:1;transform:none;}' +
+    '.vt-stack.SALT .vt.vt-out{opacity:0;transform:scale(.97);transition-duration:.14s,.14s;}' +
+    '.vt-stack.SALT .vt-icon{flex:none;width:18px;height:18px;display:grid;place-items:center;' +
       'margin-top:1px;color:var(--vt-accent);}' +
-    '.vt-success .vt-icon{color:var(--vt-success);}' +
-    '.vt-error .vt-icon{color:var(--vt-error);}' +
-    '.vt-warning .vt-icon{color:var(--vt-warning);}' +
-    '.vt-icon svg{display:block;}' +
-    '.vt-spin{animation:vt-spin .8s linear infinite;}' +
+    '.vt-stack.SALT .vt-success .vt-icon{color:var(--vt-success);}' +
+    '.vt-stack.SALT .vt-error .vt-icon{color:var(--vt-error);}' +
+    '.vt-stack.SALT .vt-warning .vt-icon{color:var(--vt-warning);}' +
+    '.vt-stack.SALT .vt-icon svg{display:block;}' +
+    '.vt-stack.SALT .vt-spin{animation:vt-spin .8s linear infinite;}' +
     '@keyframes vt-spin{to{transform:rotate(360deg);}}' +
-    '.vt-body{flex:1;min-width:0;overflow-wrap:break-word;}' +
-    '.vt-title{font-weight:650;}' +
-    '.vt-title~.vt-msg{color:var(--vt-muted);margin-top:1px;}' +
-    '.vt-action{flex:none;font:inherit;font-weight:600;font-size:13px;' +
+    '.vt-stack.SALT .vt-body{flex:1;min-width:0;overflow-wrap:break-word;}' +
+    '.vt-stack.SALT .vt-title{font-weight:650;}' +
+    '.vt-stack.SALT .vt-title~.vt-msg{color:var(--vt-muted);margin-top:1px;}' +
+    '.vt-stack.SALT .vt-action{flex:none;font:inherit;font-weight:600;font-size:13px;' +
       'color:var(--vt-accent);background:none;border:0;border-radius:8px;' +
       'padding:4px 8px;margin:-3px -4px -3px 0;cursor:pointer;' +
       'transition:background .12s ease;-webkit-tap-highlight-color:transparent;}' +
-    '.vt-action:hover{background:var(--vt-faint);}' +
-    '.vt-close{flex:none;width:22px;height:22px;display:grid;place-items:center;' +
+    '.vt-stack.SALT .vt-action:hover{background:var(--vt-faint);}' +
+    '.vt-stack.SALT .vt-close{flex:none;width:22px;height:22px;display:grid;place-items:center;' +
       'color:var(--vt-muted);background:none;border:0;border-radius:6px;padding:0;' +
       'margin:-2px -6px -2px 0;cursor:pointer;transition:background .12s ease,' +
       'color .12s ease;-webkit-tap-highlight-color:transparent;}' +
-    '.vt-close:hover{background:var(--vt-faint);color:var(--vt-text);}' +
-    '.vt-close svg{display:block;}' +
-    '.vt-action:focus,.vt-close:focus{outline:none;}' +
-    '.vt-action:focus-visible,.vt-close:focus-visible{outline:2px solid var(--vt-accent);' +
-      'outline-offset:1px;}' +
+    '.vt-stack.SALT .vt-close:hover{background:var(--vt-faint);color:var(--vt-text);}' +
+    '.vt-stack.SALT .vt-close svg{display:block;}' +
+    '.vt-stack.SALT .vt-action:focus,.vt-stack.SALT .vt-close:focus{outline:none;}' +
+    '.vt-stack.SALT .vt-action:focus-visible,.vt-stack.SALT .vt-close:focus-visible{' +
+      'outline:2px solid var(--vt-accent);outline-offset:1px;}' +
     '@media (prefers-reduced-motion:reduce){' +
-      '.vt,.vt *{transition:none!important;animation:none!important;}' +
+      '.vt-stack.SALT .vt,.vt-stack.SALT .vt *{transition:none!important;animation:none!important;}' +
     '}';
+
+  // Salt namespace — same defaults and semantics as the datepicker: 'vc1'
+  // (deterministic, matches dist/toast.css), or set Toast.salt to your own
+  // token / false BEFORE the first toast is shown.
+  var DEFAULT_SALT = 'vc1';
+
+  function saltToken() {
+    var s = Toast.salt;
+    if (s === false) return '';
+    s = s == null ? DEFAULT_SALT : String(s).replace(/[^\w-]/g, '');
+    return s || DEFAULT_SALT;
+  }
+
+  function saltClass() {
+    var s = saltToken();
+    return s ? ' ' + s : '';
+  }
+
+  function renderCss() {
+    var s = saltToken();
+    return CSS.split('.SALT').join(s ? '.' + s : '');
+  }
 
   var ICONS = {
     info: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
@@ -2256,7 +2344,7 @@ var define, module, exports;
   function getStack(pos) {
     if (stacks[pos]) return stacks[pos];
     var el = document.createElement('div');
-    el.className = 'vt-stack';
+    el.className = 'vt-stack' + saltClass();
     el.setAttribute('data-pos', pos);
     el.setAttribute('data-theme', resolveTheme());
     var stack = { el: el, items: [] };
@@ -2389,7 +2477,15 @@ var define, module, exports;
   var Toast = {};
 
   Toast.version = '1.0.0';
-  Toast.css = CSS;
+  Toast.salt = DEFAULT_SALT;
+  try {
+    // Live view: always rendered with the CURRENT salt.
+    Object.defineProperty(Toast, 'css', {
+      get: renderCss, enumerable: true, configurable: true
+    });
+  } catch (err) {
+    Toast.css = renderCss();
+  }
 
   Toast.defaults = {
     position: 'bottom-right', // top|bottom - left|center|right
@@ -2406,7 +2502,7 @@ var define, module, exports;
     if (!HAS_DOM) return dummyHandle;
     opts = mergedOpts(opts);
     if (opts.styles !== false) {
-      if (window.VC && window.VC.injectStyles) window.VC.injectStyles(STYLE_ID, CSS);
+      if (window.VC && window.VC.injectStyles) window.VC.injectStyles(STYLE_ID, renderCss());
       else injectOwnStyles();
     }
     ensureThemeWatch();
@@ -2468,7 +2564,7 @@ var define, module, exports;
     if (document.getElementById(STYLE_ID)) return;
     var style = document.createElement('style');
     style.id = STYLE_ID;
-    style.textContent = CSS;
+    style.textContent = renderCss();
     var firstSheet = document.head.querySelector('link[rel="stylesheet"],style');
     if (firstSheet) document.head.insertBefore(style, firstSheet);
     else document.head.appendChild(style);
@@ -2526,6 +2622,9 @@ var define, module, exports;
     radius: '--vt-radius',
     font: '--vt-font'
   };
+  // Where theme vars are DEFINED (unsalted on purpose) — VC.config() writes
+  // its bridge overrides to these scopes so they apply in dark mode too.
+  Toast.varScopes = ['.vt', '.vt-stack[data-theme=dark] .vt'];
 
   if (HAS_DOM && window.VC && typeof window.VC.register === 'function') {
     window.VC.register('toast', Toast);
