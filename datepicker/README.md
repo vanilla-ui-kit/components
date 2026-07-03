@@ -44,6 +44,7 @@ new DatePicker('#date', {
   firstDay: 1,                     // 0-6; defaults to the locale's first weekday
   weekNumbers: false,              // ISO-8601 week number column
   theme: 'auto',                   // 'auto' | 'light' | 'dark'
+  styles: true,                    // false = headless: no CSS injected (see below)
   accent: '#0f766e',               // any CSS color
   todayButton: true,
   clearButton: true,
@@ -153,6 +154,21 @@ All colors are CSS custom properties, so you can restyle from your own CSS:
 ```
 
 Scope overrides per theme with `.vdp[data-theme="dark"] { … }`.
+
+### Headless — bring your own design
+
+Pass `styles: false` (or `data-styles="false"`) and no CSS is ever injected:
+you keep the full markup, behavior, keyboard handling, and ARIA, with stable
+`.vdp-*` class hooks and state classes (`is-selected`, `is-disabled`,
+`in-range`, …) to style from your own stylesheet. Our CSS is available as a
+starting point via `DatePicker.css` (string) or
+[`dist/datepicker.css`](../dist/datepicker.css) (file). Injection is deduped
+page-wide, so keep `styles: false` on every instance when going headless.
+
+This component is part of the [vanilla-components family](../README.md) —
+also available via the all-in-one bundle (`dist/vanilla-components.js`) or
+npm (`vanilla-components/datepicker`), and it converges with the optional
+`VC` core for one-call family theming: `VC.config({ accent: '#0f766e' })`.
 
 ## Keyboard & accessibility
 
