@@ -29,6 +29,7 @@ const FAMILY = [
   ['Menu', 'menu/menu.js', 'vmn', ['create', 'get', 'open', 'closeAll', 'autoInit']],
   ['Modal', 'modal/modal.js', 'vmd', ['open', 'alert', 'confirm', 'prompt', 'get', 'autoInit']],
   ['Tabs', 'tabs/tabs.js', 'vtb', ['create', 'get', 'autoInit']],
+  ['Select', 'select/select.js', 'vsel', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -138,6 +139,16 @@ test('Tabs specifics: SSR no-op instance', () => {
   assert.doesNotThrow(() => t.select(0));
   assert.doesNotThrow(() => t.getActive());
   assert.doesNotThrow(() => t.destroy());
+});
+
+test('Select specifics: SSR no-op instance', () => {
+  const Select = components[6].mod;
+  const s = Select.create(null, { options: ['a', 'b'] });
+  for (const fn of ['open', 'close', 'enable', 'disable', 'refresh', 'destroy']) {
+    assert.doesNotThrow(() => s[fn](), `select.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => s.setValue('a'));
+  assert.doesNotThrow(() => s.getValue());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

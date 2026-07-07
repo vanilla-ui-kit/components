@@ -23,9 +23,10 @@ you bring your own design.
 | Dropdown / context menus | `Menu` | [`menu/menu.js`](./menu/menu.js) | [README](./menu/README.md) |
 | Modals / dialogs (alert, confirm, prompt) | `Modal` | [`modal/modal.js`](./modal/modal.js) | [README](./modal/README.md) |
 | Tabs | `Tabs` | [`tabs/tabs.js`](./tabs/tabs.js) | [README](./tabs/README.md) |
+| Select / combobox (search, multiple, groups) | `Select` | [`select/select.js`](./select/select.js) | [README](./select/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: select/combobox, command palette, phone input — same contract, same DNA.
+Roadmap: command palette, phone input — same contract, same DNA.
 
 ## Get it any way you like
 
