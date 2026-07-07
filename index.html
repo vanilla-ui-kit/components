@@ -167,6 +167,81 @@
       <div class="links"><a href="./phone/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/phone">Docs</a></div>
       <div class="try"><input id="tryPhone" placeholder="Phone number…" style="font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;background:var(--surface);color:var(--text);width:100%"></div>
     </div>
+    <div class="card">
+      <span class="pill">Drawer</span>
+      <h3>Drawers / side sheets</h3>
+      <p>Slide-in panels from any side on the same native-dialog machinery as Modal.</p>
+      <div class="links"><a href="./drawer/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/drawer">Docs</a></div>
+      <div class="try"><button class="btn" id="tryDrawer">Open drawer</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Autocomplete</span>
+      <h3>Autocomplete / typeahead</h3>
+      <p>Free-text suggestions from arrays or async sources, race-safe, with match highlighting.</p>
+      <div class="links"><a href="./autocomplete/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/autocomplete">Docs</a></div>
+      <div class="try"><input id="tryAutocomplete" placeholder="Try a city…" style="font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;background:var(--surface);color:var(--text);width:100%"></div>
+    </div>
+    <div class="card">
+      <span class="pill">Slider</span>
+      <h3>Slider</h3>
+      <p>Single and dual-thumb ranges with marks, tooltips, and full keyboard support.</p>
+      <div class="links"><a href="./slider/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/slider">Docs</a></div>
+      <div class="try"><div id="trySlider"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Popconfirm</span>
+      <h3>Popconfirm</h3>
+      <p>Inline are-you-sure anchored to the button. A promise, not a modal.</p>
+      <div class="links"><a href="./popconfirm/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/popconfirm">Docs</a></div>
+      <div class="try"><button class="btn" id="tryPopconfirm">Delete everything</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Segmented</span>
+      <h3>Segmented control</h3>
+      <p>The modern radio group with an animated sliding thumb.</p>
+      <div class="links"><a href="./segmented/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/segmented">Docs</a></div>
+      <div class="try"><div id="trySegmented"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Upload</span>
+      <h3>File upload / dropzone</h3>
+      <p>Drag-and-drop, paste, image previews, per-file progress with retry.</p>
+      <div class="links"><a href="./upload/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/upload">Docs</a></div>
+    </div>
+    <div class="card">
+      <span class="pill">NumberInput</span>
+      <h3>Number / currency input</h3>
+      <p>Thousands grouping while you type, steppers with acceleration, raw values for forms.</p>
+      <div class="links"><a href="./number/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/number">Docs</a></div>
+      <div class="try"><div id="tryNumber"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Progress</span>
+      <h3>Progress / skeletons</h3>
+      <p>Bars, spinners, and shimmering skeleton placeholders that restore what they cover.</p>
+      <div class="links"><a href="./progress/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/progress">Docs</a></div>
+      <div class="try"><div id="tryProgress"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Pagination</span>
+      <h3>Pagination</h3>
+      <p>Constant-width ellipsis logic, go-to jump, and totals — the data-page workhorse.</p>
+      <div class="links"><a href="./pagination/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/pagination">Docs</a></div>
+      <div class="try"><div id="tryPagination"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">EmptyState</span>
+      <h3>Empty states</h3>
+      <p>Icon, title, description, action — the screen every app forgets to design.</p>
+      <div class="links"><a href="./empty/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/empty">Docs</a></div>
+    </div>
+    <div class="card">
+      <span class="pill">Rating</span>
+      <h3>Rating</h3>
+      <p>Stars or hearts, half-steps, fractional averages, keyboard accessible.</p>
+      <div class="links"><a href="./rating/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/rating">Docs</a></div>
+      <div class="try"><div id="tryRating"></div></div>
+    </div>
   </div>
 </section>
 
@@ -270,6 +345,36 @@ VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
   Array.prototype.forEach.call(document.querySelectorAll('[data-demo=palette]'), function (b) {
     b.addEventListener('click', CommandPalette.open);
   });
+
+  // Wave-2 live demos.
+  document.getElementById('tryDrawer').addEventListener('click', function () {
+    Drawer.open({
+      title: 'Hello from the side',
+      content: 'Same focus management and scroll lock as Modal, sliding in from any edge.',
+      buttons: [{ label: 'Nice', variant: 'primary', close: true }]
+    });
+  });
+  new Autocomplete('#tryAutocomplete', {
+    source: ['Amsterdam', 'Athens', 'Austin', 'Barcelona', 'Berlin', 'Bogotá',
+      'Cairo', 'Dubai', 'Lisbon', 'London', 'Madrid', 'Nairobi', 'Oslo',
+      'Paris', 'São Paulo', 'Seoul', 'Singapore', 'Tokyo', 'Toronto', 'Zürich'],
+    openOnFocus: true
+  });
+  new Slider('#trySlider', {
+    value: [20, 80], prefix: '$', tooltip: 'drag',
+    onChange: function () {}
+  });
+  document.getElementById('tryPopconfirm').addEventListener('click', function () {
+    Popconfirm.ask('#tryPopconfirm', { message: 'Delete everything?', danger: true, okLabel: 'Delete' })
+      .then(function (yes) {
+        if (yes) Toast.error('Everything deleted. (Not really.)');
+      });
+  });
+  new Segmented('#trySegmented', { options: ['Day', 'Week', 'Month'], value: 'Week' });
+  new NumberInput('#tryNumber', { prefix: '$', precision: 2, value: 1234.5, step: 10 });
+  Progress.bar('#tryProgress', { indeterminate: true, label: 'Always busy…' });
+  new Pagination('#tryPagination', { pages: 12, page: 4, compact: true });
+  new Rating('#tryRating', { value: 3.5, half: true });
 })();
 </script>
 </body>
