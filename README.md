@@ -32,10 +32,11 @@ you bring your own design.
 | Drawers / side sheets | `Drawer` | [`drawer/drawer.js`](./drawer/drawer.js) | [README](./drawer/README.md) |
 | Segmented control | `Segmented` | [`segmented/segmented.js`](./segmented/segmented.js) | [README](./segmented/README.md) |
 | Progress bars / spinners / skeletons | `Progress` | [`progress/progress.js`](./progress/progress.js) | [README](./progress/README.md) |
+| Popconfirm (inline are-you-sure) | `Popconfirm` | [`popconfirm/popconfirm.js`](./popconfirm/popconfirm.js) | [README](./popconfirm/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: autocomplete, slider, popconfirm, upload, number input,
-pagination, empty state, rating — same contract, same DNA.
+Roadmap: autocomplete, slider, upload, number input, pagination,
+empty state, rating — same contract, same DNA.
 
 ## Get it any way you like
 

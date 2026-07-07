@@ -36,6 +36,7 @@ const FAMILY = [
   ['Drawer', 'drawer/drawer.js', 'vdr', ['open', 'create', 'get', 'autoInit']],
   ['Segmented', 'segmented/segmented.js', 'vsg', ['create', 'get', 'autoInit']],
   ['Progress', 'progress/progress.js', 'vpg', ['bar', 'spinner', 'skeleton', 'autoInit']],
+  ['Popconfirm', 'popconfirm/popconfirm.js', 'vpc', ['ask', 'create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -229,6 +230,15 @@ test('Progress specifics: SSR no-op handles for bar/spinner/skeleton', () => {
   assert.doesNotThrow(() => Progress.spinner(null).remove());
   assert.doesNotThrow(() => Progress.skeleton(null).release());
   assert.doesNotThrow(() => Progress.skeleton.release(null));
+});
+
+test('Popconfirm specifics: SSR ask resolves false', async () => {
+  const Popconfirm = components[13].mod;
+  assert.equal(await Popconfirm.ask(null, 'sure?'), false);
+  const p = Popconfirm.create(null, { message: 'x' });
+  assert.doesNotThrow(() => p.show());
+  assert.doesNotThrow(() => p.hide());
+  assert.doesNotThrow(() => p.destroy());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

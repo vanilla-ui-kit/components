@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Popconfirm — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='9' rx='3' fill='%235b5bd6'/%3E%3Cpath d='M8 15L5.5 10h5L8 15z' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --danger: #e5484d;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --danger: #f2555a;
+      --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --danger: #e5484d;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --danger: #f2555a;
+    --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card button.demo-btn, .card input.demo-input {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card button.demo-btn.is-danger:hover { border-color: var(--danger); color: var(--danger); }
+  .card input.demo-input { cursor: text; background: var(--surface); min-width: 0; flex: 1; }
+  .card .status { font-size: 13px; color: var(--muted); min-height: 1.4em; margin: 0; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Popconfirm <small>v1.0.0 · <a href="../tooltip/examples.html">tooltip →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Are you sure? <em>Inline.</em></h1>
+  <p class="lede">A confirmation anchored to the button that asked — lighter
+  than a modal. Focus starts on Cancel, Escape backs out, and intercepted
+  clicks only proceed once you say OK. Every card below is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Promise-based ask()</h3>
+      <p>Anchor a one-shot confirm to any element and await the answer.
+      Escape, outside click, or Cancel resolve <code>false</code>.</p>
+      <div class="demo">
+        <button class="demo-btn" id="ask-btn">Archive project</button>
+      </div>
+      <p class="status" id="ask-status" role="status"></p>
+      <pre>const ok = await Popconfirm.ask(
+  '#archive', 'Archive this project?')
+if (ok) archive()</pre>
+    </div>
+
+    <div class="card">
+      <h3>Danger delete</h3>
+      <p><code>danger: true</code> reddens the OK button and the icon —
+      focus still lands on Cancel, so a reflexive Enter is safe.</p>
+      <div class="demo">
+        <button class="demo-btn is-danger" id="danger-btn">Delete account</button>
+      </div>
+      <p class="status" id="danger-status" role="status"></p>
+      <pre>Popconfirm.ask(btn, {
+  title: 'Delete account',
+  message: 'This cannot be undone.',
+  okLabel: 'Delete', danger: true
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p>Buttons with <code>data-vpc</code> are auto-bound at load. The click
+      is intercepted; on confirm it proceeds — watch the inline
+      <code>onclick</code> fire only after OK.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vpc="Send the newsletter to 1,204 people?"
+          data-vpc-ok="Send" data-vpc-cancel="Not yet"
+          onclick="document.getElementById('decl-status').textContent =
+            'Original click ran → newsletter sent.'">Send newsletter</button>
+        <button class="demo-btn is-danger" data-vpc="Remove this member?" data-vpc-danger
+          data-vpc-ok="Remove"
+          onclick="document.getElementById('decl-status').textContent =
+            'Original click ran → member removed.'">Remove member</button>
+      </div>
+      <p class="status" id="decl-status" role="status"></p>
+      <pre>&lt;button data-vpc="Remove this member?"
+        data-vpc-danger data-vpc-ok="Remove"&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Form submit button</h3>
+      <p>A <code>type=submit</code> trigger holds the form until confirmed,
+      then submits it for real via <code>requestSubmit()</code> — validation
+      included (try submitting empty).</p>
+      <form id="unsub-form" class="demo">
+        <input class="demo-input" name="email" type="email" required
+          placeholder="you@example.com" aria-label="Email">
+        <button class="demo-btn" type="submit"
+          data-vpc="Unsubscribe this address?" data-vpc-ok="Unsubscribe">
+          Unsubscribe</button>
+      </form>
+      <p class="status" id="form-status" role="status"></p>
+      <pre>&lt;form&gt;
+  &lt;input name="email" required&gt;
+  &lt;button type="submit"
+    data-vpc="Unsubscribe this address?"&gt;
+&lt;/form&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Custom labels, no icon</h3>
+      <p>Rename the buttons per call (or once via
+      <code>Popconfirm.defaults.labels</code>) and drop the icon with
+      <code>icon: false</code>.</p>
+      <div class="demo">
+        <button class="demo-btn" id="labels-btn">Log out everywhere</button>
+      </div>
+      <p class="status" id="labels-status" role="status"></p>
+      <pre>Popconfirm.ask(btn, {
+  message: 'Log out on all devices?',
+  okLabel: 'Log out', cancelLabel: 'Stay',
+  icon: false, width: 240
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Placements</h3>
+      <p>Four sides with auto-flip when there's no room, plus an arrow that
+      stays pointed at the trigger even when the panel is clamped.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vpc="I open on top" data-vpc-placement="top">Top</button>
+        <button class="demo-btn" data-vpc="I open below" data-vpc-placement="bottom">Bottom</button>
+        <button class="demo-btn" data-vpc="To the left" data-vpc-placement="left">Left</button>
+        <button class="demo-btn" data-vpc="To the right" data-vpc-placement="right">Right</button>
+      </div>
+      <pre>&lt;button data-vpc="I open below"
+        data-vpc-placement="bottom"&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Persistent binding + callbacks</h3>
+      <p><code>new Popconfirm(el, opts)</code> keeps intercepting until
+      <code>destroy()</code>. <code>onConfirm(el)</code> /
+      <code>onCancel()</code> report each answer.</p>
+      <div class="demo">
+        <button class="demo-btn" id="bound-btn">Reset settings</button>
+        <button class="demo-btn" id="unbind-btn">destroy() the binding</button>
+      </div>
+      <p class="status" id="bound-status" role="status"></p>
+      <pre>var pc = new Popconfirm('#reset', {
+  message: 'Reset all settings?',
+  onConfirm: function (el) { … },
+  onCancel:  function () { … }
+})
+pc.destroy()   // unbinds</pre>
+    </div>
+
+    <div class="card">
+      <h3>Headless &amp; family theming</h3>
+      <p><code>Popconfirm.defaults.styles = false</code> injects no CSS — the
+      interception, focus management, and ARIA stay, the look is yours (see
+      <code>Popconfirm.css</code>). With the VC core loaded, one call themes
+      every family component.</p>
+      <div class="demo">
+        <button class="demo-btn" id="amber-btn">Amber accent</button>
+      </div>
+      <pre>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/popconfirm/popconfirm.js"&gt;&lt;/script&gt;
+VC.config({ accent: '#b45309' })</pre>
+    </div>
+  </div>
+</div>
+
+<script src="./popconfirm.js"></script>
+<script>
+  // Theme switch — the popconfirms follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  function say(id, msg) { document.getElementById(id).textContent = msg; }
+
+  // Promise-based one-shot.
+  document.getElementById('ask-btn').addEventListener('click', function () {
+    Popconfirm.ask(this, 'Archive this project?').then(function (ok) {
+      say('ask-status', ok ? 'Resolved true → archived.' : 'Resolved false — untouched.');
+    });
+  });
+
+  // Danger delete with a title.
+  document.getElementById('danger-btn').addEventListener('click', function () {
+    Popconfirm.ask(this, {
+      title: 'Delete account',
+      message: 'This cannot be undone.',
+      okLabel: 'Delete',
+      danger: true
+    }).then(function (ok) {
+      say('danger-status', ok ? 'Deleted (pretend).' : 'Kept — nothing happened.');
+    });
+  });
+
+  // The unsubscribe form never leaves the page; the submit EVENT proves the
+  // confirmed click really submitted (requestSubmit ran validation first).
+  document.getElementById('unsub-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    say('form-status', 'submit event fired → unsubscribed ' + (this.email.value || '?'));
+  });
+
+  // Custom labels, no icon, fixed width.
+  document.getElementById('labels-btn').addEventListener('click', function () {
+    Popconfirm.ask(this, {
+      message: 'Log out on all devices?',
+      okLabel: 'Log out',
+      cancelLabel: 'Stay',
+      icon: false,
+      width: 240
+    }).then(function (ok) {
+      say('labels-status', ok ? 'Logged out everywhere.' : 'Still logged in.');
+    });
+  });
+
+  // Persistent binding with callbacks, plus destroy() to unbind.
+  var bound = new Popconfirm('#bound-btn', {
+    message: 'Reset all settings to defaults?',
+    okLabel: 'Reset',
+    placement: 'bottom',
+    onConfirm: function () { say('bound-status', 'onConfirm → settings reset.'); },
+    onCancel: function () { say('bound-status', 'onCancel → left alone.'); }
+  });
+  document.getElementById('unbind-btn').addEventListener('click', function () {
+    bound.destroy();
+    say('bound-status', 'Binding destroyed — the button clicks straight through now.');
+  });
+
+  // Family theming via the optional VC core (falls back to a hint).
+  document.getElementById('amber-btn').addEventListener('click', function () {
+    if (window.VC && window.VC.config) {
+      VC.config({ accent: '#b45309' });
+      Popconfirm.ask(this, 'Family accent is amber now — nice?');
+    } else {
+      Popconfirm.ask(this, 'Load dist/vanilla-ui-kit.js to get VC.config().');
+    }
+  });
+</script>
+</body>
+</html>

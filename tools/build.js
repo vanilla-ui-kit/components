@@ -34,7 +34,8 @@ var COMPONENTS = [
   ['phone/phone.js', 'PhoneInput', 'phone.css', 'vanilla-phone'],
   ['drawer/drawer.js', 'Drawer', 'drawer.css', 'vanilla-drawer'],
   ['segmented/segmented.js', 'Segmented', 'segmented.css', 'vanilla-segmented'],
-  ['progress/progress.js', 'Progress', 'progress.css', 'vanilla-progress']
+  ['progress/progress.js', 'Progress', 'progress.css', 'vanilla-progress'],
+  ['popconfirm/popconfirm.js', 'Popconfirm', 'popconfirm.css', 'vanilla-popconfirm']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));
