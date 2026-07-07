@@ -598,6 +598,154 @@ size: 'sm'</pre>
   left to the browser.</p>
 </section>
 
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (thumb measurement, roving tabindex, hidden input), the radiogroup ARIA and
+  keyboard handling, and the stable <code>.vsg-*</code> class hooks; you
+  bring your own CSS. Each demo runs in its own <code>&lt;iframe&gt;</code>:
+  the styled examples above already injected the segmented stylesheet into
+  this page, so only a clean document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — <code>role="radiogroup"</code> with
+      <code>role="radio"</code> buttons and class hooks, zero CSS injected.
+      Arrow keys still move and select.</p>
+      <iframe id="hl-raw-frame" title="Headless segmented control demo, unstyled" style="height:150px"></iframe>
+      <pre>new Segmented('#view', {
+  styles: false,        // zero CSS injected
+  options: [
+    { value: 'list',     label: 'List' },
+    { value: 'board',    label: 'Board' },
+    { value: 'timeline', label: 'Timeline' }
+  ],
+  value: 'board',
+  label: 'View'
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless control mapped to a different design — the JS keeps
+      driving the thumb's <code>transform</code>/size while Tailwind draws it —
+      loaded on demand from <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless segmented control demo, styled with Tailwind" style="height:180px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vsg { @apply relative inline-flex rounded-full
+  bg-slate-900 p-1; }
+.vsg-thumb { @apply absolute left-0 top-0 rounded-full
+  bg-emerald-400 opacity-0 shadow
+  transition-[transform,width] duration-200; }
+.vsg-thumb.vsg-thumb-on { @apply opacity-100; }
+.vsg-seg { @apply relative z-[1] cursor-pointer
+  rounded-full border-0 bg-transparent px-4 py-1.5
+  text-sm font-medium text-slate-400 transition-colors; }
+.vsg-seg[aria-checked="true"] { @apply text-slate-950; }
+.vsg-seg:focus-visible { @apply outline-none ring-2
+  ring-emerald-300; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless segmented control, unstyled</title>',
+    '<p>Clean document: no segmented CSS exists here.</p>',
+    '<div id="view"></div>',
+    '<p>Selected: <output id="out" aria-live="polite">board</output></p>',
+    S + ' src="segmented.js">' + E,
+    S + '>',
+    'new Segmented("#view", {',
+    '  styles: false,',
+    '  label: "View",',
+    '  options: [',
+    '    { value: "list", label: "List" },',
+    '    { value: "board", label: "Board" },',
+    '    { value: "timeline", label: "Timeline" }',
+    '  ],',
+    '  value: "board",',
+    '  onChange: function (v) { document.getElementById("out").value = v; }',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless segmented control, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="segmented.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vsg { @apply relative inline-flex rounded-full bg-slate-900 p-1; }',
+    '  .vsg-thumb { @apply absolute left-0 top-0 rounded-full bg-emerald-400 opacity-0 shadow transition-[transform,width] duration-200; }',
+    '  .vsg-thumb.vsg-thumb-on { @apply opacity-100; }',
+    '  .vsg-seg { @apply relative z-[1] cursor-pointer rounded-full border-0 bg-transparent px-4 py-1.5 text-sm font-medium text-slate-400 transition-colors; }',
+    '  .vsg-seg[aria-checked="true"] { @apply text-slate-950; }',
+    '  .vsg-seg:focus-visible { @apply outline-none ring-2 ring-emerald-300; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-slate-100 font-sans">',
+    '<div class="text-center">',
+    '<div id="plan" class="inline-block"></div>',
+    '<p class="mt-3 text-xs text-slate-400">Selected: <output id="out" aria-live="polite">pro</output></p>',
+    '</div>',
+    S + '>',
+    'new Segmented("#plan", {',
+    '  styles: false,',
+    '  label: "Plan",',
+    '  options: [',
+    '    { value: "free", label: "Free" },',
+    '    { value: "pro", label: "Pro" },',
+    '    { value: "team", label: "Team" },',
+    '    { value: "scale", label: "Scale" }',
+    '  ],',
+    '  value: "pro",',
+    '  onChange: function (v) { document.getElementById("out").value = v; }',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

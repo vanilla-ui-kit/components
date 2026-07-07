@@ -675,6 +675,159 @@ if (ok) remove()</pre>
   </div>
 </section>
 
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (click interception, focus management, positioning), the ARIA wiring and
+  keyboard handling, and the stable <code>.vpc-*</code> class hooks; you
+  bring your own CSS. Each demo runs in its own <code>&lt;iframe&gt;</code>:
+  the styled examples above already injected the popconfirm stylesheet into
+  this page, so only a clean document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — the click is still intercepted, the panel
+      is positioned inline, but not a single rule is injected.</p>
+      <iframe id="hl-raw-frame" title="Headless popconfirm demo, unstyled" style="height:220px"></iframe>
+      <pre>new Popconfirm('#del', {
+  styles: false,        // zero CSS injected
+  title: 'Delete file?',
+  message: 'This cannot be undone.',
+  danger: true,
+  onConfirm: function () { … }
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless popconfirm mapped to a different design — panel,
+      arrow per placement, <code>.vpc-open</code> transition and danger
+      button — loaded on demand from <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless popconfirm demo, styled with Tailwind" style="height:260px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vpc { @apply z-10 w-64 rounded-2xl border border-slate-200
+  bg-white opacity-0 shadow-2xl transition-opacity
+  duration-150; }
+.vpc.vpc-open { @apply opacity-100; }
+.vpc-arrow { @apply absolute h-2 w-2 rotate-45 bg-white; }
+.vpc[data-placement="top"] .vpc-arrow { @apply -bottom-1
+  border-b border-r border-slate-200; }
+.vpc[data-placement="bottom"] .vpc-arrow { @apply -top-1
+  border-l border-t border-slate-200; }
+.vpc-body { @apply flex items-start gap-2.5 px-4 pt-4; }
+.vpc-icon { @apply mt-0.5 text-rose-500; }
+.vpc-title { @apply m-0 text-sm font-semibold
+  text-slate-900; }
+.vpc-msg { @apply m-0 mt-1 text-[13px] leading-5
+  text-slate-500; }
+.vpc-actions { @apply flex justify-end gap-2 px-4 py-3; }
+.vpc-btn { @apply cursor-pointer rounded-lg border
+  border-slate-200 bg-white px-3 py-1.5 text-[13px]
+  font-medium text-slate-600 hover:bg-slate-50; }
+.vpc-btn.vpc-ok { @apply border-transparent bg-rose-600
+  text-white hover:bg-rose-500; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless popconfirm, unstyled</title>',
+    '<p>Clean document: no popconfirm CSS exists here.</p>',
+    '<button id="del" type="button">Delete file</button>',
+    '<p><output id="out" aria-live="polite"></output></p>',
+    S + ' src="popconfirm.js">' + E,
+    S + '>',
+    'new Popconfirm("#del", {',
+    '  styles: false,',
+    '  title: "Delete file?",',
+    '  message: "This cannot be undone.",',
+    '  danger: true,',
+    '  onConfirm: function () { document.getElementById("out").value = "Confirmed."; },',
+    '  onCancel: function () { document.getElementById("out").value = "Cancelled."; }',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless popconfirm, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="popconfirm.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vpc { @apply z-10 w-64 rounded-2xl border border-slate-200 bg-white opacity-0 shadow-2xl transition-opacity duration-150; }',
+    '  .vpc.vpc-open { @apply opacity-100; }',
+    '  .vpc-arrow { @apply absolute h-2 w-2 rotate-45 bg-white; }',
+    '  .vpc[data-placement="top"] .vpc-arrow { @apply -bottom-1 border-b border-r border-slate-200; }',
+    '  .vpc[data-placement="bottom"] .vpc-arrow { @apply -top-1 border-l border-t border-slate-200; }',
+    '  .vpc-body { @apply flex items-start gap-2.5 px-4 pt-4; }',
+    '  .vpc-icon { @apply mt-0.5 text-rose-500; }',
+    '  .vpc-title { @apply m-0 text-sm font-semibold text-slate-900; }',
+    '  .vpc-msg { @apply m-0 mt-1 text-[13px] leading-5 text-slate-500; }',
+    '  .vpc-actions { @apply flex justify-end gap-2 px-4 py-3; }',
+    '  .vpc-btn { @apply cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] font-medium text-slate-600 hover:bg-slate-50; }',
+    '  .vpc-btn.vpc-ok { @apply border-transparent bg-rose-600 text-white hover:bg-rose-500; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-slate-50 font-sans">',
+    '<div class="text-center">',
+    '<button id="del" type="button" class="rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500">Delete repository</button>',
+    '<p class="mt-3 text-xs text-slate-400"><output id="out" aria-live="polite"></output></p>',
+    '</div>',
+    S + '>',
+    'new Popconfirm("#del", {',
+    '  styles: false,',
+    '  title: "Delete this repository?",',
+    '  message: "All issues and stars are lost forever.",',
+    '  danger: true,',
+    '  labels: { ok: "Delete", cancel: "Keep it" },',
+    '  onConfirm: function () { document.getElementById("out").value = "Deleted (not really)."; },',
+    '  onCancel: function () { document.getElementById("out").value = "Kept."; }',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

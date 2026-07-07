@@ -593,6 +593,163 @@ Drawer.get(el)                 // &rarr; instance | null</pre>
   </div>
 </section>
 
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (focus trap, scroll lock, stacking), the ARIA wiring and keyboard handling,
+  and the stable <code>.vdr-*</code> class hooks; you bring your own CSS. Each
+  demo runs in its own <code>&lt;iframe&gt;</code>: the styled examples above
+  already injected the drawer stylesheet into this page, so only a clean
+  document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a native <code>&lt;dialog&gt;</code> with
+      semantic children and class hooks, zero CSS injected.</p>
+      <iframe id="hl-raw-frame" title="Headless drawer demo, unstyled" style="height:240px"></iframe>
+      <pre>Drawer.open({
+  styles: false,        // zero CSS injected
+  title: 'Headless drawer',
+  content: 'Bring your own styles.',
+  buttons: [{ label: 'Close',
+    variant: 'primary', close: true }]
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless drawer mapped to a different design with Tailwind
+      utilities — loaded on demand from <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless drawer demo, styled with Tailwind" style="height:320px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vdr { @apply fixed inset-0 m-0 h-full max-h-none w-full
+  max-w-none border-0 p-0 opacity-0 transition-opacity
+  duration-150; background: rgb(15 23 42 / 0.55); }
+.vdr::backdrop { background: transparent; }
+.vdr.vdr-in  { @apply opacity-100; }
+.vdr.vdr-out { @apply opacity-0; }
+.vdr-panel { @apply absolute inset-y-0 right-0 flex
+  translate-x-full flex-col bg-slate-900 text-slate-100
+  shadow-2xl transition-transform duration-200; }
+.vdr-in  .vdr-panel { @apply translate-x-0; }
+.vdr-out .vdr-panel { @apply translate-x-full; }
+.vdr-head { @apply flex items-center justify-between
+  border-b border-slate-700/60 px-5 py-4; }
+.vdr-title { @apply m-0 text-base font-semibold; }
+.vdr-x { @apply cursor-pointer border-0 bg-transparent p-0
+  text-xl leading-none text-slate-400 hover:text-white; }
+.vdr-body { @apply flex-1 overflow-y-auto px-5 py-4; }
+.vdr-msg { @apply m-0 text-sm leading-6 text-slate-300; }
+.vdr-foot { @apply flex justify-end gap-2 border-t
+  border-slate-700/60 px-5 py-4; }
+.vdr-btn { @apply cursor-pointer rounded-full border-0
+  bg-slate-800 px-4 py-2 text-sm font-medium
+  text-slate-200 hover:bg-slate-700; }
+.vdr-btn-primary { @apply bg-emerald-400 text-slate-950
+  hover:bg-emerald-300; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless drawer, unstyled</title>',
+    '<p>Clean document: no drawer CSS exists here.</p>',
+    '<button id="open" type="button">Open headless drawer</button>',
+    S + ' src="drawer.js">' + E,
+    S + '>',
+    'document.getElementById("open").onclick = function () {',
+    '  Drawer.open({',
+    '    styles: false,',
+    '    title: "Headless drawer",',
+    '    content: "Zero CSS injected. Focus trap, Esc and ARIA still work.",',
+    '    buttons: [{ label: "Close", variant: "primary", close: true }]',
+    '  });',
+    '};',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless drawer, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="drawer.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vdr { @apply fixed inset-0 m-0 h-full max-h-none w-full max-w-none border-0 p-0 opacity-0 transition-opacity duration-150; background: rgb(15 23 42 / 0.55); }',
+    '  .vdr::backdrop { background: transparent; }',
+    '  .vdr.vdr-in { @apply opacity-100; }',
+    '  .vdr.vdr-out { @apply opacity-0; }',
+    '  .vdr-panel { @apply absolute inset-y-0 right-0 flex translate-x-full flex-col bg-slate-900 text-slate-100 shadow-2xl transition-transform duration-200; }',
+    '  .vdr-in .vdr-panel { @apply translate-x-0; }',
+    '  .vdr-out .vdr-panel { @apply translate-x-full; }',
+    '  .vdr-head { @apply flex items-center justify-between border-b border-slate-700/60 px-5 py-4; }',
+    '  .vdr-title { @apply m-0 text-base font-semibold; }',
+    '  .vdr-x { @apply cursor-pointer border-0 bg-transparent p-0 text-xl leading-none text-slate-400 hover:text-white; }',
+    '  .vdr-body { @apply flex-1 overflow-y-auto px-5 py-4; }',
+    '  .vdr-msg { @apply m-0 text-sm leading-6 text-slate-300; }',
+    '  .vdr-foot { @apply flex justify-end gap-2 border-t border-slate-700/60 px-5 py-4; }',
+    '  .vdr-btn { @apply cursor-pointer rounded-full border-0 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-700; }',
+    '  .vdr-btn-primary { @apply bg-emerald-400 text-slate-950 hover:bg-emerald-300; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-slate-100">',
+    '<button id="open" type="button" class="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-slate-700">Open the redesigned drawer</button>',
+    S + '>',
+    'document.getElementById("open").onclick = function () {',
+    '  Drawer.open({',
+    '    styles: false, side: "right", size: "300px",',
+    '    title: "Your cart",',
+    '    content: "The same headless drawer, dressed entirely in Tailwind utilities.",',
+    '    buttons: [',
+    '      { label: "Keep shopping", close: true },',
+    '      { label: "Checkout", variant: "primary", close: "go" }',
+    '    ]',
+    '  });',
+    '};',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

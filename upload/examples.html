@@ -788,6 +788,181 @@ Upload.get('#box')           // instance registered on that element, or null</pr
   </div>
 </section>
 
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (drag counting, validation, uploads), the ARIA wiring with a live region,
+  and the stable <code>.vup-*</code> class hooks; you bring your own CSS.
+  Each demo runs in its own <code>&lt;iframe&gt;</code>: the styled examples
+  above already injected the upload stylesheet into this page, so only a
+  clean document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — dropzone, live region, the real file input
+      (visible, since no CSS hides it) and a plain list, zero CSS injected.
+      Pick a file to see raw rows appear.</p>
+      <iframe id="hl-raw-frame" title="Headless upload demo, unstyled" style="height:280px"></iframe>
+      <pre>new Upload('#box', {
+  styles: false,        // zero CSS injected
+  multiple: true
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless uploader mapped to a different design — dropzone
+      drag state, progress fill, done/error rows — with a simulated transport
+      so progress animates. Loaded on demand from
+      <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless upload demo, styled with Tailwind" style="height:380px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vup { @apply mx-auto max-w-md font-sans; }
+.vup-zone { @apply flex cursor-pointer flex-col
+  items-center gap-1 rounded-2xl border-2 border-dashed
+  border-slate-300 bg-white px-6 py-8 text-sm
+  text-slate-500 transition-colors; }
+.vup.is-drag .vup-zone { @apply border-indigo-500
+  bg-indigo-50 text-indigo-600; }
+.vup-zone-icon { @apply text-slate-400; }
+.vup.is-drag .vup-zone-icon { @apply text-indigo-500; }
+.vup-browse { @apply cursor-pointer border-0 bg-transparent
+  p-0 font-semibold text-indigo-600 underline
+  underline-offset-2; }
+.vup-native, .vup-live { @apply sr-only; }
+.vup-list { @apply m-0 mt-3 list-none space-y-2 p-0; }
+.vup-item { @apply flex items-center gap-3 rounded-xl
+  border border-slate-200 bg-white p-3; }
+.vup-item[data-status="error"] { @apply border-rose-300
+  bg-rose-50; }
+.vup-thumb { @apply grid h-9 w-9 flex-none
+  place-items-center overflow-hidden rounded-lg
+  bg-slate-100 text-slate-400; }
+.vup-thumb img { @apply h-full w-full object-cover; }
+.vup-meta { @apply min-w-0 flex-1; }
+.vup-name { @apply block truncate text-sm font-medium
+  text-slate-700; }
+.vup-sub { @apply text-xs text-slate-400; }
+.vup-errmsg { @apply text-xs font-medium text-rose-600; }
+.vup-bar { @apply mt-1.5 h-1.5 overflow-hidden
+  rounded-full bg-slate-100; }
+.vup-fill { @apply h-full rounded-full bg-indigo-500
+  transition-[width]; }
+.vup-item[data-status="done"] .vup-fill {
+  @apply bg-emerald-500; }
+.vup-remove, .vup-retry { @apply grid h-7 w-7 flex-none
+  cursor-pointer place-items-center rounded-full border-0
+  bg-transparent text-slate-400 hover:bg-slate-100
+  hover:text-slate-600; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless upload, unstyled</title>',
+    '<p>Clean document: no upload CSS exists here.</p>',
+    '<div id="box"></div>',
+    S + ' src="upload.js">' + E,
+    S + '>',
+    'new Upload("#box", {',
+    '  styles: false,',
+    '  multiple: true',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless upload, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="upload.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vup { @apply mx-auto max-w-md font-sans; }',
+    '  .vup-zone { @apply flex cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-6 py-8 text-sm text-slate-500 transition-colors; }',
+    '  .vup.is-drag .vup-zone { @apply border-indigo-500 bg-indigo-50 text-indigo-600; }',
+    '  .vup-zone-icon { @apply text-slate-400; }',
+    '  .vup.is-drag .vup-zone-icon { @apply text-indigo-500; }',
+    '  .vup-browse { @apply cursor-pointer border-0 bg-transparent p-0 font-semibold text-indigo-600 underline underline-offset-2; }',
+    '  .vup-native, .vup-live { @apply sr-only; }',
+    '  .vup-list { @apply m-0 mt-3 list-none space-y-2 p-0; }',
+    '  .vup-item { @apply flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3; }',
+    '  .vup-item[data-status="error"] { @apply border-rose-300 bg-rose-50; }',
+    '  .vup-thumb { @apply grid h-9 w-9 flex-none place-items-center overflow-hidden rounded-lg bg-slate-100 text-slate-400; }',
+    '  .vup-thumb img { @apply h-full w-full object-cover; }',
+    '  .vup-meta { @apply min-w-0 flex-1; }',
+    '  .vup-name { @apply block truncate text-sm font-medium text-slate-700; }',
+    '  .vup-sub { @apply text-xs text-slate-400; }',
+    '  .vup-errmsg { @apply text-xs font-medium text-rose-600; }',
+    '  .vup-bar { @apply mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100; }',
+    '  .vup-fill { @apply h-full rounded-full bg-indigo-500 transition-[width]; }',
+    '  .vup-item[data-status="done"] .vup-fill { @apply bg-emerald-500; }',
+    '  .vup-remove, .vup-retry { @apply grid h-7 w-7 flex-none cursor-pointer place-items-center rounded-full border-0 bg-transparent text-slate-400 hover:bg-slate-100 hover:text-slate-600; }',
+    '</style>',
+    '<body class="bg-slate-50 p-6">',
+    '<div id="box"></div>',
+    S + '>',
+    'new Upload("#box", {',
+    '  styles: false,',
+    '  multiple: true,',
+    '  autoUpload: true,',
+    '  // simulated transport so the progress bar animates',
+    '  upload: function (file, onProgress) {',
+    '    return new Promise(function (resolve) {',
+    '      var p = 0;',
+    '      var t = setInterval(function () {',
+    '        p += 0.13;',
+    '        if (p >= 1) { clearInterval(t); onProgress(1); resolve("ok"); }',
+    '        else onProgress(p);',
+    '      }, 160);',
+    '    });',
+    '  }',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

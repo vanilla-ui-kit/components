@@ -676,6 +676,147 @@ VC.config({ accent: '#b45309' })  /* with the VC core: themes the whole family *
   native caret behavior in the input.</p>
 </section>
 
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (async guards, keyboard navigation), the ARIA combobox wiring and the stable
+  <code>.vac-*</code> class hooks; you bring your own CSS. Each demo runs in
+  its own <code>&lt;iframe&gt;</code>: the styled examples above already
+  injected the autocomplete stylesheet into this page, so only a clean
+  document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — your input untouched, a plain listbox
+      panel with class hooks, zero CSS injected. Type <code>a</code>.</p>
+      <iframe id="hl-raw-frame" title="Headless autocomplete demo, unstyled" style="height:260px"></iframe>
+      <pre>new Autocomplete('#q', {
+  styles: false,        // zero CSS injected
+  source: ['Amsterdam', 'Auckland',
+    'Austin', 'Barcelona', 'Berlin'],
+  minChars: 1,
+  openOnFocus: true
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless instance mapped to a different design — groups,
+      active option and match highlight — loaded on demand from
+      <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless autocomplete demo, styled with Tailwind" style="height:320px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vac-panel { @apply z-10 overflow-hidden rounded-2xl
+  border border-slate-200 bg-white shadow-2xl; }
+.vac-list { @apply max-h-60 overflow-y-auto p-1.5; }
+.vac-group-label { @apply px-3 pb-1 pt-2 text-[11px]
+  font-bold uppercase tracking-widest text-indigo-400; }
+.vac-option { @apply cursor-pointer rounded-xl px-3 py-2
+  text-sm text-slate-700; }
+.vac-option.is-active { @apply bg-indigo-600 text-white; }
+.vac-match { @apply font-extrabold; }
+.vac-loading, .vac-empty { @apply px-3 py-6 text-center
+  text-sm text-slate-400; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless autocomplete, unstyled</title>',
+    '<p>Clean document: no autocomplete CSS exists here.</p>',
+    '<label for="q">City </label>',
+    '<input id="q" placeholder="Type a…" autocomplete="off">',
+    S + ' src="autocomplete.js">' + E,
+    S + '>',
+    'new Autocomplete("#q", {',
+    '  styles: false,',
+    '  source: ["Amsterdam", "Auckland", "Austin", "Barcelona",',
+    '    "Berlin", "Bogota", "Boston", "Brisbane"],',
+    '  minChars: 1,',
+    '  openOnFocus: true',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless autocomplete, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="autocomplete.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vac-panel { @apply z-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl; }',
+    '  .vac-list { @apply max-h-60 overflow-y-auto p-1.5; }',
+    '  .vac-group-label { @apply px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-widest text-indigo-400; }',
+    '  .vac-option { @apply cursor-pointer rounded-xl px-3 py-2 text-sm text-slate-700; }',
+    '  .vac-option.is-active { @apply bg-indigo-600 text-white; }',
+    '  .vac-match { @apply font-extrabold; }',
+    '  .vac-loading, .vac-empty { @apply px-3 py-6 text-center text-sm text-slate-400; }',
+    '</style>',
+    '<body class="bg-slate-50 p-6 font-sans">',
+    '<label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500" for="city">Destination</label>',
+    '<input id="city" placeholder="Type a…" autocomplete="off"',
+    '  class="w-72 rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/15">',
+    S + '>',
+    'new Autocomplete("#city", {',
+    '  styles: false,',
+    '  minChars: 1,',
+    '  openOnFocus: true,',
+    '  source: [',
+    '    { value: "amsterdam", label: "Amsterdam", group: "Europe" },',
+    '    { value: "barcelona", label: "Barcelona", group: "Europe" },',
+    '    { value: "berlin", label: "Berlin", group: "Europe" },',
+    '    { value: "auckland", label: "Auckland", group: "Oceania" },',
+    '    { value: "brisbane", label: "Brisbane", group: "Oceania" },',
+    '    { value: "austin", label: "Austin", group: "Americas" },',
+    '    { value: "boston", label: "Boston", group: "Americas" }',
+    '  ]',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
