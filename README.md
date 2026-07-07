@@ -38,9 +38,12 @@ you bring your own design.
 | File upload / dropzone | `Upload` | [`upload/upload.js`](./upload/upload.js) | [README](./upload/README.md) |
 | Slider (single and dual-thumb) | `Slider` | [`slider/slider.js`](./slider/slider.js) | [README](./slider/README.md) |
 | Number / currency input | `NumberInput` | [`number/number.js`](./number/number.js) | [README](./number/README.md) |
+| Pagination | `Pagination` | [`pagination/pagination.js`](./pagination/pagination.js) | [README](./pagination/README.md) |
+| Empty states | `EmptyState` | [`empty/empty.js`](./empty/empty.js) | [README](./empty/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: pagination, empty state — same contract, same DNA.
+Twenty-one components, one contract. Missing something? Open an issue —
+new family members follow the same DNA.
 
 ## Get it any way you like
 

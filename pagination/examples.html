@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Pagination — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='6' width='4' height='4' rx='1.5' fill='%239b9bf0'/%3E%3Crect x='6' y='6' width='4' height='4' rx='1.5' fill='%235b5bd6'/%3E%3Crect x='11' y='6' width='4' height='4' rx='1.5' fill='%239b9bf0'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card.wide { grid-column: 1 / -1; }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .fruit-list {
+    margin: 0; padding: 0; list-style: none; border: 1px solid var(--faint);
+    border-radius: 10px; overflow: hidden;
+  }
+  .fruit-list li {
+    padding: 8px 14px; font-size: 14px; border-top: 1px solid var(--faint);
+  }
+  .fruit-list li:first-child { border-top: 0; }
+  .fruit-list li:nth-child(odd) { background: var(--surface-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Pagination <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Pagination, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency page controls that follow your page's theme
+  on their own. Real buttons, real ARIA — every card below is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic</h3>
+      <p>97 items, 10 per page. Click around — prev/next disable at the ends.</p>
+      <div class="demo"><div id="basic"></div></div>
+      <pre>new Pagination('#basic', {
+  total: 97,          // perPage: 10 → 10 pages
+  onChange: (page) =&gt; load(page)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Siblings &amp; boundaries</h3>
+      <p>Two pages pinned at each end, two on each side of the current page —
+      the strip never changes width while paging.</p>
+      <div class="demo"><div id="windows"></div></div>
+      <pre>new Pagination('#windows', {
+  pages: 42, page: 21,
+  siblings: 2, boundaries: 2
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Compact</h3>
+      <p>Just <em>prev · 3 / 12 · next</em> — for toolbars and tight corners.</p>
+      <div class="demo"><div id="compact"></div></div>
+      <pre>new Pagination('#compact', {
+  pages: 12, page: 3, compact: true
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Total + jump</h3>
+      <p>An item-range readout on the side, and a clamped “Go&nbsp;to” field —
+      type 999 and press Enter.</p>
+      <div class="demo"><div id="full"></div></div>
+      <pre>new Pagination('#full', {
+  total: 137, perPage: 20,
+  showTotal: true,      // or (total, [from, to]) => string
+  showJump: true
+})</pre>
+    </div>
+
+    <div class="card wide">
+      <h3>Driven by data</h3>
+      <p>The pager and this list share one array — <code>onChange</code>
+      re-renders the slice, <code>update()</code> re-clamps when the data set shrinks.</p>
+      <ul class="fruit-list" id="fruit"></ul>
+      <div class="demo" style="margin-top:2px">
+        <div id="listpager"></div>
+      </div>
+      <pre>const pager = new Pagination('#listpager', {
+  total: ITEMS.length, perPage: 5, showTotal: true,
+  onChange: (page) =&gt; renderSlice(page)
+})
+renderSlice(1)
+// later, when the data changes:
+pager.update({ total: ITEMS.length })</pre>
+    </div>
+  </div>
+</div>
+
+<script src="pagination.js"></script>
+<script>
+  // Theme switch — the pagers follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  new Pagination('#basic', { total: 97 });
+
+  new Pagination('#windows', { pages: 42, page: 21, siblings: 2, boundaries: 2 });
+
+  new Pagination('#compact', { pages: 12, page: 3, compact: true });
+
+  new Pagination('#full', {
+    total: 137, perPage: 20,
+    showTotal: true,
+    showJump: true
+  });
+
+  // ---- driven-by-data demo ----
+  var ITEMS = ('Apple Apricot Avocado Banana Blackberry Blueberry Cherry ' +
+    'Clementine Coconut Cranberry Date Dragonfruit Elderberry Fig Gooseberry ' +
+    'Grape Grapefruit Guava Jackfruit Kiwi Kumquat Lemon Lime Lychee Mango ' +
+    'Melon Mulberry Nectarine Orange Papaya Passionfruit Peach Pear Persimmon ' +
+    'Pineapple Plum Pomegranate Quince Raspberry Strawberry Tangerine Watermelon')
+    .split(' ');
+  var PER = 5;
+  var listEl = document.getElementById('fruit');
+
+  function renderSlice(page) {
+    listEl.innerHTML = '';
+    var slice = ITEMS.slice((page - 1) * PER, page * PER);
+    for (var i = 0; i < slice.length; i++) {
+      var li = document.createElement('li');
+      li.textContent = slice[i];
+      listEl.appendChild(li);
+    }
+  }
+
+  var listPager = new Pagination('#listpager', {
+    total: ITEMS.length,
+    perPage: PER,
+    showTotal: function (total, range) {
+      return range[0] + '–' + range[1] + ' of ' + total + ' fruits';
+    },
+    onChange: function (page) { renderSlice(page); }
+  });
+  renderSlice(listPager.getPage());
+</script>
+</body>
+</html>

@@ -40,7 +40,9 @@ var COMPONENTS = [
   ['autocomplete/autocomplete.js', 'Autocomplete', 'autocomplete.css', 'vanilla-autocomplete'],
   ['upload/upload.js', 'Upload', 'upload.css', 'vanilla-upload'],
   ['slider/slider.js', 'Slider', 'slider.css', 'vanilla-slider'],
-  ['number/number.js', 'NumberInput', 'number.css', 'vanilla-number']
+  ['number/number.js', 'NumberInput', 'number.css', 'vanilla-number'],
+  ['pagination/pagination.js', 'Pagination', 'pagination.css', 'vanilla-pagination'],
+  ['empty/empty.js', 'EmptyState', 'empty.css', 'vanilla-empty']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

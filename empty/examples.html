@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit EmptyState — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%239b9bf0'/%3E%3Ccircle cx='8' cy='8' r='4' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card.wide { grid-column: 1 / -1; }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .stage { border: 1px dashed var(--faint); border-radius: 12px; }
+  input.filter {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--faint); border-radius: 10px; padding: 8px 12px; width: 100%;
+  }
+  input.filter:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .people { margin: 0; padding: 0; list-style: none; }
+  .people li { padding: 8px 12px; font-size: 14px; border-bottom: 1px solid var(--faint); }
+  .people li:last-child { border-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit EmptyState <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Empty states, <em>one file</em>.</h1>
+  <p class="lede">A friendly placeholder for nothing at all — four line-style
+  illustrations, an accent action, and your page's theme, automatically.</p>
+
+  <div class="grid">
+    <div class="card wide">
+      <h3>The four icons</h3>
+      <p>inbox · search · error · folder — all drawn in the family's
+      1.5px-stroke style. <code>size: 'sm'</code> here.</p>
+      <div class="grid" style="gap:12px">
+        <div class="stage" id="icon-inbox"></div>
+        <div class="stage" id="icon-search"></div>
+        <div class="stage" id="icon-error"></div>
+        <div class="stage" id="icon-folder"></div>
+      </div>
+      <pre>EmptyState.render(el, { icon: 'search', size: 'sm',
+  title: 'No results', description: '…' })</pre>
+    </div>
+
+    <div class="card">
+      <h3>With actions</h3>
+      <p>An accent button plus a quiet link-button.</p>
+      <div class="stage" id="actions"></div>
+      <pre>EmptyState.render('#actions', {
+  icon: 'folder',
+  title: 'No projects yet',
+  description: 'Create your first project…',
+  action: { label: 'New project', onClick: … },
+  secondaryAction: { label: 'Learn more', onClick: … }
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Search, no results</h3>
+      <p>Type something unfindable — the empty state appears with the query
+      in its description and a “Clear search” action. Try “zzz”.</p>
+      <input class="filter" id="filter" type="search" placeholder="Filter people…" aria-label="Filter people">
+      <ul class="people" id="people"></ul>
+      <div id="no-results"></div>
+      <pre>handle = EmptyState.render('#no-results', {
+  icon: 'search', size: 'sm',
+  title: 'No matches',
+  description: 'Nothing matches “' + q + '”.',
+  action: { label: 'Clear search', onClick: clear }
+})
+handle.update({ description: … })   // as the query changes
+handle.remove()                     // when results return</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p>No JS at all — data attributes plus an adopted action button that
+      keeps its own <code>onclick</code>.</p>
+      <div class="stage"
+           data-ves data-ves-icon="error" data-ves-size="sm"
+           data-ves-title="Something went wrong"
+           data-ves-description="We could not load this view.">
+        <button data-ves-action onclick="this.textContent='Retried!'">Retry</button>
+      </div>
+      <pre>&lt;div data-ves data-ves-icon="error"
+     data-ves-title="Something went wrong"
+     data-ves-description="We could not load this view."&gt;
+  &lt;button data-ves-action onclick="retry()"&gt;Retry&lt;/button&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Live update</h3>
+      <p><code>update()</code> re-renders the same handle in place.</p>
+      <div class="stage" id="updating"></div>
+      <div class="demo">
+        <button class="demo-btn" id="cycle">Cycle icon + copy</button>
+      </div>
+      <pre>handle.update({ icon: 'inbox',
+  title: 'Inbox zero', description: '…' })</pre>
+    </div>
+  </div>
+</div>
+
+<script src="empty.js"></script>
+<script>
+  // Theme switch — the blocks follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  // ---- the four icons ----
+  EmptyState.render('#icon-inbox', {
+    icon: 'inbox', size: 'sm', title: 'No messages',
+    description: 'Anything sent to you lands here.'
+  });
+  EmptyState.render('#icon-search', {
+    icon: 'search', size: 'sm', title: 'No results',
+    description: 'Try a different search term.'
+  });
+  EmptyState.render('#icon-error', {
+    icon: 'error', size: 'sm', title: 'Something went wrong',
+    description: 'The request could not be completed.'
+  });
+  EmptyState.render('#icon-folder', {
+    icon: 'folder', size: 'sm', title: 'Folder is empty',
+    description: 'Drop files here to get started.'
+  });
+
+  // ---- with actions ----
+  EmptyState.render('#actions', {
+    icon: 'folder',
+    title: 'No projects yet',
+    description: 'Create your first project to see it here.',
+    action: {
+      label: 'New project',
+      onClick: function (h) { h.update({ title: 'Project created!', icon: 'inbox' }); }
+    },
+    secondaryAction: {
+      label: 'Learn more',
+      onClick: function () { alert('Docs would open here.'); }
+    }
+  });
+
+  // ---- search / no-results pattern ----
+  var PEOPLE = ['Ada Lovelace', 'Alan Turing', 'Grace Hopper',
+    'Katherine Johnson', 'Edsger Dijkstra', 'Barbara Liskov',
+    'Donald Knuth', 'Margaret Hamilton'];
+  var peopleEl = document.getElementById('people');
+  var filterEl = document.getElementById('filter');
+  var noResults = null;
+
+  function renderPeople() {
+    var q = filterEl.value.replace(/^\s+|\s+$/g, '').toLowerCase();
+    peopleEl.innerHTML = '';
+    var hits = 0;
+    for (var i = 0; i < PEOPLE.length; i++) {
+      if (PEOPLE[i].toLowerCase().indexOf(q) !== -1) {
+        var li = document.createElement('li');
+        li.textContent = PEOPLE[i];
+        peopleEl.appendChild(li);
+        hits++;
+      }
+    }
+    if (hits === 0) {
+      var opts = {
+        icon: 'search', size: 'sm',
+        title: 'No matches',
+        description: 'Nothing matches “' + filterEl.value + '”.',
+        action: {
+          label: 'Clear search',
+          onClick: function () { filterEl.value = ''; renderPeople(); filterEl.focus(); }
+        }
+      };
+      if (noResults) noResults.update(opts);
+      else noResults = EmptyState.render('#no-results', opts);
+    } else if (noResults) {
+      noResults.remove();
+      noResults = null;
+    }
+  }
+  filterEl.addEventListener('input', renderPeople);
+  renderPeople();
+
+  // ---- live update ----
+  var STATES = [
+    { icon: 'inbox', title: 'Inbox zero', description: 'Nothing left to read. Enjoy it.' },
+    { icon: 'search', title: 'Nothing found', description: 'Loosen the filters and retry.' },
+    { icon: 'error', title: 'Offline', description: 'Reconnect to keep working.' },
+    { icon: 'folder', title: 'No documents', description: 'Everything you save shows up here.' }
+  ];
+  var stateIdx = 0;
+  var updating = EmptyState.render('#updating', STATES[0]);
+  document.getElementById('cycle').addEventListener('click', function () {
+    stateIdx = (stateIdx + 1) % STATES.length;
+    updating.update(STATES[stateIdx]);
+  });
+</script>
+</body>
+</html>

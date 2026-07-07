@@ -42,6 +42,8 @@ const FAMILY = [
   ['Upload', 'upload/upload.js', 'vup', ['create', 'get', 'autoInit', 'formatBytes']],
   ['Slider', 'slider/slider.js', 'vsld', ['create', 'get', 'autoInit']],
   ['NumberInput', 'number/number.js', 'vnum', ['create', 'get', 'autoInit', 'parse', 'format']],
+  ['Pagination', 'pagination/pagination.js', 'vpn', ['create', 'get', 'autoInit']],
+  ['EmptyState', 'empty/empty.js', 'ves', ['render', 'create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -293,6 +295,20 @@ test('NumberInput specifics: pure parse/format helpers', () => {
     assert.doesNotThrow(() => n[fn](), `number.${fn} in Node`);
   }
   assert.doesNotThrow(() => n.setValue(5));
+});
+
+test('Pagination and EmptyState specifics: SSR no-op instances', () => {
+  const Pagination = components[19].mod;
+  const p = Pagination.create(null, { pages: 5 });
+  assert.doesNotThrow(() => p.setPage(2));
+  assert.doesNotThrow(() => p.getPage());
+  assert.doesNotThrow(() => p.update({ pages: 3 }));
+  assert.doesNotThrow(() => p.destroy());
+
+  const EmptyState = components[20].mod;
+  const e = EmptyState.render(null, { title: 'Nothing here' });
+  assert.doesNotThrow(() => e.update({ title: 'Still nothing' }));
+  assert.doesNotThrow(() => e.remove());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

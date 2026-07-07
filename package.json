@@ -25,6 +25,8 @@
     "./upload": "./upload/upload.js",
     "./slider": "./slider/slider.js",
     "./number": "./number/number.js",
+    "./pagination": "./pagination/pagination.js",
+    "./empty": "./empty/empty.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -44,6 +46,8 @@
     "./upload.css": "./dist/upload.css",
     "./slider.css": "./dist/slider.css",
     "./number.css": "./dist/number.css",
+    "./pagination.css": "./dist/pagination.css",
+    "./empty.css": "./dist/empty.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -68,6 +72,8 @@
     "upload",
     "slider",
     "number",
+    "pagination",
+    "empty",
     "dist"
   ],
   "scripts": {
