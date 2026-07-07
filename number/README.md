@@ -44,6 +44,7 @@ new NumberInput(target, {
   steppers: true,       // +/− buttons; hold to repeat (500ms, then 60ms, ×10 after 2s)
   allowNegative: true,  // auto-disabled when min >= 0
   placeholder: null,
+  ariaLabel: null,      // accessible name — required in container mode (no <label> can point inside)
   value: null,          // initial value (container mode)
   name: null,           // hidden input carrying the RAW value for forms
   disabled: false,

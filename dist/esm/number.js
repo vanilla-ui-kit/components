@@ -402,6 +402,7 @@ var define, module, exports, self = __root;
     steppers: true,           // +/− buttons with hold-to-repeat
     allowNegative: true,
     placeholder: null,
+    ariaLabel: null,          // accessible name (container mode has no label)
     value: null,              // initial value (container mode)
     name: null,               // hidden input carrying the RAW value (forms)
     disabled: false,
@@ -512,6 +513,10 @@ var define, module, exports, self = __root;
       input.setAttribute('inputmode', 'decimal');
       if (!input.getAttribute('autocomplete')) input.setAttribute('autocomplete', 'off');
       input.setAttribute('role', 'spinbutton');
+      // Accessible name: explicit option wins; an adopted input keeps its own
+      // label/aria-label since it IS the original element. Container-mode
+      // instances must pass ariaLabel (or be wrapped in a <label>).
+      if (opts.ariaLabel) input.setAttribute('aria-label', String(opts.ariaLabel));
       if (opts.placeholder != null && opts.placeholder !== false) {
         input.placeholder = String(opts.placeholder);
       }

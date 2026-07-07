@@ -31,6 +31,7 @@ var define, module, exports, self = __root;
   var HAS_DOM = typeof window !== 'undefined' && typeof document !== 'undefined';
   var VERSION = '1.0.0';
   var STYLE_ID = 'vanilla-datepicker-styles';
+  var panelSeq = 0; // ids for panels so inputs can reference them via aria-controls
   var TOKEN_RE = /YYYY|YY|MMMM|MMM|MM|M|DD|D/g;
   var ISO_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
   var instances = typeof WeakMap !== 'undefined' ? new WeakMap() : null;
@@ -893,6 +894,7 @@ var define, module, exports, self = __root;
       p.className = 'vdp' + saltClass() + (multi ? ' vdp-multi' : '');
       p.setAttribute('role', this.inline ? 'group' : 'dialog');
       p.setAttribute('aria-label', L.dialog);
+      if (!p.id) p.id = 'vdp-dialog-' + (++panelSeq);
       var presetsHtml = '';
       if (this._presets.length) {
         presetsHtml = '<div class="vdp-presets" role="group" aria-label="' +
@@ -1012,6 +1014,9 @@ var define, module, exports, self = __root;
           this.input.setAttribute('autocomplete', 'off');
         }
         if (!this.inline) {
+          // APG date-picker-combobox pattern: a plain textbox may not carry
+          // aria-haspopup/aria-expanded, a combobox may.
+          if (!this.input.getAttribute('role')) this.input.setAttribute('role', 'combobox');
           this.input.setAttribute('aria-haspopup', 'dialog');
           this.input.setAttribute('aria-expanded', 'false');
         }
@@ -1560,7 +1565,10 @@ var define, module, exports, self = __root;
       var panel = this.panel;
       requestAnimationFrame(function () { panel.classList.add('vdp-open'); });
       this.isOpen = true;
-      if (this.input) this.input.setAttribute('aria-expanded', 'true');
+      if (this.input) {
+        this.input.setAttribute('aria-expanded', 'true');
+        if (this.panel.id) this.input.setAttribute('aria-controls', this.panel.id);
+      }
 
       document.addEventListener('pointerdown', this._onDocPointer, true);
       document.addEventListener('keydown', this._onDocKeydown);
@@ -1704,6 +1712,7 @@ var define, module, exports, self = __root;
         this.panel.style.display = 'none';
         document.body.appendChild(this.panel);
         if (this.input) {
+          if (!this.input.getAttribute('role')) this.input.setAttribute('role', 'combobox');
           this.input.setAttribute('aria-haspopup', 'dialog');
           this.input.setAttribute('aria-expanded', 'false');
         }

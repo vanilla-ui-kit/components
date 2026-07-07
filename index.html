@@ -402,7 +402,7 @@ VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
       });
   });
   new Segmented('#trySegmented', { options: ['Day', 'Week', 'Month'], value: 'Week' });
-  new NumberInput('#tryNumber', { prefix: '$', precision: 2, value: 1234.5, step: 10 });
+  new NumberInput('#tryNumber', { prefix: '$', precision: 2, value: 1234.5, step: 10, ariaLabel: 'Amount in dollars' });
   Progress.bar('#tryProgress', { indeterminate: true, label: 'Always busy…' });
   new Pagination('#tryPagination', { pages: 12, page: 4, compact: true });
   new Rating('#tryRating', { value: 3.5, half: true });
