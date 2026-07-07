@@ -16,6 +16,7 @@
     "./command": "./command/command.js",
     "./form": "./form/form.js",
     "./phone": "./phone/phone.js",
+    "./drawer": "./drawer/drawer.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -26,6 +27,7 @@
     "./command.css": "./dist/command.css",
     "./form.css": "./dist/form.css",
     "./phone.css": "./dist/phone.css",
+    "./drawer.css": "./dist/drawer.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -41,6 +43,7 @@
     "command",
     "form",
     "phone",
+    "drawer",
     "dist"
   ],
   "scripts": {

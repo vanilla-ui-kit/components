@@ -31,7 +31,8 @@ var COMPONENTS = [
   ['select/select.js', 'Select', 'select.css', 'vanilla-select'],
   ['command/command.js', 'CommandPalette', 'command.css', 'vanilla-command'],
   ['form/form.js', 'Form', 'form.css', 'vanilla-form'],
-  ['phone/phone.js', 'PhoneInput', 'phone.css', 'vanilla-phone']
+  ['phone/phone.js', 'PhoneInput', 'phone.css', 'vanilla-phone'],
+  ['drawer/drawer.js', 'Drawer', 'drawer.css', 'vanilla-drawer']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

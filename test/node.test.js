@@ -33,6 +33,7 @@ const FAMILY = [
   ['CommandPalette', 'command/command.js', 'vcmd', ['register', 'unregister', 'open', 'close', 'toggle', 'autoInit']],
   ['Form', 'form/form.js', 'vfm', ['create', 'get', 'autoInit']],
   ['PhoneInput', 'phone/phone.js', 'vph', ['create', 'get', 'autoInit', 'parse', 'format', 'isValid', 'flag']],
+  ['Drawer', 'drawer/drawer.js', 'vdr', ['open', 'create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -193,6 +194,18 @@ test('PhoneInput specifics: pure parse/format/validate/flag helpers', () => {
   for (const iso of ['us', 'gb', 'ae', 'jp', 'br', 'in']) {
     assert.ok(PhoneInput.flag(iso).startsWith('<svg'), `flag(${iso}) is SVG`);
   }
+});
+
+test('Drawer specifics: SSR no-op handles', () => {
+  const Drawer = components[10].mod;
+  const h = Drawer.open({ title: 'x' });
+  assert.equal(h.el, null);
+  assert.doesNotThrow(() => h.update({ title: 'y' }));
+  assert.doesNotThrow(() => h.close());
+  const d = Drawer.create(null);
+  assert.doesNotThrow(() => d.open());
+  assert.doesNotThrow(() => d.close());
+  assert.doesNotThrow(() => d.destroy());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

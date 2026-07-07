@@ -29,9 +29,10 @@ you bring your own design.
 | Command palette (Ctrl/⌘+K) | `CommandPalette` | [`command/command.js`](./command/command.js) | [README](./command/README.md) |
 | Forms (reactive, validation, honeypot) | `Form` | [`form/form.js`](./form/form.js) | [README](./form/README.md) |
 | Phone input (flags, formatting, validation) | `PhoneInput` | [`phone/phone.js`](./phone/phone.js) | [README](./phone/README.md) |
+| Drawers / side sheets | `Drawer` | [`drawer/drawer.js`](./drawer/drawer.js) | [README](./drawer/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: drawer, autocomplete, slider, popconfirm, segmented control, upload,
+Roadmap: autocomplete, slider, popconfirm, segmented control, upload,
 number input, progress/skeletons, pagination, empty state, rating — same
 contract, same DNA.
 
