@@ -591,6 +591,117 @@ new DatePicker('#ex-inline', {
     <p>ARIA dialog/grid roles, <code>aria-selected</code>, <code>aria-current="date"</code> on today; month changes are announced politely; <code>prefers-reduced-motion</code> is respected. Typing a date by hand always works — invalid text (including impossible dates like <code>2026-02-30</code>) reverts on blur, and typed values respect <code>min</code>/<code>max</code>/disabled rules.</p>
   </section>
 </section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Pass <code>styles: false</code> and the picker never injects a byte of CSS —
+  you keep the full behavior, keyboard handling, and ARIA, plus the stable <code>.vdp-*</code>
+  class hooks and state classes (<code>is-selected</code>, <code>is-disabled</code>,
+  <code>in-range</code>, …) to style however you like. Both demos below run in an
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected the stylesheet
+  into this page, so a headless instance out here would still match those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — semantic markup, native buttons, zero CSS. Keyboard and
+    ARIA still work; try arrowing around the grid.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="DatePicker with styles: false — raw browser rendering"
+      width="100%" style="height:320px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre><code>&lt;script src="datepicker.js"&gt;&lt;/script&gt;
+&lt;div id="cal"&gt;&lt;/div&gt;
+&lt;script&gt;
+  new DatePicker('#cal', { styles: false, value: 'today' })   // zero CSS injected
+&lt;/script&gt;</code></pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless init with every structural <code>.vdp-*</code> hook mapped to Tailwind
+    utilities via <code>@apply</code> — a different product's design system, not a reskin of ours.
+    The button fetches <code>cdn.tailwindcss.com</code>, so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="DatePicker with styles: false, styled with Tailwind"
+      width="100%" style="height:470px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre><code id="hl-tw-code"></code></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "datepicker.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<div id="cal"></div>' +
+    '<script src="datepicker.js"><\/script>' +
+    '<script>new DatePicker("#cal", { styles: false, value: "today" })<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vdp-* hooks */\n' +
+'.vdp{@apply inline-block rounded-3xl bg-white p-4 font-sans text-slate-800 shadow-xl ring-1 ring-slate-900/5;}\n' +
+'.vdp-header{@apply mb-2 flex items-center gap-1;}\n' +
+'.vdp-nav{@apply grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-700;}\n' +
+'.vdp-title{@apply flex-1 cursor-pointer rounded-xl border-0 bg-transparent py-2 text-center text-sm font-semibold text-slate-900 hover:bg-slate-100;}\n' +
+'.vdp-title-year{@apply ml-1.5 font-normal text-slate-400;}\n' +
+'.vdp-row{@apply grid grid-cols-7 justify-items-center;}\n' +
+'.vdp-head{@apply flex h-8 w-9 items-center justify-center text-[11px] font-semibold uppercase tracking-widest text-slate-400;}\n' +
+'.vdp-day{@apply m-0.5 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-transparent text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700;}\n' +
+'.vdp-day.is-outside{@apply text-slate-300;}\n' +
+'.vdp-day.is-today{@apply font-bold text-emerald-700 ring-1 ring-inset ring-emerald-400;}\n' +
+'.vdp-day.in-range{@apply rounded-none bg-emerald-50 text-emerald-900;}\n' +
+'.vdp-day.is-selected{@apply bg-emerald-600 font-semibold text-white ring-0 hover:bg-emerald-600 hover:text-white;}\n' +
+'.vdp-day.is-disabled{@apply cursor-default text-slate-200 hover:bg-transparent hover:text-slate-200;}\n' +
+'.vdp-day.is-empty{@apply cursor-default hover:bg-transparent;}\n' +
+'.vdp-footer{@apply mt-2 flex justify-between gap-2 border-t border-slate-100 pt-3;}\n' +
+'.vdp-btn{@apply cursor-pointer rounded-lg border-0 bg-transparent px-3 py-1.5 text-[13px] font-semibold text-emerald-700 hover:bg-emerald-50;}\n' +
+'.vdp-months,.vdp-years{@apply grid grid-cols-3 gap-1 py-1;}\n' +
+'.vdp-month,.vdp-year{@apply cursor-pointer rounded-xl border-0 bg-transparent px-2 py-3 text-sm text-slate-700 hover:bg-emerald-50;}\n' +
+'.vdp-month.is-now,.vdp-year.is-now{@apply font-semibold text-emerald-700;}\n' +
+'.vdp-month.is-selected,.vdp-year.is-selected{@apply bg-emerald-600 text-white;}\n' +
+'.vdp-presets{@apply mb-2 flex flex-wrap gap-1.5;}\n' +
+'.vdp-presets-label{@apply hidden;}\n' +
+'.vdp-preset{@apply cursor-pointer rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:border-emerald-400 hover:text-emerald-700;}\n' +
+'.vdp-preset.is-active{@apply border-emerald-600 bg-emerald-600 text-white;}\n';
+
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="datepicker.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 font-sans">' +
+    '<div id="cal"></div>' +
+    '<script>' +
+    'var s = new Date(), e = new Date();' +
+    's.setDate(s.getDate() + 2); e.setDate(e.getDate() + 9);' +
+    'new DatePicker("#cal", { styles: false, range: true, presets: true, value: [s, e] })' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'new DatePicker("#cal", { styles: false, range: true, presets: true, value: [s, e] })\n' + TW_CSS;
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

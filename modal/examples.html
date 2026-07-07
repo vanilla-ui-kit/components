@@ -483,6 +483,141 @@ Modal.prompt(message | opts)     // → Promise&lt;string | null&gt;</pre>
     <p>Native <code>&lt;dialog&gt;</code> + <code>showModal()</code> where supported; fallback is a <code>role="dialog"</code> overlay. <code>aria-modal="true"</code> and <code>aria-labelledby</code> point at the title (or <code>aria-label</code> when there is none). Focus moves into the dialog on open — <code>[autofocus]</code> first, then the body’s first field, then the primary button — and <strong>returns to the opener</strong> on close. <code>:focus-visible</code> outlines on every control; animations are disabled under <code>prefers-reduced-motion: reduce</code>. All UI strings are overridable via <code>defaults.labels</code> for localisation.</p>
   </section>
 </section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Set <code>Modal.defaults.styles = false</code> and no CSS is ever injected —
+  you keep the full behavior (native <code>&lt;dialog&gt;</code> top layer, focus management,
+  scroll lock, promises, ARIA) and the stable <code>.vmd-*</code> markup contract to style however
+  you like. Both demos below run in an <code>&lt;iframe&gt;</code>: the styled examples above have
+  already injected the stylesheet into this page, so a headless dialog out here would still match
+  those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — click the button and you get the user-agent's own
+    <code>&lt;dialog&gt;</code> look: centered box, default border, dimmed backdrop. Esc, backdrop
+    click, and the footer buttons all still work.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="Modal with styles: false — raw browser rendering"
+      width="100%" style="height:240px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre>Modal.defaults.styles = false            // headless: zero CSS injected
+Modal.open({
+  title: 'Raw dialog',
+  content: 'A native &lt;dialog&gt; in the top layer.',
+  buttons: [{ label: 'Cancel' }, { label: 'OK', variant: 'primary' }]
+})</pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless calls with every structural <code>.vmd-*</code> hook mapped to Tailwind
+    utilities via <code>@apply</code> — scrim, panel, head/body/foot, the prompt input, and all
+    three button variants; the <code>.vmd-in</code>/<code>.vmd-out</code> state classes drive the
+    transitions. The button fetches <code>cdn.tailwindcss.com</code>, so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="Modal with styles: false, styled with Tailwind"
+      width="100%" style="height:420px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre id="hl-tw-code"></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "modal.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<body style="margin:24px">' +
+    '<button id="open">Open dialog</button>' +
+    '<script src="modal.js"><\/script>' +
+    '<script>' +
+    'Modal.defaults.styles = false;' +
+    'document.getElementById("open").onclick = function () {' +
+    '  Modal.open({' +
+    '    title: "Raw dialog",' +
+    '    content: "A native dialog in the top layer — focus, Esc, and backdrop still work. Zero CSS.",' +
+    '    buttons: [{ label: "Cancel" }, { label: "OK", variant: "primary" }]' +
+    '  });' +
+    '};' +
+    '<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vmd-* hooks */\n' +
+'.vmd{@apply fixed inset-0 z-50 grid h-full w-full max-h-none max-w-none place-items-center border-0 bg-slate-900/50 p-6 font-sans opacity-0 transition-opacity duration-150;}\n' +
+'.vmd::backdrop{background:transparent;}   /* the root itself is the scrim */\n' +
+'.vmd.vmd-in{@apply opacity-100;}\n' +
+'.vmd.vmd-out{@apply opacity-0;}\n' +
+'.vmd-panel{@apply flex max-h-full w-full max-w-sm translate-y-2 scale-[.98] flex-col rounded-3xl bg-white shadow-2xl transition-transform duration-150;}\n' +
+'.vmd.vmd-in .vmd-panel{@apply translate-y-0 scale-100;}\n' +
+'.vmd-head{@apply flex items-start gap-3 px-6 pt-5;}\n' +
+'.vmd-title{@apply m-0 flex-1 text-base font-semibold leading-snug text-slate-900;}\n' +
+'.vmd-head-spacer{@apply flex-1;}\n' +
+'.vmd-x{@apply -mr-1.5 grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-slate-400 hover:bg-slate-100 hover:text-slate-600;}\n' +
+'.vmd-body{@apply min-h-0 flex-1 overflow-auto px-6 pb-1 pt-2 text-sm leading-relaxed text-slate-500;}\n' +
+'.vmd-input{@apply mt-3 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100;}\n' +
+'.vmd-foot{@apply flex flex-wrap justify-end gap-2 px-6 pb-5 pt-4;}\n' +
+'.vmd-btn{@apply cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50;}\n' +
+'.vmd-btn-primary{@apply border-transparent bg-emerald-600 text-white hover:bg-emerald-700;}\n' +
+'.vmd-btn-danger{@apply border-transparent bg-rose-600 text-white hover:bg-rose-700;}\n';
+
+  var BTN = 'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm ';
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="modal.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 font-sans">' +
+    '<div class="flex flex-wrap gap-2">' +
+    '<button id="b1" class="' + BTN + 'border-0 bg-emerald-600 text-white hover:bg-emerald-700">Open dialog</button>' +
+    '<button id="b2" class="' + BTN + 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100">Prompt</button>' +
+    '</div>' +
+    '<p id="out" class="mt-3 text-sm text-slate-500"></p>' +
+    '<script>' +
+    'Modal.defaults.styles = false;' +
+    'var out = document.getElementById("out");' +
+    'document.getElementById("b1").onclick = function () {' +
+    '  Modal.open({' +
+    '    title: "Move to trash?",' +
+    '    content: "Same focus management and promises — the design is 100% Tailwind.",' +
+    '    buttons: [' +
+    '      { label: "Cancel" },' +
+    '      { label: "Move to trash", variant: "danger", close: "trashed" }' +
+    '    ],' +
+    '    onClose: function (r) { out.textContent = "closed with: " + JSON.stringify(r); }' +
+    '  });' +
+    '};' +
+    'document.getElementById("b2").onclick = function () {' +
+    '  Modal.prompt({ title: "Rename file", message: "New name:", value: "untitled.txt" })' +
+    '    .then(function (name) { out.textContent = "prompt → " + JSON.stringify(name); });' +
+    '};' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'Modal.defaults.styles = false    // headless — then style the hooks:\n' + TW_CSS;
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

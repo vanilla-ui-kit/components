@@ -389,6 +389,121 @@ Toast.dismissAll()</pre>
     <p>Errors and warnings render with <code>role="alert"</code> / <code>aria-live="assertive"</code>; info, success, and loading use <code>role="status"</code> / <code>aria-live="polite"</code>. Hovering a stack pauses <strong>all</strong> of its timers; they resume with the time they had left (minimum 400&nbsp;ms so nothing vanishes mid-read). <code>:focus-visible</code> outlines on buttons; all animation is disabled under <code>prefers-reduced-motion: reduce</code>.</p>
   </section>
 </section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Set <code>Toast.defaults.styles = false</code> and no CSS is ever injected —
+  you keep the full behavior (stacking, timers, pause-on-hover, ARIA) and the stable
+  <code>.vt-*</code> markup contract to style however you like. Both demos below run in an
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected the stylesheet
+  into this page, so a headless toast out here would still match those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — a sticky toast is shown on load (unstyled stacks are not
+    <code>position: fixed</code>, so it simply flows in the document), and the button adds more.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="Toast with styles: false — raw browser rendering"
+      width="100%" style="height:200px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre>Toast.defaults.styles = false            // headless: zero CSS injected
+Toast.info('A raw toast', { duration: 0 })
+Toast.success('Changes saved', { title: 'All set' })</pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless calls with the <code>.vt-*</code> hooks mapped to Tailwind utilities via
+    <code>@apply</code> — including the <code>.vt-in</code>/<code>.vt-out</code> state classes, so the
+    enter/leave transitions are yours too. The button fetches <code>cdn.tailwindcss.com</code>,
+    so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="Toast with styles: false, styled with Tailwind"
+      width="100%" style="height:340px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre id="hl-tw-code"></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "toast.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<button id="go">Show another toast</button>' +
+    '<script src="toast.js"><\/script>' +
+    '<script>' +
+    'Toast.defaults.styles = false;' +
+    'Toast.info("A raw toast — zero CSS injected", { duration: 0 });' +
+    'document.getElementById("go").onclick = function () {' +
+    '  Toast.success("Changes saved", { title: "All set" });' +
+    '};' +
+    '<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vt-* hooks */\n' +
+'.vt-stack{@apply fixed z-50 flex flex-col gap-3 p-4 font-sans;}\n' +
+'.vt-stack[data-pos$="right"]{@apply bottom-0 right-0 items-end;}\n' +
+'.vt{@apply flex w-80 max-w-full translate-y-2 items-start gap-3 rounded-2xl bg-white p-4 opacity-0 shadow-2xl ring-1 ring-slate-900/10 transition-all duration-200;}\n' +
+'.vt.vt-in{@apply translate-y-0 opacity-100;}\n' +
+'.vt.vt-out{@apply scale-95 opacity-0;}\n' +
+'.vt-icon{@apply mt-0.5 h-5 w-5 shrink-0 text-sky-500;}\n' +
+'.vt-success .vt-icon{@apply text-emerald-600;}\n' +
+'.vt-error .vt-icon{@apply text-rose-600;}\n' +
+'.vt-warning .vt-icon{@apply text-amber-500;}\n' +
+'.vt-spin{@apply animate-spin;}\n' +
+'.vt-body{@apply min-w-0 flex-1 text-sm leading-snug text-slate-500;}\n' +
+'.vt-title{@apply mb-0.5 text-sm font-semibold text-slate-900;}\n' +
+'.vt-msg{@apply break-words;}\n' +
+'.vt-action{@apply shrink-0 cursor-pointer rounded-lg border-0 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100;}\n' +
+'.vt-close{@apply grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent p-0 text-slate-400 hover:bg-slate-100 hover:text-slate-600;}\n';
+
+  var BTN = 'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm ';
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="toast.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 font-sans">' +
+    '<div class="flex flex-wrap gap-2">' +
+    '<button id="b1" class="' + BTN + 'border-0 bg-emerald-600 text-white hover:bg-emerald-700">Save (success)</button>' +
+    '<button id="b2" class="' + BTN + 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100">Delete + Undo</button>' +
+    '<button id="b3" class="' + BTN + 'border border-rose-200 bg-white text-rose-600 hover:bg-rose-50">Fail (error)</button>' +
+    '</div>' +
+    '<script>' +
+    'Toast.defaults.styles = false;' +
+    'Toast.info("Same behavior, your design system", { title: "Headless toast", duration: 0 });' +
+    'document.getElementById("b1").onclick = function () { Toast.success("Changes saved", { title: "All set" }); };' +
+    'document.getElementById("b2").onclick = function () {' +
+    '  Toast.show("Message deleted", { action: { label: "Undo", onClick: function () { Toast.success("Restored"); } } });' +
+    '};' +
+    'document.getElementById("b3").onclick = function () { Toast.error("Could not reach the server", { title: "Save failed" }); };' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'Toast.defaults.styles = false    // headless — then style the hooks:\n' + TW_CSS;
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

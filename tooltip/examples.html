@@ -447,6 +447,113 @@ VC.config({ accent: '#b45309' })</pre>
     <p>Hover/focus tooltips follow the WAI-ARIA tooltip pattern: the panel gets <code>role="tooltip"</code> and the trigger gets <code>aria-describedby</code> while it is visible (an existing <code>aria-describedby</code> is preserved and restored). Click popovers set <code>aria-expanded</code> + <code>aria-controls</code> on the trigger; the panel is a labelled <code>role="group"</code> (name via <code>labels.popover</code>). Focusable content inside interactive panels gets <code>:focus-visible</code> outlines; <code>prefers-reduced-motion</code> disables all animation.</p>
   </section>
 </section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Set <code>Tooltip.defaults.styles = false</code> and no CSS is ever injected —
+  you keep the full behavior (triggers, delays, positioning, flipping, ARIA) and the stable
+  <code>.vtt-*</code> class hooks to style however you like. Both demos below run in an
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected the stylesheet
+  into this page, so a headless tooltip out here would still match those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — the panel is a plain positioned <code>&lt;div&gt;</code>
+    (positioning is behavior, so it still lands next to the trigger). It is opened on load;
+    click the trigger to toggle it.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="Tooltip with styles: false — raw browser rendering"
+      width="100%" style="height:150px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre>Tooltip.defaults.styles = false          // headless: zero CSS injected
+new Tooltip('#tip', { content: '…', trigger: 'click', placement: 'bottom' })</pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless init with the <code>.vtt-*</code> hooks mapped to Tailwind utilities via
+    <code>@apply</code> — a light panel with a matching arrow instead of the kit's dark one, and the
+    <code>.vtt-open</code> state class drives the transition. The button fetches
+    <code>cdn.tailwindcss.com</code>, so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="Tooltip with styles: false, styled with Tailwind"
+      width="100%" style="height:230px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre id="hl-tw-code"></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "tooltip.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<body style="margin:24px">' +
+    '<button id="tip">Tooltip trigger — click to toggle</button>' +
+    '<script src="tooltip.js"><\/script>' +
+    '<script>' +
+    'Tooltip.defaults.styles = false;' +
+    'new Tooltip("#tip", {' +
+    '  content: "The raw panel — behavior, positioning and ARIA intact, zero CSS",' +
+    '  trigger: "click", placement: "bottom"' +
+    '}).show();' +
+    '<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vtt-* hooks */\n' +
+'.vtt{@apply pointer-events-none z-50 w-max max-w-[16rem] scale-95 rounded-xl bg-white px-3.5 py-2.5 font-sans text-[13px] leading-relaxed text-slate-600 opacity-0 shadow-xl ring-1 ring-slate-900/10 transition duration-150;}\n' +
+'.vtt.vtt-open{@apply scale-100 opacity-100;}\n' +
+'.vtt.vtt-interactive{@apply pointer-events-auto;}\n' +
+'.vtt-content b{@apply font-semibold text-slate-900;}\n' +
+'.vtt-arrow{@apply absolute h-2 w-2 rotate-45 bg-white;}\n' +
+'.vtt[data-placement="top"] .vtt-arrow{@apply -bottom-1;}\n' +
+'.vtt[data-placement="bottom"] .vtt-arrow{@apply -top-1;}\n' +
+'.vtt[data-placement="left"] .vtt-arrow{@apply -right-1;}\n' +
+'.vtt[data-placement="right"] .vtt-arrow{@apply -left-1;}\n';
+
+  var BTN = 'rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-100';
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="tooltip.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 pt-24 font-sans">' +
+    '<div class="flex flex-wrap gap-2">' +
+    '<button id="hov" class="' + BTN + '">Hover me</button>' +
+    '<button id="clk" class="' + BTN + '">Click popover</button>' +
+    '</div>' +
+    '<script>' +
+    'Tooltip.defaults.styles = false;' +
+    'new Tooltip("#hov", { html: true, placement: "top",' +
+    '  content: "Styled entirely with Tailwind — <b>@apply</b> on the .vtt hooks" });' +
+    'new Tooltip("#clk", { trigger: "click", placement: "bottom",' +
+    '  content: "Click again (or press Escape) to close" }).show();' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'Tooltip.defaults.styles = false  // headless — then style the hooks:\n' + TW_CSS;
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
