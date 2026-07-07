@@ -320,7 +320,9 @@ test('SSR: VC registry and injectStyles are safe without a DOM', () => {
 });
 
 test('package.json exports map points at real files', () => {
-  for (const target of Object.values(pkg.exports)) {
+  const targets = Object.values(pkg.exports)
+    .flatMap((v) => (typeof v === 'string' ? [v] : Object.values(v)));
+  for (const target of targets) {
     assert.ok(fs.existsSync(path.join(ROOT, target)), `${target} exists`);
   }
   assert.ok(fs.existsSync(path.join(ROOT, pkg.main)), 'main exists');
@@ -336,6 +338,33 @@ test('dist bundle is in sync with sources', () => {
   }
   assert.ok(dist.startsWith('/*!'), 'bundle keeps its license banner');
   assert.ok(dist.includes(`vanilla-ui-kit v${pkg.version}`), 'banner carries the version');
+});
+
+test('ESM bundle and per-component modules work in Node', async () => {
+  const esm = await import('../dist/esm/vanilla-ui-kit.js');
+  assert.equal(esm.VC, esm.VanillaUI);
+  for (const { name } of components) {
+    assert.ok(esm[name], `esm bundle exports ${name}`);
+    assert.equal(esm[name].version, pkg.version);
+  }
+  const single = await import('../dist/esm/toast.js');
+  assert.equal(typeof single.default.info, 'function');
+  assert.equal(single.Toast, single.default);
+  const core = await import('../dist/esm/core.js');
+  assert.equal(core.default.version, pkg.version);
+});
+
+test('minified dist and SRI hashes are present and fresh', () => {
+  for (const f of ['vanilla-ui-kit.min.js', 'esm/vanilla-ui-kit.min.js', 'vanilla-ui-kit.min.css']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'dist', f)), `dist/${f} exists`);
+  }
+  const sri = JSON.parse(read('dist/sri.json'));
+  const { createHash } = require('node:crypto');
+  for (const f of ['vanilla-ui-kit.js', 'vanilla-ui-kit.min.js', 'vanilla-ui-kit.css']) {
+    const expected = 'sha384-' +
+      createHash('sha384').update(fs.readFileSync(path.join(ROOT, 'dist', f))).digest('base64');
+    assert.equal(sri[f], expected, `sri.json entry for ${f} matches the file`);
+  }
 });
 
 test('dist stylesheets are in sync with component CSS', () => {

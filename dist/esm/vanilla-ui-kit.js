@@ -20990,6 +20990,28 @@ if (cjsModule) {
     EmptyState: global.EmptyState
   };
 }
-})(typeof globalThis !== 'undefined' ? globalThis :
-   typeof self !== 'undefined' ? self : this,
-   typeof module === 'object' && module.exports ? module : null);
+})(globalThis, null);
+export var VC = globalThis.VC;
+export var VanillaUI = globalThis.VanillaUI;
+export var DatePicker = globalThis.DatePicker;
+export var Toast = globalThis.Toast;
+export var Tooltip = globalThis.Tooltip;
+export var Menu = globalThis.Menu;
+export var Modal = globalThis.Modal;
+export var Tabs = globalThis.Tabs;
+export var Select = globalThis.Select;
+export var CommandPalette = globalThis.CommandPalette;
+export var Form = globalThis.Form;
+export var PhoneInput = globalThis.PhoneInput;
+export var Drawer = globalThis.Drawer;
+export var Segmented = globalThis.Segmented;
+export var Progress = globalThis.Progress;
+export var Popconfirm = globalThis.Popconfirm;
+export var Rating = globalThis.Rating;
+export var Autocomplete = globalThis.Autocomplete;
+export var Upload = globalThis.Upload;
+export var Slider = globalThis.Slider;
+export var NumberInput = globalThis.NumberInput;
+export var Pagination = globalThis.Pagination;
+export var EmptyState = globalThis.EmptyState;
+export default { VC, VanillaUI, DatePicker, Toast, Tooltip, Menu, Modal, Tabs, Select, CommandPalette, Form, PhoneInput, Drawer, Segmented, Progress, Popconfirm, Rating, Autocomplete, Upload, Slider, NumberInput, Pagination, EmptyState };
