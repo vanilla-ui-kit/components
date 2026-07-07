@@ -39,6 +39,7 @@ const FAMILY = [
   ['Popconfirm', 'popconfirm/popconfirm.js', 'vpc', ['ask', 'create', 'get', 'autoInit']],
   ['Rating', 'rating/rating.js', 'vrt', ['create', 'get', 'autoInit']],
   ['Autocomplete', 'autocomplete/autocomplete.js', 'vac', ['create', 'get', 'autoInit']],
+  ['Upload', 'upload/upload.js', 'vup', ['create', 'get', 'autoInit', 'formatBytes']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -259,6 +260,17 @@ test('Autocomplete specifics: SSR no-op instance', () => {
     assert.doesNotThrow(() => a[fn](), `autocomplete.${fn} in Node`);
   }
   assert.doesNotThrow(() => a.setSource([]));
+});
+
+test('Upload specifics: SSR no-op instance and formatBytes', async () => {
+  const Upload = components[16].mod;
+  assert.equal(typeof Upload.formatBytes(1536), 'string');
+  const u = Upload.create(null);
+  assert.deepEqual(u.getFiles(), []);
+  for (const fn of ['clear', 'enable', 'disable', 'destroy']) {
+    assert.doesNotThrow(() => u[fn](), `upload.${fn} in Node`);
+  }
+  await u.uploadAll();
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

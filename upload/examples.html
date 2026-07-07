@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Upload — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1.5' y='2' width='13' height='9' rx='2.5' fill='none' stroke='%235b5bd6' stroke-width='1.6' stroke-dasharray='2.6 2'/%3E%3Cpath d='M8 13.5V8.5M5.8 10.2 8 8l2.2 2.2' stroke='%239b9bf0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-direction: column; gap: 10px; }
+  .card .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .card .out {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    white-space: pre-wrap; word-break: break-word;
+  }
+  form.plain label { display: block; font-size: 13.5px; font-weight: 600; margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Upload <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Uploads, <em>one file</em>.</h1>
+  <p class="lede">A zero-dependency dropzone with a managed file list —
+  click, drag, or paste; thumbnails, validation, progress, and retry.
+  Every card below is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic single file</h3>
+      <p>One file at a time; picking another replaces it. Keyboard: Tab to
+      the zone, Enter or Space opens the picker.</p>
+      <div class="demo"><div id="ex-basic"></div></div>
+      <pre>new Upload('#box')</pre>
+    </div>
+
+    <div class="card">
+      <h3>Multiple + image thumbnails</h3>
+      <p>Drop a few images — previews render from object URLs (revoked on
+      remove). Paste works too while the zone is focused.</p>
+      <div class="demo"><div id="ex-multi"></div></div>
+      <pre>new Upload('#box', {
+  multiple: true,
+  accept: 'image/*'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Validation errors</h3>
+      <p>Images only, max 200&nbsp;KB, max 3 files. Rejected files get an
+      inline danger row — nothing throws, valid files still land.</p>
+      <div class="demo"><div id="ex-valid"></div></div>
+      <pre>new Upload('#box', {
+  multiple: true,
+  accept: 'image/*',
+  maxSize: 200 * 1024,   // '200 KB' in the error
+  maxFiles: 3
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Custom upload fn + retry</h3>
+      <p>A simulated uploader with progress. Files whose name contains
+      <code>fail</code> reject — the row gets a retry button (a retry
+      succeeds). Or use the buttons to add sample files.</p>
+      <div class="demo">
+        <div id="ex-upload"></div>
+        <div class="row">
+          <button type="button" class="demo-btn" id="add-ok">Add sample file</button>
+          <button type="button" class="demo-btn" id="add-fail">Add failing file</button>
+          <button type="button" class="demo-btn" id="upload-all">uploadAll()</button>
+        </div>
+        <div class="out" id="ex-upload-out"></div>
+      </div>
+      <pre>new Upload('#box', {
+  multiple: true,
+  upload: function (file, onProgress) {   // onProgress(0..1)
+    return fakeServer(file, onProgress)   // → Promise
+  },
+  onDone: (file, res) => log(file.name + ' → ' + res.url)
+})
+// built-in XHR uploader instead:
+//   upload: { action: '/api/upload', fieldName: 'file' }</pre>
+    </div>
+
+    <div class="card">
+      <h3>Enhance an input in a real &lt;form&gt;</h3>
+      <p>The original <code>&lt;input type=file&gt;</code> is wrapped and
+      hidden but keeps submitting with the form — dragged files are mirrored
+      onto it. Submit to see what the form would send.</p>
+      <div class="demo">
+        <form class="plain" id="ex-form" action="#">
+          <label for="attachments">Attachments</label>
+          <input type="file" id="attachments" name="attachments" multiple>
+          <p style="margin:10px 0 0"><button type="submit" class="demo-btn">Submit form</button>
+          <button type="button" class="demo-btn" id="toggle-enhance">Destroy / re-enhance</button></p>
+        </form>
+        <div class="out" id="ex-form-out"></div>
+      </div>
+      <pre>new Upload(document.getElementById('attachments'))
+// destroy() restores the native input exactly</pre>
+    </div>
+
+    <div class="card">
+      <h3>Family theming</h3>
+      <p>With the VC core loaded, one call themes every component.</p>
+      <div class="demo">
+        <div class="row">
+          <button type="button" class="demo-btn" id="theme-amber">Amber accent</button>
+          <button type="button" class="demo-btn" id="theme-reset">Reset</button>
+        </div>
+        <div class="out" id="theme-out"></div>
+      </div>
+      <pre>VC.config({ accent: '#b45309' })
+// standalone: .vup { --vup-accent: #b45309 }</pre>
+    </div>
+  </div>
+</div>
+
+<script src="upload.js"></script>
+<script>
+  // Theme switch — the widgets follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  /* 1 — basic single */
+  new Upload('#ex-basic');
+
+  /* 2 — multiple images with thumbnails */
+  new Upload('#ex-multi', { multiple: true, accept: 'image/*' });
+
+  /* 3 — validation errors */
+  new Upload('#ex-valid', {
+    multiple: true,
+    accept: 'image/*',
+    maxSize: 200 * 1024,
+    maxFiles: 3
+  });
+
+  /* 4 — custom upload fn: simulated progress; 'fail' in the name rejects
+     on the FIRST attempt only, so the retry button can be seen working. */
+  var attempts = {};
+  function fakeServer(file, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var sent = 0;
+      var timer = setInterval(function () {
+        sent += 0.08 + Math.random() * 0.1;
+        if (sent >= 1) {
+          clearInterval(timer);
+          onProgress(1);
+          attempts[file.name] = (attempts[file.name] || 0) + 1;
+          var shouldFail = file.name.indexOf('fail') !== -1 && attempts[file.name] === 1;
+          if (shouldFail) reject(new Error('Server said no (retry will work)'));
+          else resolve({ url: '/files/' + encodeURIComponent(file.name) });
+        } else {
+          onProgress(sent);
+        }
+      }, 120);
+    });
+  }
+  var upOut = document.getElementById('ex-upload-out');
+  function upLog(msg) {
+    upOut.textContent = (msg + '\n' + upOut.textContent).split('\n').slice(0, 5).join('\n');
+  }
+  var uploader = new Upload('#ex-upload', {
+    multiple: true,
+    upload: fakeServer,
+    onDone: function (file, res) { upLog('done: ' + file.name + ' → ' + res.url); },
+    onError: function (file, err) { upLog('error: ' + file.name + ' — ' + err.message); }
+  });
+  function sampleFile(name) {
+    // A tiny generated file, so the demo needs nothing from your disk.
+    try { return new File(['vanilla ui kit sample'], name, { type: 'text/plain' }); }
+    catch (err) { return null; /* very old engines: drop real files instead */ }
+  }
+  var seq = 0;
+  document.getElementById('add-ok').addEventListener('click', function () {
+    var f = sampleFile('notes-' + (++seq) + '.txt');
+    if (f) uploader.addFiles([f]);
+  });
+  document.getElementById('add-fail').addEventListener('click', function () {
+    var f = sampleFile('report-fail-' + (++seq) + '.txt');
+    if (f) uploader.addFiles([f]);
+  });
+  document.getElementById('upload-all').addEventListener('click', function () {
+    uploader.uploadAll().then(function (files) {
+      upLog('uploadAll settled: ' + files.length + ' file(s)');
+    });
+  });
+
+  /* 5 — enhance an existing input inside a real <form> */
+  var formInput = document.getElementById('attachments');
+  var formOut = document.getElementById('ex-form-out');
+  var enhanced = new Upload(formInput);
+  document.getElementById('ex-form').addEventListener('submit', function (e) {
+    e.preventDefault(); // demo only — show what WOULD be submitted
+    var names = [];
+    for (var i = 0; i < formInput.files.length; i++) names.push(formInput.files[i].name);
+    formOut.textContent = 'form would submit input.files = [' +
+      names.join(', ') + '] (' + names.length + ' file(s))';
+  });
+  document.getElementById('toggle-enhance').addEventListener('click', function () {
+    if (enhanced) {
+      enhanced.destroy();
+      enhanced = null;
+      formOut.textContent = 'destroyed — the plain native input is back';
+    } else {
+      enhanced = new Upload(formInput);
+      formOut.textContent = 're-enhanced';
+    }
+  });
+
+  /* 6 — family theming */
+  var themeOut = document.getElementById('theme-out');
+  document.getElementById('theme-amber').addEventListener('click', function () {
+    if (window.VC) { VC.config({ accent: '#b45309' }); themeOut.textContent = 'Family accent → amber'; }
+    else {
+      var s = document.getElementById('demo-accent') || document.createElement('style');
+      s.id = 'demo-accent';
+      s.textContent = '.vup{--vup-accent:#b45309;}.vup[data-theme=dark]{--vup-accent:#f5a623;}';
+      document.head.appendChild(s);
+      themeOut.textContent = 'Accent → amber (standalone var override)';
+    }
+  });
+  document.getElementById('theme-reset').addEventListener('click', function () {
+    if (window.VC) { VC.config({ accent: null }); themeOut.textContent = 'Back to iris'; }
+    else {
+      var s = document.getElementById('demo-accent');
+      if (s) s.parentNode.removeChild(s);
+      themeOut.textContent = 'Back to iris';
+    }
+  });
+</script>
+</body>
+</html>

@@ -22,6 +22,7 @@
     "./popconfirm": "./popconfirm/popconfirm.js",
     "./rating": "./rating/rating.js",
     "./autocomplete": "./autocomplete/autocomplete.js",
+    "./upload": "./upload/upload.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -38,6 +39,7 @@
     "./popconfirm.css": "./dist/popconfirm.css",
     "./rating.css": "./dist/rating.css",
     "./autocomplete.css": "./dist/autocomplete.css",
+    "./upload.css": "./dist/upload.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -59,6 +61,7 @@
     "popconfirm",
     "rating",
     "autocomplete",
+    "upload",
     "dist"
   ],
   "scripts": {
