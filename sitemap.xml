@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://vanilla-ui-kit.github.io/components/</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/theme.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/demo/admin.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/datepicker/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/toast/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/tooltip/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/menu/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/modal/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/tabs/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/select/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/command/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/form/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/phone/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/drawer/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/autocomplete/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/slider/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/popconfirm/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/segmented/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/upload/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/number/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/progress/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/pagination/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/empty/examples.html</loc></url>
+  <url><loc>https://vanilla-ui-kit.github.io/components/rating/examples.html</loc></url>
+</urlset>
