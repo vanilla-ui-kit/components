@@ -75,9 +75,13 @@ var define, module, exports, self = __root;
     // The root is the scrim: full-viewport for the fallback <div>, and the
     // same for the native <dialog> (its ::backdrop goes transparent below),
     // so both paths dim and animate identically. The panel slides within it.
+    // overflow:clip (not just hidden): hidden containers can still be
+    // scrolled programmatically, and moving focus into the off-screen panel
+    // scroll-reveals it — which cancels the right/bottom slide-in transform
+    // before it ever animates. clip forbids scrolling entirely.
     '.vdr.SALT{position:fixed;top:0;left:0;z-index:99990;box-sizing:border-box;' +
       'width:100%;height:100%;max-width:none;max-height:none;' +
-      'border:0;margin:0;padding:0;overflow:hidden;' +
+      'border:0;margin:0;padding:0;overflow:hidden;overflow:clip;' +
       'background:var(--vdr-backdrop);opacity:0;transition:opacity .16s ease;}' +
     '.vdr.SALT::backdrop{background:transparent;}' +
     '.vdr.SALT *,.vdr.SALT *::before,.vdr.SALT *::after{box-sizing:border-box;}' +
