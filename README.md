@@ -30,11 +30,11 @@ you bring your own design.
 | Forms (reactive, validation, honeypot) | `Form` | [`form/form.js`](./form/form.js) | [README](./form/README.md) |
 | Phone input (flags, formatting, validation) | `PhoneInput` | [`phone/phone.js`](./phone/phone.js) | [README](./phone/README.md) |
 | Drawers / side sheets | `Drawer` | [`drawer/drawer.js`](./drawer/drawer.js) | [README](./drawer/README.md) |
+| Segmented control | `Segmented` | [`segmented/segmented.js`](./segmented/segmented.js) | [README](./segmented/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: autocomplete, slider, popconfirm, segmented control, upload,
-number input, progress/skeletons, pagination, empty state, rating — same
-contract, same DNA.
+Roadmap: autocomplete, slider, popconfirm, upload, number input,
+progress/skeletons, pagination, empty state, rating — same contract, same DNA.
 
 ## Get it any way you like
 

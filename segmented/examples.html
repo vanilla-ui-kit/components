@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Segmented — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='4' width='14' height='8' rx='4' fill='%239b9bf0'/%3E%3Crect x='2' y='5' width='6' height='6' rx='3' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .card .out { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .stretch { width: 100%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Segmented <small>v1.0.0 · <a href="../tabs/examples.html">tabs →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Segmented, <em>one file</em>.</h1>
+  <p class="lede">The modern radio group — a sliding thumb, real radio
+  semantics, and automatic light/dark. Every card below is live; try the
+  arrow keys.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>View switcher</h3>
+      <p>Array shorthand; arrows move <em>and</em> select.</p>
+      <div class="demo">
+        <div id="basic" aria-label="View"></div>
+        <span class="out" id="basic-out">value: List</span>
+      </div>
+      <pre>new Segmented('#basic', {
+  options: ['List', 'Board', 'Calendar'],
+  onChange: v =&gt; render(v)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Icons + icon-only</h3>
+      <p>Icons ride next to labels; omit the label (it becomes the
+      <code>aria-label</code>) for icon-only.</p>
+      <div class="demo">
+        <div id="icons" aria-label="Layout"></div>
+        <div id="icononly" aria-label="Alignment"></div>
+      </div>
+      <pre>{ value: 'grid', label: 'Grid', icon: SVG }
+{ value: 'left', icon: SVG,
+  label: 'Align left', iconOnly: true }</pre>
+    </div>
+
+    <div class="card stretch">
+      <h3>Full width</h3>
+      <p><code>fullWidth</code> stretches segments evenly; the thumb
+      re-measures on resize.</p>
+      <div class="demo">
+        <div id="full" style="width:100%" aria-label="Billing period"></div>
+      </div>
+      <pre>new Segmented('#full', {
+  options: ['Day', 'Week', 'Month', 'Year'],
+  value: 'Week', fullWidth: true
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Enhance existing buttons</h3>
+      <p>Plain markup in, control out — <code>destroy()</code> gives the
+      original buttons back.</p>
+      <div class="demo">
+        <div id="enhance" aria-label="Environment">
+          <button data-value="dev">Dev</button>
+          <button data-value="staging">Staging</button>
+          <button data-value="prod">Prod</button>
+        </div>
+        <button class="demo-btn" id="enhance-toggle" type="button">Destroy</button>
+      </div>
+      <pre>&lt;div id="enhance"&gt;
+  &lt;button data-value="dev"&gt;Dev&lt;/button&gt; …
+&lt;/div&gt;
+new Segmented('#enhance')</pre>
+    </div>
+
+    <div class="card">
+      <h3>In a real form</h3>
+      <p><code>name</code> renders a hidden input, so the value submits
+      like any field.</p>
+      <form id="form" class="demo" onsubmit="return false">
+        <div id="plan" aria-label="Plan"></div>
+        <button class="demo-btn" type="submit">Submit</button>
+        <span class="out" id="form-out"></span>
+      </form>
+      <pre>new Segmented('#plan', {
+  options: ['Free', 'Pro', 'Team'],
+  name: 'plan'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Disabled segment + sizes</h3>
+      <p>Disabled segments are skipped by clicks and arrows; the whole
+      control can be toggled too. <code>size: 'sm'</code> shrinks it.</p>
+      <div class="demo">
+        <div id="disabled" aria-label="Quality"></div>
+        <div id="small" aria-label="Zoom"></div>
+        <button class="demo-btn" id="disable-toggle" type="button">Disable all</button>
+      </div>
+      <pre>options: [{ value: '4k', label: '4K',
+            disabled: true }, …]
+size: 'sm'</pre>
+    </div>
+  </div>
+</div>
+
+<script src="segmented.js"></script>
+<script>
+  // Trusted inline SVGs (same trust model as Toast's built-in icons).
+  var I = {
+    list: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    grid: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
+    left: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M2.5 8h7M2.5 12h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    center: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M4.5 8h7M3.5 12h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    right: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 4h11M6.5 8h7M4.5 12h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+  };
+
+  // View switcher.
+  new Segmented('#basic', {
+    options: ['List', 'Board', 'Calendar'],
+    label: 'View',
+    onChange: function (v) {
+      document.getElementById('basic-out').textContent = 'value: ' + v;
+    }
+  });
+
+  // Icons next to labels.
+  new Segmented('#icons', {
+    options: [
+      { value: 'list', label: 'List', icon: I.list },
+      { value: 'grid', label: 'Grid', icon: I.grid }
+    ],
+    value: 'grid',
+    label: 'Layout'
+  });
+
+  // Icon-only (labels become aria-labels).
+  new Segmented('#icononly', {
+    options: [
+      { value: 'left', label: 'Align left', icon: I.left, iconOnly: true },
+      { value: 'center', label: 'Align center', icon: I.center, iconOnly: true },
+      { value: 'right', label: 'Align right', icon: I.right, iconOnly: true }
+    ],
+    label: 'Alignment'
+  });
+
+  // Full width.
+  new Segmented('#full', {
+    options: ['Day', 'Week', 'Month', 'Year'],
+    value: 'Week',
+    fullWidth: true,
+    label: 'Billing period'
+  });
+
+  // Enhance existing buttons; destroy restores them.
+  new Segmented('#enhance', { label: 'Environment' });
+  document.getElementById('enhance-toggle').addEventListener('click', function () {
+    var inst = Segmented.get('#enhance');
+    if (inst) {
+      inst.destroy();
+      this.textContent = 'Enhance again';
+    } else {
+      new Segmented('#enhance', { label: 'Environment' });
+      this.textContent = 'Destroy';
+    }
+  });
+
+  // In a form.
+  new Segmented('#plan', { options: ['Free', 'Pro', 'Team'], name: 'plan', label: 'Plan' });
+  document.getElementById('form').addEventListener('submit', function () {
+    var data = new FormData(this);
+    document.getElementById('form-out').textContent = 'submitted plan=' + data.get('plan');
+  });
+
+  // Disabled segment, small size, whole-control toggle.
+  var quality = new Segmented('#disabled', {
+    options: [
+      { value: '720', label: '720p' },
+      { value: '1080', label: '1080p' },
+      { value: '4k', label: '4K', disabled: true }
+    ],
+    label: 'Quality'
+  });
+  new Segmented('#small', { options: ['50%', '100%', '200%'], value: '100%', size: 'sm', label: 'Zoom' });
+  document.getElementById('disable-toggle').addEventListener('click', function () {
+    if (this.textContent === 'Disable all') { quality.disable(); this.textContent = 'Enable'; }
+    else { quality.enable(); this.textContent = 'Disable all'; }
+  });
+
+  // Theme switch — the controls follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+</script>
+</body>
+</html>

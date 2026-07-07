@@ -34,6 +34,7 @@ const FAMILY = [
   ['Form', 'form/form.js', 'vfm', ['create', 'get', 'autoInit']],
   ['PhoneInput', 'phone/phone.js', 'vph', ['create', 'get', 'autoInit', 'parse', 'format', 'isValid', 'flag']],
   ['Drawer', 'drawer/drawer.js', 'vdr', ['open', 'create', 'get', 'autoInit']],
+  ['Segmented', 'segmented/segmented.js', 'vsg', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -206,6 +207,16 @@ test('Drawer specifics: SSR no-op handles', () => {
   assert.doesNotThrow(() => d.open());
   assert.doesNotThrow(() => d.close());
   assert.doesNotThrow(() => d.destroy());
+});
+
+test('Segmented specifics: SSR no-op instance', () => {
+  const Segmented = components[11].mod;
+  const s = Segmented.create(null, { options: ['a', 'b'] });
+  for (const fn of ['getValue', 'enable', 'disable', 'destroy']) {
+    assert.doesNotThrow(() => s[fn](), `segmented.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => s.setValue('b'));
+  assert.doesNotThrow(() => s.update(['c', 'd']));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

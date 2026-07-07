@@ -17,6 +17,7 @@
     "./form": "./form/form.js",
     "./phone": "./phone/phone.js",
     "./drawer": "./drawer/drawer.js",
+    "./segmented": "./segmented/segmented.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -28,6 +29,7 @@
     "./form.css": "./dist/form.css",
     "./phone.css": "./dist/phone.css",
     "./drawer.css": "./dist/drawer.css",
+    "./segmented.css": "./dist/segmented.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -44,6 +46,7 @@
     "form",
     "phone",
     "drawer",
+    "segmented",
     "dist"
   ],
   "scripts": {
