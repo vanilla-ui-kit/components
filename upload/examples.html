@@ -328,6 +328,466 @@
     }
   });
 </script>
+<style>
+  .api { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; line-height: 1.15; margin: 0 0 10px;
+  }
+  .api h3 { font-size: 18px; font-weight: 650; margin: 44px 0 10px; }
+  .api h4 { font-size: 14.5px; font-weight: 650; margin: 26px 0 8px; }
+  .api p { color: var(--muted); font-size: 14.5px; max-width: 76ch; margin: 8px 0; }
+  .api ul { color: var(--muted); font-size: 14.5px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api .api-toc { font-size: 14px; margin: 0 0 6px; }
+  .api .api-toc a {
+    display: inline-block; color: var(--accent); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 3px 12px; margin: 0 6px 8px 0;
+  }
+  .api .api-toc a:hover { border-color: var(--accent); }
+  .api pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td {
+    text-align: left; padding: 8px 12px; vertical-align: top;
+    border-bottom: 1px solid var(--faint);
+  }
+  .api th { border-bottom: 2px solid var(--faint); font-weight: 650; }
+  .api td { color: var(--muted); }
+  .api td:first-child { color: var(--text); white-space: nowrap; }
+  .api .table-scroll { overflow-x: auto; margin: 12px 0; }
+  .api .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <p>Everything below is verified against <code>upload.js</code> v1.0.0 — the
+  single file is the source of truth.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics</a>
+    <a href="#api-events">Events</a>
+    <a href="#api-declarative">Declarative</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p><code>new Upload(target, options?)</code> — <code>target</code> is a CSS
+  selector string or a DOM element. There are two mount modes, decided by what
+  the target is:</p>
+  <pre>new Upload('#box', opts)     // CONTAINER mode: the widget is appended into the
+                             // element and a real &lt;input type=file&gt; is created
+                             // inside it — give it opts.name and it still submits
+                             // with a parent &lt;form&gt; while autoUpload is off
+
+new Upload(fileInput, opts)  // ENHANCE mode: an existing &lt;input type=file&gt; is
+                             // wrapped and visually hidden (never display:none),
+                             // so it keeps submitting with its form;
+                             // destroy() restores it exactly as it was</pre>
+  <p>In enhance mode, <code>multiple</code> and <code>accept</code> are adopted
+  from the input's own attributes when not passed as options. Constructing on an
+  element that already holds an instance destroys the old instance first. With a
+  <code>null</code>/missing target or no DOM (SSR), the constructor returns an
+  inert no-op handle whose whole instance API is safe to call
+  (<code>uploadAll()</code> resolves to <code>[]</code>,
+  <code>getFiles()</code> returns <code>[]</code>). An unmatched selector or
+  non-element target throws
+  <code>Upload: target element not found</code>.</p>
+  <pre>Upload.create('#box', opts)  // static alias — identical to new Upload(...)
+Upload.get('#box')           // instance registered on that element, or null</pre>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every key of <code>Upload.defaults</code>, with its exact default from the
+  source. Options merge over the defaults; <code>undefined</code> values are
+  ignored.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Options table">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>multiple</code></td><td>boolean</td><td><code>false</code></td>
+          <td><code>false</code> = single-file mode: a new pick <em>replaces</em> the current file.</td></tr>
+        <tr><td><code>accept</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Accept string like <code>'image/*,.pdf'</code> — set on the input <em>and</em> validated on drop/paste (extension, <code>type/*</code> wildcard, or exact MIME match; empty accepts anything).</td></tr>
+        <tr><td><code>maxSize</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Max size in bytes; larger files get an inline error row with a human-readable size (via <code>formatBytes</code>).</td></tr>
+        <tr><td><code>maxFiles</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Cap on managed files. Validation-rejected rows don't count toward the cap.</td></tr>
+        <tr><td><code>text</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Full dropzone prompt; when set it overrides <code>labels.drop</code> + <code>labels.browse</code>.</td></tr>
+        <tr><td><code>listPosition</code></td><td>string</td><td><code>'below'</code></td>
+          <td><code>'below'</code> renders the managed <code>&lt;ul&gt;</code> under the zone; <code>'none'</code> renders no list (drive your own UI via callbacks).</td></tr>
+        <tr><td><code>autoUpload</code></td><td>boolean</td><td><code>false</code></td>
+          <td><code>true</code> = upload immediately on add; the native input's value is cleared after each pick and is <em>not</em> mirrored for form submits.</td></tr>
+        <tr><td><code>upload</code></td><td>function | object | null</td><td><code>null</code></td>
+          <td>The transport — a function or an XHR config object. See <a href="#api-upload-contract">the upload contract</a> below.</td></tr>
+        <tr><td><code>name</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Container mode only: <code>name=</code> for the created input, so it submits with a parent form. <code>null</code> = no name.</td></tr>
+        <tr><td><code>onAdd</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(file, instance)</code> — a file passed validation and was added.</td></tr>
+        <tr><td><code>onRemove</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(file, instance)</code> — a file was removed.</td></tr>
+        <tr><td><code>onProgress</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(file, pct, instance)</code> — <code>pct</code> is an integer 0..100.</td></tr>
+        <tr><td><code>onDone</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(file, response, instance)</code> — upload finished.</td></tr>
+        <tr><td><code>onError</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(file, error, instance)</code> — fires for validation <em>and</em> upload errors; <code>error</code> is an <code>Error</code>.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto follows the page and re-resolves live.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS injected; style the <code>.vup-*</code> markup yourself.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td>see below</td>
+          <td>All UI strings; merged shallowly over the defaults, so overriding one key keeps the rest.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>labels.* defaults</h4>
+  <p>Templates interpolate <code>{name}</code>, <code>{error}</code>,
+  <code>{size}</code>, <code>{max}</code> placeholders.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Label defaults table">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>zone</code></td><td><code>'Choose files'</code></td><td>Dropzone's <code>aria-label</code> (the accessible button name).</td></tr>
+        <tr><td><code>drop</code></td><td><code>'Drop files here or'</code></td><td>Visible prompt text (unless <code>text</code> is set).</td></tr>
+        <tr><td><code>browse</code></td><td><code>'browse'</code></td><td>Accent-colored word inside the prompt.</td></tr>
+        <tr><td><code>files</code></td><td><code>'Selected files'</code></td><td><code>aria-label</code> of the file list.</td></tr>
+        <tr><td><code>remove</code></td><td><code>'Remove {name}'</code></td><td>Per-file remove button <code>aria-label</code>.</td></tr>
+        <tr><td><code>retry</code></td><td><code>'Retry uploading {name}'</code></td><td>Per-file retry button <code>aria-label</code>.</td></tr>
+        <tr><td><code>progress</code></td><td><code>'Uploading {name}'</code></td><td>Progress bar <code>aria-label</code>.</td></tr>
+        <tr><td><code>added</code></td><td><code>'{name} added'</code></td><td>Live-region announcement.</td></tr>
+        <tr><td><code>removed</code></td><td><code>'{name} removed'</code></td><td>Live-region announcement.</td></tr>
+        <tr><td><code>uploaded</code></td><td><code>'{name} uploaded'</code></td><td>Live-region announcement.</td></tr>
+        <tr><td><code>failed</code></td><td><code>'{name} failed: {error}'</code></td><td>Live-region announcement (validation or upload failure).</td></tr>
+        <tr><td><code>done</code></td><td><code>'Uploaded'</code></td><td>Suffix on a finished row's size line.</td></tr>
+        <tr><td><code>tooLarge</code></td><td><code>'File is larger than {size}'</code></td><td>Inline error for <code>maxSize</code>.</td></tr>
+        <tr><td><code>badType</code></td><td><code>'File type not accepted'</code></td><td>Inline error for <code>accept</code>.</td></tr>
+        <tr><td><code>tooMany</code></td><td><code>'No more than {max} files'</code></td><td>Inline error for <code>maxFiles</code>.</td></tr>
+        <tr><td><code>uploadError</code></td><td><code>'Upload failed'</code></td><td>Fallback error text when an upload rejects without a message.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4 id="api-upload-contract">The upload contract</h4>
+  <p><code>upload</code> takes either <strong>a function</strong> or
+  <strong>a config object</strong>.</p>
+  <p><strong>Function</strong> — you own the transport. Exact signature:
+  <code>upload(file, onProgress)</code>, where <code>file</code> is the
+  <code>File</code> and <code>onProgress(ratio)</code> takes a ratio
+  <strong>0..1</strong> (clamped; rendered as a 0..100 percentage). Return a
+  Promise/thenable: <em>resolve</em> = done and the resolution value becomes the
+  item's <code>response</code>; <em>reject</em> = error — the rejection's
+  <code>.message</code> (or <code>labels.uploadError</code>) becomes the row's
+  error text and a retry button appears. A non-thenable return value counts as
+  instantly done, with that value as the response. A synchronous throw is
+  treated as a rejection. There is no abort hook for a custom function: on
+  remove/destroy an internal token simply discards the late settlement.</p>
+  <pre>upload: function (file, onProgress) {
+  return myApi.put('/files', file, { onUploadProgress: function (e) {
+    onProgress(e.loaded / e.total)
+  }})
+}</pre>
+  <p><strong>Config object</strong> — the built-in <code>XMLHttpRequest</code>
+  uploader. The file is sent as <code>multipart/form-data</code> via
+  <code>FormData.append(fieldName, file, file.name)</code>; real
+  <code>xhr.upload.onprogress</code> events drive the bar (only when
+  <code>lengthComputable</code>). The XHR is kept on the item so
+  <code>removeFile()</code> / <code>clear()</code> / <code>destroy()</code> can
+  abort it mid-flight. A config without <code>action</code> fails immediately
+  with <code>Upload: no `upload.action` configured</code>.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Built-in XHR uploader config table">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>action</code></td><td>— (required)</td><td>Request URL.</td></tr>
+        <tr><td><code>method</code></td><td><code>'POST'</code></td><td>HTTP method; uppercased before <code>open()</code>.</td></tr>
+        <tr><td><code>fieldName</code></td><td><code>'file'</code></td><td><code>FormData</code> field the file rides in.</td></tr>
+        <tr><td><code>headers</code></td><td>—</td><td>Plain object; each entry is applied with <code>setRequestHeader</code>.</td></tr>
+        <tr><td><code>withCredentials</code></td><td><code>false</code></td><td>Set <code>xhr.withCredentials = true</code> when truthy.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Completion: any <strong>2xx status resolves</strong>; the response body is
+  JSON-parsed when possible, else kept as raw text, and becomes
+  <code>response</code>. Non-2xx (or a network error, status 0) rejects with an
+  <code>Error</code> carrying <code>.status</code> and <code>.response</code>;
+  its message is a JSON body's <code>message</code> if present, else
+  <code>'Upload failed (status)'</code>.</p>
+
+  <h3 id="api-methods">Instance methods</h3>
+  <p>All mutators return the instance (chainable) except
+  <code>uploadAll()</code>, which returns a Promise.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance methods table">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>addFiles(files)</code></td><td>this</td>
+          <td>Add a <code>FileList</code>, <code>File[]</code>, or single <code>File</code> through the same validation path as click/drop/paste. In single-file mode the new pick replaces the managed list. Uploads start immediately when <code>autoUpload</code> is on.</td></tr>
+        <tr><td><code>removeFile(file)</code></td><td>this</td>
+          <td>Remove by <code>File</code> identity: aborts an in-flight built-in upload, revokes the thumbnail object URL, drops the row, fires <code>onRemove</code>.</td></tr>
+        <tr><td><code>uploadAll()</code></td><td>Promise</td>
+          <td>Starts every <code>'pending'</code> file (nothing else). Resolves with <code>getFiles()</code> once all started uploads settle (removal mid-flight counts as settled). Never rejects. Where <code>Promise</code> is absent it starts the uploads and returns <code>null</code>.</td></tr>
+        <tr><td><code>getFiles()</code></td><td>Array</td>
+          <td>Snapshot of the managed list — one record per row, see the shape below.</td></tr>
+        <tr><td><code>clear()</code></td><td>this</td>
+          <td>Remove everything (aborting in-flight uploads) and reset the native input's value.</td></tr>
+        <tr><td><code>enable()</code></td><td>this</td>
+          <td>Re-enable after <code>disable()</code>: restores the zone's <code>tabindex="0"</code>, clears <code>aria-disabled</code>, re-enables the input.</td></tr>
+        <tr><td><code>disable()</code></td><td>this</td>
+          <td>Disable interaction: adds <code>.is-disabled</code>, sets <code>aria-disabled="true"</code>, takes the zone out of the tab order, disables the input.</td></tr>
+        <tr><td><code>destroy()</code></td><td>this</td>
+          <td>Abort uploads, revoke URLs, unbind all listeners, remove the widget. Enhance mode restores the original input's position, class, <code>tabindex</code>, <code>aria-hidden</code>, and disabled state exactly.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>File records</h4>
+  <p>Each record returned by <code>getFiles()</code> (and resolved by
+  <code>uploadAll()</code>) has exactly these keys; name, size, and MIME type
+  live on the <code>File</code> itself. Internally each row also tracks a
+  stable <code>id</code>, a 0..1 <code>progress</code>, the preview object URL,
+  and the in-flight XHR, but those are not part of the public snapshot.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="File record shape table">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>file</code></td><td>File</td><td>The original <code>File</code> object.</td></tr>
+        <tr><td><code>status</code></td><td>string</td><td><code>'pending'</code> | <code>'uploading'</code> | <code>'done'</code> | <code>'error'</code>. Validation failures enter as <code>'error'</code> with no retry.</td></tr>
+        <tr><td><code>response</code></td><td>any</td><td>The upload's resolution value (or the built-in uploader's parsed body); <code>null</code> until done.</td></tr>
+        <tr><td><code>error</code></td><td>string | null</td><td>Human-readable error message; <code>null</code> unless the row is in error.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static properties and helpers table">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Upload.formatBytes(n)</code></td>
+          <td>Human-readable byte counts in B / KB / MB / GB / TB (1024-based): one decimal below 10 in a non-byte unit, trailing <code>.0</code> trimmed — <code>formatBytes(1536)</code> → <code>'1.5 KB'</code>, <code>524288</code> → <code>'512 KB'</code>. Negative or non-finite input returns <code>''</code>.</td></tr>
+        <tr><td><code>Upload.defaults</code></td>
+          <td>The live defaults object from the options table above — mutate it before constructing to change global defaults (e.g. <code>Upload.defaults.styles = false</code>).</td></tr>
+        <tr><td><code>Upload.get(target)</code></td>
+          <td>Selector or element → the instance registered on it, or <code>null</code>.</td></tr>
+        <tr><td><code>Upload.create(target, options)</code></td>
+          <td>Alias for <code>new Upload(target, options)</code>.</td></tr>
+        <tr><td><code>Upload.autoInit(root?)</code></td>
+          <td>Scan <code>root</code> (default <code>document</code>) for <code>[data-vup]</code> elements and construct instances; returns the created array. Skips already-initialized elements; one bad element logs and does not abort the rest. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>Upload.salt</code></td>
+          <td>CSS isolation token, default <code>'vc1'</code>. Set your own string or <code>false</code> (no salting) <em>before</em> the first instance.</td></tr>
+        <tr><td><code>Upload.css</code></td>
+          <td>The full stylesheet as a string — a live getter, always rendered with the current salt. Starting point for headless styling.</td></tr>
+        <tr><td><code>Upload.version</code></td>
+          <td><code>'1.0.0'</code>.</td></tr>
+        <tr><td><code>Upload.displayName</code></td>
+          <td><code>'Upload'</code> (family convergence contract).</td></tr>
+        <tr><td><code>Upload.rootClass</code></td>
+          <td><code>'vup'</code> — the widget root's class (family convergence contract).</td></tr>
+        <tr><td><code>Upload.themeVars</code></td>
+          <td>Map used by the VC core bridge: <code>{ accent: '--vup-accent', radius: '--vup-radius', font: '--vup-font' }</code>.</td></tr>
+        <tr><td><code>Upload.varScopes</code></td>
+          <td><code>['.vup', '.vup[data-theme=dark]']</code> — the (deliberately unsalted) scopes where theme variables are defined.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>All notifications are <strong>option callbacks</strong> — the component
+  dispatches <strong>no DOM CustomEvents</strong>. Every callback receives the
+  instance as its final argument; a callback that throws is caught and logged
+  (<code>console.error</code>) so it can never break the upload pipeline.
+  Return values are ignored — there is no <code>beforeUpload</code>-style
+  veto hook; use <code>accept</code> / <code>maxSize</code> /
+  <code>maxFiles</code> for client-side rejection.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Callbacks table">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>Arguments</th><th>Fires when</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onAdd</code></td><td><code>(file, instance)</code></td>
+          <td>A file passed validation and joined the managed list (click, drop, paste, or <code>addFiles</code>).</td></tr>
+        <tr><td><code>onRemove</code></td><td><code>(file, instance)</code></td>
+          <td>A file was removed via the row button or <code>removeFile()</code>. Not fired by <code>clear()</code> or <code>destroy()</code>.</td></tr>
+        <tr><td><code>onProgress</code></td><td><code>(file, pct, instance)</code></td>
+          <td>Upload progress; <code>pct</code> is an integer 0..100 (also fired at 0 on start and 100 on completion).</td></tr>
+        <tr><td><code>onDone</code></td><td><code>(file, response, instance)</code></td>
+          <td>An upload settled successfully; <code>response</code> is the record's response value.</td></tr>
+        <tr><td><code>onError</code></td><td><code>(file, error, instance)</code></td>
+          <td>A validation failure (type / size / count — <code>error</code> is an <code>Error</code> wrapping the label text) <em>or</em> an upload failure (the rejection, with <code>.status</code>/<code>.response</code> from the built-in uploader).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Any element with <code>data-vup</code> is auto-initialized on
+  <code>DOMContentLoaded</code> (or immediately when the script loads later);
+  <code>Upload.autoInit(root?)</code> re-scans on demand. A
+  <code>&lt;div data-vup&gt;</code> mounts in container mode, an
+  <code>&lt;input type=file data-vup&gt;</code> in enhance mode. Boolean values
+  parse as true unless the string is <code>"false"</code> or <code>"0"</code>.</p>
+  <pre>&lt;div data-vup data-vup-multiple="true" data-vup-accept="image/*"
+     data-vup-max-size="2097152" data-vup-action="/api/upload"
+     data-vup-auto-upload="true"&gt;&lt;/div&gt;
+&lt;!-- or enhance: &lt;input type="file" data-vup multiple&gt; --&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Data attributes table">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vup</code></td><td>—</td><td>Marker: opt this element in to auto-init.</td></tr>
+        <tr><td><code>data-vup-multiple</code></td><td><code>multiple</code></td><td>Boolean string.</td></tr>
+        <tr><td><code>data-vup-accept</code></td><td><code>accept</code></td><td>Accept string.</td></tr>
+        <tr><td><code>data-vup-max-size</code></td><td><code>maxSize</code></td><td>Number (bytes); coerced with <code>+</code>.</td></tr>
+        <tr><td><code>data-vup-max-files</code></td><td><code>maxFiles</code></td><td>Number; coerced with <code>+</code>.</td></tr>
+        <tr><td><code>data-vup-text</code></td><td><code>text</code></td><td>Prompt string.</td></tr>
+        <tr><td><code>data-vup-name</code></td><td><code>name</code></td><td>Input name string.</td></tr>
+        <tr><td><code>data-vup-list-position</code></td><td><code>listPosition</code></td><td><code>below</code> | <code>none</code>.</td></tr>
+        <tr><td><code>data-vup-auto-upload</code></td><td><code>autoUpload</code></td><td>Boolean string.</td></tr>
+        <tr><td><code>data-vup-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code>.</td></tr>
+        <tr><td><code>data-vup-styles</code></td><td><code>styles</code></td><td>Boolean string.</td></tr>
+        <tr><td><code>data-vup-action</code></td><td><code>upload.action</code></td><td>URL — its presence enables the built-in XHR uploader.</td></tr>
+        <tr><td><code>data-vup-method</code></td><td><code>upload.method</code></td><td>HTTP method (only read alongside <code>data-vup-action</code>).</td></tr>
+        <tr><td><code>data-vup-field-name</code></td><td><code>upload.fieldName</code></td><td>FormData field (only read alongside <code>data-vup-action</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Callbacks and a custom upload function cannot be expressed declaratively —
+  construct those instances from JS.</p>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>With <code>theme: 'auto'</code> (default) the resolution order is:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> →
+  <code>.dark</code> / <code>.light</code> class on <code>&lt;html&gt;</code> →
+  <code>prefers-color-scheme</code> — re-resolved live via a
+  MutationObserver and a media-query listener (or delegated to the shared VC
+  theme engine when the core is loaded). Pin per instance with
+  <code>theme: 'light'</code> or <code>'dark'</code>; the resolved theme lands
+  as <code>data-theme</code> on the widget root. With the VC core loaded,
+  <code>VC.config({ accent: '#b45309' })</code> themes the whole family.</p>
+  <p>All colors are CSS custom properties, defined on <code>.vup</code> (light)
+  and re-defined on <code>.vup[data-theme=dark]</code>:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties table">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vup-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td></tr>
+        <tr><td><code>--vup-danger</code></td><td><code>#e5484d</code></td><td><code>#f2555a</code></td></tr>
+        <tr><td><code>--vup-success</code></td><td><code>#1f9d5b</code></td><td><code>#4ccb8f</code></td></tr>
+        <tr><td><code>--vup-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td></tr>
+        <tr><td><code>--vup-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td></tr>
+        <tr><td><code>--vup-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td></tr>
+        <tr><td><code>--vup-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td></tr>
+        <tr><td><code>--vup-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td></tr>
+        <tr><td><code>--vup-accent-soft</code></td><td><code>rgba(91,91,214,.13)</code>*</td><td>(inherits light)*</td></tr>
+        <tr><td><code>--vup-danger-soft</code></td><td><code>rgba(229,72,77,.12)</code>*</td><td>(inherits light)*</td></tr>
+        <tr><td><code>--vup-shadow</code></td><td>layered rgba shadow</td><td>deeper layered shadow</td></tr>
+        <tr><td><code>--vup-radius</code></td><td><code>12px</code></td><td>(inherits light)</td></tr>
+        <tr><td><code>--vup-font</code></td><td>system-ui stack</td><td>(inherits light)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>* Where <code>color-mix()</code> is supported, the soft tints are derived
+  from the current <code>--vup-accent</code> / <code>--vup-danger</code>
+  automatically, so overriding the accent recolors them too.</p>
+  <p><strong>CSS isolation:</strong> the root renders as
+  <code>class="vup vc1"</code> and every structural rule ships salted
+  (<code>.vup.vc1 .vup-zone { … }</code>), so host-page design systems can't
+  override the widget — while variable <em>definitions</em> stay unsalted at
+  their documented specificity, so <code>.vup { --vup-accent: … }</code> page
+  overrides keep working. Set <code>Upload.salt = 'acme'</code> (sanitized to
+  <code>[\w-]</code>) or <code>Upload.salt = false</code> before the first
+  instance. The injected <code>&lt;style&gt;</code> (id
+  <code>vanilla-upload-styles</code>) is inserted <em>before</em> the page's
+  first stylesheet so page overrides win.</p>
+  <p><strong>Headless:</strong> <code>styles: false</code> per instance, or
+  <code>Upload.defaults.styles = false</code> globally, injects no CSS while
+  keeping the full behavior (drag counting, validation, uploads, ARIA).
+  <code>Upload.css</code> is the stylesheet string to start from. The markup
+  contract you style:</p>
+  <pre>.vup[data-theme="dark"].is-drag.is-disabled
+  .vup-zone[role=button]           ← .vup-zone-icon + .vup-prompt &gt; .vup-browse
+  .vup-live                        ← visually-hidden polite live region
+  input.vup-native                 ← the real file input, visually hidden
+  ul.vup-list
+    li.vup-item[data-status=pending|uploading|done|error]
+      .vup-thumb &gt; img|svg
+      .vup-meta &gt; .vup-name + .vup-sub|.vup-errmsg + .vup-bar &gt; .vup-fill
+      .vup-retry                   ← only after an upload error
+      .vup-remove</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <ul>
+    <li>The dropzone is a labelled <code>role="button"</code> with
+      <code>tabindex="0"</code>: its accessible name is <code>labels.zone</code>
+      (<code>aria-label</code>) and the visible prompt describes it via
+      <code>aria-describedby</code>. <code>disable()</code> sets
+      <code>aria-disabled="true"</code> and removes it from the tab order.</li>
+    <li>The real <code>&lt;input type=file&gt;</code> stays in the DOM (so it
+      keeps submitting with a form) but is visually hidden with
+      <code>tabindex="-1"</code> and <code>aria-hidden="true"</code>.</li>
+    <li>A visually-hidden <strong>polite live region</strong>
+      (<code>aria-live="polite"</code>) announces added / removed / uploaded /
+      failed files, clearing first so repeated messages re-announce.</li>
+    <li>The file list is a <code>&lt;ul&gt;</code> labelled with
+      <code>labels.files</code>; progress bars are
+      <code>role="progressbar"</code> with <code>aria-valuemin/max</code> and a
+      live <code>aria-valuenow</code>, labelled per file via
+      <code>labels.progress</code>.</li>
+    <li>Remove and retry are real <code>&lt;button type="button"&gt;</code>
+      elements with per-file <code>aria-label</code>s
+      (<code>labels.remove</code> / <code>labels.retry</code>).</li>
+    <li><code>:focus-visible</code> rings only;
+      <code>prefers-reduced-motion: reduce</code> disables all transitions and
+      animations.</li>
+  </ul>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard map table">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Tab</code> / <code>Shift+Tab</code></td>
+          <td>Move between the dropzone and each row's retry / remove buttons (the hidden input is skipped).</td></tr>
+        <tr><td><code>Enter</code> or <code>Space</code> (dropzone focused)</td>
+          <td>Open the file picker. Space's default is prevented so the page doesn't scroll; legacy <code>keyCode</code> 13/32 and <code>'Spacebar'</code> are also handled.</td></tr>
+        <tr><td><code>Ctrl+V</code> / <code>Cmd+V</code> (dropzone focused)</td>
+          <td>Attach files from the clipboard. The paste listener is document-level but only acts while the dropzone is the active element, so it never hijacks paste elsewhere.</td></tr>
+        <tr><td><code>Enter</code> / <code>Space</code> (row button focused)</td>
+          <td>Native button activation: retry a failed upload or remove the file. There is no separate Delete-key shortcut on rows.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
