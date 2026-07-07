@@ -222,7 +222,7 @@
       <h3>Programmatic API</h3>
       <p><code>setValues</code>, <code>setError</code>, <code>reset</code>,
       <code>disable</code> — the instance is the single source of truth.</p>
-      <div id="api"></div>
+      <div id="api-demo"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button type="button" class="demo-btn" onclick="apiForm.setValues({city:'Berlin',country:'de'})">setValues</button>
         <button type="button" class="demo-btn" onclick="apiForm.setError('city','Not deliverable')">setError</button>
@@ -354,7 +354,7 @@ form.isDirty()  // true</pre>
   famLog.textContent = JSON.stringify(fam.values);
 
   /* ---- 6. programmatic API ---- */
-  var apiForm = new Form('#api', {
+  var apiForm = new Form('#api-demo', {
     minFillTime: 0,
     submitLabel: false,
     fields: [

@@ -293,6 +293,237 @@ handle.remove()                     // when results return</pre>
     updating.update(STATES[stateIdx]);
   });
 </script>
+<style>
+  /* ---- API reference ---- */
+  .api-sec { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api-sec h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-sec h3 { font-size: 18px; font-weight: 650; margin: 44px 0 8px; }
+  .api-sec h4 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  .api-sec p { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; }
+  .api-sec ul { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api-sec code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api-sec pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-sec pre code { background: none; border: 0; padding: 0; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .api-toc a {
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-table-wrap {
+    overflow-x: auto; margin: 12px 0; border: 1px solid var(--faint);
+    border-radius: 10px; background: var(--surface);
+  }
+  .api-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table.api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.api-table th {
+    text-align: left; font-weight: 600; padding: 8px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--faint); background: var(--surface-2);
+  }
+  table.api-table td {
+    padding: 8px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  table.api-table tr:last-child td { border-bottom: 0; }
+  table.api-table td:first-child { white-space: nowrap; }
+</style>
+<div class="wrap api-sec">
+  <h2 id="api">API reference</h2>
+  <p>The complete <code>EmptyState</code> API — the render/constructor duality,
+  every option, the handle, statics, declarative attributes, theming and
+  accessibility.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Render &amp; constructor</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-handle">Handle</a>
+    <a href="#api-statics">Statics &amp; helpers</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Render &amp; constructor</h3>
+  <pre><code>EmptyState.render(target, options?)  // → handle: { el, update(opts), remove() }
+new EmptyState(target, options?)     // alias of render — same handle back
+EmptyState.create(target, options?)  // also an alias</code></pre>
+  <p>All three forms are the same call: <code>new EmptyState(…)</code> simply
+  returns <code>EmptyState.render(…)</code>'s plain handle (there is no class
+  instance), so the family <code>create</code>/<code>get</code> contract holds.
+  <code>target</code> is a selector string or an element; the block is appended
+  into it. Re-rendering onto the same target replaces the previous block (the
+  old handle is removed first). A missing target throws; without a DOM (SSR)
+  every call returns an inert handle.</p>
+  <pre><code>const empty = EmptyState.render('#list', {
+  icon: 'inbox',
+  title: 'No messages yet',
+  description: 'Anything sent to you will land here.',
+  action: { label: 'Compose', onClick: () =&gt; compose() }
+})</code></pre>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every key of <code>EmptyState.defaults</code>, with its default value.</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="EmptyState options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>icon</code></td><td>string</td><td><code>'inbox'</code></td>
+          <td>One of the built-ins — <code>'inbox'</code> | <code>'search'</code> | <code>'error'</code> | <code>'folder'</code> — or a TRUSTED inline-SVG string (anything starting with <code>'&lt;'</code> is injected verbatim; never pass user input). Unknown names fall back to <code>'inbox'</code>.</td></tr>
+        <tr><td><code>title</code></td><td>string</td><td><code>''</code></td>
+          <td>TEXT — always rendered with <code>textContent</code>. Omitted from the DOM when empty.</td></tr>
+        <tr><td><code>description</code></td><td>string</td><td><code>''</code></td>
+          <td>TEXT by default; <code>html: true</code> opts in to markup. Omitted when empty.</td></tr>
+        <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Applies to <code>description</code> only — render it as HTML instead of text.</td></tr>
+        <tr><td><code>action</code></td><td>object | Element | null</td><td><code>null</code></td>
+          <td><code>{ label, onClick(handle) }</code> → the solid accent button. Declarative init may pass an adopted element instead (see below).</td></tr>
+        <tr><td><code>secondaryAction</code></td><td>object | null</td><td><code>null</code></td>
+          <td><code>{ label, onClick(handle) }</code> → the quiet link-button.</td></tr>
+        <tr><td><code>size</code></td><td>string</td><td><code>'md'</code></td>
+          <td><code>'sm'</code> | <code>'md'</code>. <code>'sm'</code> tightens paddings and shrinks the illustration for cards, table bodies and sidebars.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto re-resolves live against the page theme.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is injected — style the <code>.ves-*</code> markup yourself.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-handle">Handle</h3>
+  <p>Every render returns the same plain handle shape:</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="EmptyState handle">
+    <table class="api-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>el</code></td>
+          <td>The root <code>.ves</code> element (or <code>null</code> for the inert SSR handle).</td></tr>
+        <tr><td><code>update(opts)</code></td>
+          <td>Merge <code>opts</code> over the current options and re-render the block's content in place — same root element, no flicker. Chainable.</td></tr>
+        <tr><td><code>remove()</code></td>
+          <td>Take the block back out of the DOM. An adopted declarative action button is returned to the host element with its listeners intact. Chainable.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Action callbacks receive the handle, so an action can update its own block:</p>
+  <pre><code>action: { label: 'New project',
+  onClick: (h) =&gt; h.update({ title: 'Project created!' }) }</code></pre>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="EmptyState static members">
+    <table class="api-table">
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>EmptyState.render(target, opts)</code></td>
+          <td>The canonical entry point → handle.</td></tr>
+        <tr><td><code>EmptyState.create(target, opts)</code></td>
+          <td>Alias of <code>render</code>.</td></tr>
+        <tr><td><code>EmptyState.get(el)</code></td>
+          <td>The handle bound to a target element — works with the original target <em>and</em> with <code>handle.el</code>. <code>null</code> when none.</td></tr>
+        <tr><td><code>EmptyState.autoInit(root?)</code></td>
+          <td>Initialize every <code>[data-ves]</code> under <code>root</code> (default: <code>document</code>); returns the created handles. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>EmptyState.defaults</code></td>
+          <td>The live defaults object — mutate before rendering (e.g. <code>EmptyState.defaults.styles = false</code>).</td></tr>
+        <tr><td><code>EmptyState.css</code></td>
+          <td>The full stylesheet as a string (rendered with the current salt) — a starting point for headless styling.</td></tr>
+        <tr><td><code>EmptyState.salt</code></td>
+          <td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first render.</td></tr>
+        <tr><td><code>EmptyState.version</code></td>
+          <td>Version string, <code>'1.0.0'</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Add <code>data-ves</code> to a container — blocks are built on
+  <code>DOMContentLoaded</code> (or call <code>EmptyState.autoInit(root)</code>
+  after inserting markup). A child <code>&lt;button data-ves-action&gt;</code> is
+  <em>adopted</em> as the accent button: its own listeners (e.g. an inline
+  <code>onclick</code>) stay attached, it is given <code>type="button"</code> if
+  it has no type, and <code>remove()</code> gives it back to the host.</p>
+  <pre><code>&lt;div data-ves data-ves-icon="search" data-ves-title="No results"
+     data-ves-description="Try a different search term."&gt;
+  &lt;button data-ves-action onclick="clearFilters()"&gt;Clear filters&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="EmptyState data attributes">
+    <table class="api-table">
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-ves</code></td><td>—</td><td>Marks the container.</td></tr>
+        <tr><td><code>data-ves-icon</code></td><td><code>icon</code></td><td>Built-in name or trusted SVG string.</td></tr>
+        <tr><td><code>data-ves-title</code> / <code>data-ves-description</code></td><td><code>title</code> / <code>description</code></td><td>Plain text.</td></tr>
+        <tr><td><code>data-ves-size</code></td><td><code>size</code></td><td><code>sm</code> | <code>md</code>.</td></tr>
+        <tr><td><code>data-theme</code></td><td><code>theme</code></td><td>Note: unprefixed (not <code>data-ves-theme</code>).</td></tr>
+        <tr><td><code>data-styles</code></td><td><code>styles</code></td><td>Unprefixed boolean; <code>"false"</code> and <code>"0"</code> = false.</td></tr>
+        <tr><td>child <code>[data-ves-action]</code></td><td><code>action</code></td><td>The element is adopted as the accent button, listeners intact.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+  <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live.
+  Pin one block with <code>theme: 'dark'</code>. All colors are CSS custom
+  properties on <code>.ves</code>:</p>
+  <pre><code>.ves {
+  --ves-accent: #b45309;   /* action button, quiet action, focus rings */
+  --ves-text: …; --ves-muted: …; --ves-faint: …;
+  --ves-circle: …;         /* the illustration circle */
+  --ves-on-accent: …;      /* text on the accent button */
+  --ves-radius: 10px; --ves-font: …;
+}</code></pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  empty states and every other family component in one call. Blocks render as
+  <code>class="ves ves-md vc1"</code>; structural rules ship salted so host
+  design systems can't override them, while the unsalted <code>--ves-*</code>
+  variable definitions keep page overrides working. Change the token with
+  <code>EmptyState.salt = 'acme'</code> (or <code>false</code>) before the first
+  render.</p>
+  <p><strong>Headless:</strong> pass <code>styles: false</code> (per render, or
+  via <code>EmptyState.defaults</code>) and no CSS is injected — you keep the
+  behavior (rendering, adoption, theme tracking) and style this markup contract
+  yourself (<code>EmptyState.css</code> is the reference stylesheet as a
+  string):</p>
+  <pre><code>.ves.ves-md[data-theme="dark"]     ← .ves-sm for size: 'sm'
+  .ves-art                         ← illustration circle + inline SVG
+  .ves-title                       ← only when `title` given
+  .ves-desc                        ← only when `description` given
+  .ves-actions                     ← only when any action given
+    button.ves-action              ← accent button (or adopted button)
+    button.ves-action-quiet        ← secondaryAction</code></pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <ul>
+    <li>Centered column layout: circle + icon, title, description, action row.
+    The illustration is <code>aria-hidden</code> — the title carries the
+    meaning, so give every block a <code>title</code>.</li>
+    <li><code>action</code> renders as a solid accent <code>&lt;button
+    type="button"&gt;</code>, <code>secondaryAction</code> as a quiet
+    link-button; both are real buttons (native keyboard support) with family
+    focus-visible rings, and they respect reduced motion.</li>
+    <li><code>title</code> is always text; <code>description</code> is text
+    unless you explicitly opt in with <code>html: true</code>. Custom SVG icon
+    strings are injected verbatim — pass only markup you trust, never user
+    input.</li>
+  </ul>
+</div>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
