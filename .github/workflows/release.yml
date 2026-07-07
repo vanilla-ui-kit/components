@@ -3,13 +3,14 @@ name: Release
 # Tag a version (v1.2.3) to cut a release. jsDelivr serves straight from
 # GitHub, so the release itself is the CDN publish:
 #
-#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1.2.3/dist/vanilla-ui-kit.js
-#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1/dist/vanilla-ui-kit.js  (latest 1.x)
+#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1.2.3/dist/vanilla-ui-kit.min.js
+#   https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1/dist/vanilla-ui-kit.min.js  (latest 1.x)
 #
 # The workflow verifies the tag matches package.json, proves dist/ was built
 # from these sources, runs the tests, publishes a GitHub Release with the
-# dist files attached, and purges jsDelivr's cache for the un-versioned URLs
-# used in the docs.
+# dist files attached (idempotent: uploads assets even when the release was
+# already created by hand), publishes to npm when NPM_TOKEN is configured,
+# and purges jsDelivr's cache for the un-versioned URLs used in the docs.
 
 on:
   push:
@@ -17,6 +18,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -27,6 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
 
       - name: Tag matches package.json version
         run: |
@@ -38,7 +41,7 @@ jobs:
           fi
 
       - name: Build dist/
-        run: npm run build
+        run: npm run build && npm run build:min
 
       - name: dist/ committed in sync with sources
         run: git diff --exit-code -- dist
@@ -46,17 +49,31 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Create GitHub Release with CDN assets
+      - name: Create or update GitHub Release with CDN assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            dist/vanilla-ui-kit.js \
-            dist/vanilla-ui-kit.css \
-            dist/datepicker.css \
-            dist/toast.css \
-            --title "vanilla-ui-kit $GITHUB_REF_NAME" \
-            --generate-notes
+          ASSETS="dist/vanilla-ui-kit.js dist/vanilla-ui-kit.min.js \
+                  dist/vanilla-ui-kit.css dist/vanilla-ui-kit.min.css \
+                  dist/sri.json"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release exists — uploading assets"
+            gh release upload "$GITHUB_REF_NAME" $ASSETS --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" $ASSETS \
+              --title "vanilla-ui-kit $GITHUB_REF_NAME" \
+              --generate-notes
+          fi
+
+      - name: Publish to npm (when NPM_TOKEN is configured)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_TOKEN secret not set — skipping npm publish."
+          else
+            npm publish --provenance --access public
+          fi
 
       - name: Purge jsDelivr cache for un-versioned URLs
         run: |
@@ -65,9 +82,10 @@ jobs:
           # immediately. Versioned URLs are immutable and need no purge.
           for f in \
             dist/vanilla-ui-kit.js \
+            dist/vanilla-ui-kit.min.js \
             dist/vanilla-ui-kit.css \
-            dist/datepicker.css \
-            dist/toast.css \
+            dist/vanilla-ui-kit.min.css \
+            dist/esm/vanilla-ui-kit.js \
             core/core.js \
             datepicker/datepicker.js \
             toast/toast.js
