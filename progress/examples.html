@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Progress — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='6' width='14' height='4' rx='2' fill='%23e7e7ec'/%3E%3Crect x='1' y='6' width='9' height='4' rx='2' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card .slot { display: flex; flex-direction: column; gap: 14px; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .note { color: var(--muted); font-size: 13px; }
+  /* the "real card" the skeleton covers */
+  .mini-card { display: flex; gap: 12px; align-items: flex-start; }
+  .mini-card img { width: 40px; height: 40px; border-radius: 50%; }
+  .mini-card .who { min-width: 0; }
+  .mini-card .who b { display: block; font-size: 14px; }
+  .mini-card .who span { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Progress <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Loading, <em>one file</em>.</h1>
+  <p class="lede">Bars, spinners and skeletons that follow your page's theme
+  on their own. Click anything below — every card is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Determinate bar</h3>
+      <p>A fake upload drives <code>set()</code>; <code>done()</code> flips to
+      the success color.</p>
+      <div class="slot" id="bar-slot"></div>
+      <div class="demo">
+        <button class="demo-btn" id="run-task">Start upload</button>
+      </div>
+      <pre>var bar = Progress.bar('#bar-slot', {
+  label: 'Uploading photo…',
+  showValue: true, autoRemove: true })
+bar.set(42)   // …later:
+bar.done()</pre>
+    </div>
+
+    <div class="card">
+      <h3>Indeterminate</h3>
+      <p>No known total — a segment sweeps until <code>set()</code> or
+      <code>done()</code> promotes it.</p>
+      <div class="slot" id="ind-slot"></div>
+      <div class="demo">
+        <button class="demo-btn" id="ind-start">Start</button>
+        <button class="demo-btn" id="ind-done">done()</button>
+      </div>
+      <pre>Progress.bar('#ind-slot', {
+  indeterminate: true,
+  label: 'Contacting server…' })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Spinner sizes</h3>
+      <p><code>role="status"</code> with visually-hidden text — screen
+      readers hear "Loading…".</p>
+      <div class="demo" id="spinner-slot"></div>
+      <pre>Progress.spinner('#spinner-slot',
+  { size: 28, label: 'Loading results…' })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Skeleton over a real card</h3>
+      <p>Original content is hidden, not removed — Reveal calls
+      <code>release()</code> and restores it exactly.</p>
+      <div class="slot" id="sk-target">
+        <div class="mini-card">
+          <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%235b5bd6'/%3E%3Ctext x='20' y='26' font-family='sans-serif' font-size='16' fill='white' text-anchor='middle'%3EAA%3C/text%3E%3C/svg%3E">
+          <div class="who">
+            <b>Ada Lovelace</b>
+            <span>Wrote the first program — for a machine that didn't exist
+            yet. Patience level: legendary.</span>
+          </div>
+        </div>
+      </div>
+      <div class="demo">
+        <button class="demo-btn" id="sk-cover">Cover</button>
+        <button class="demo-btn" id="sk-reveal">Reveal</button>
+      </div>
+      <pre>var sk = Progress.skeleton('#sk-target',
+  { avatar: true, lines: 3 })
+sk.release()  // or Progress.skeleton.release(el)</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p>These three were built from markup alone on page load.</p>
+      <div class="slot">
+        <div data-vpg="bar" data-vpg-value="65" data-vpg-label="Profile complete" data-vpg-show-value></div>
+        <div><span data-vpg="spinner" data-vpg-size="16"></span>
+          <span class="note">inline spinner</span></div>
+        <div data-vpg="skeleton" data-vpg-lines="2" data-vpg-height="10"></div>
+      </div>
+      <pre>&lt;div data-vpg="bar" data-vpg-value="65"
+     data-vpg-label="Profile complete"
+     data-vpg-show-value&gt;&lt;/div&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Sizes, colors &amp; motion</h3>
+      <p>Small + success variants. With
+      <strong>prefers-reduced-motion</strong>, shimmer, sweep and spin all
+      become a calm opacity pulse — try it in your OS settings.</p>
+      <div class="slot" id="variant-slot"></div>
+      <pre>Progress.bar(el, { size: 'sm',
+  color: 'success', value: 80 })</pre>
+    </div>
+  </div>
+</div>
+
+<script src="progress.js"></script>
+<script>
+  // Theme switch — the widgets follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  // Determinate bar driven by a fake task.
+  var task = null;
+  document.getElementById('run-task').addEventListener('click', function () {
+    if (task) { clearInterval(task.timer); task.bar.remove(); }
+    var bar = Progress.bar('#bar-slot', {
+      label: 'Uploading photo…', showValue: true, autoRemove: 1200
+    });
+    var v = 0;
+    task = { bar: bar, timer: setInterval(function () {
+      v += 3 + Math.random() * 9;
+      if (v >= 100) {
+        clearInterval(task.timer);
+        bar.setLabel('Uploaded');
+        bar.done();
+        task = null;
+      } else {
+        bar.set(v);
+      }
+    }, 160) };
+  });
+
+  // Indeterminate → done().
+  var ind = null;
+  document.getElementById('ind-start').addEventListener('click', function () {
+    if (ind) ind.remove();
+    ind = Progress.bar('#ind-slot', { indeterminate: true, label: 'Contacting server…' });
+  });
+  document.getElementById('ind-done').addEventListener('click', function () {
+    if (!ind) return;
+    ind.setLabel('Connected').done();
+  });
+
+  // Spinner sizes.
+  Progress.spinner('#spinner-slot', { size: 14 });
+  Progress.spinner('#spinner-slot', { size: 20 });
+  Progress.spinner('#spinner-slot', { size: 28 });
+  Progress.spinner('#spinner-slot', { size: 40, label: 'Loading results…' });
+
+  // Skeleton cover / reveal.
+  document.getElementById('sk-cover').addEventListener('click', function () {
+    Progress.skeleton('#sk-target', { avatar: true, lines: 3, header: true });
+  });
+  document.getElementById('sk-reveal').addEventListener('click', function () {
+    Progress.skeleton.release(document.getElementById('sk-target'));
+  });
+
+  // Variants: small, success, custom accent via CSS var.
+  Progress.bar('#variant-slot', { size: 'sm', value: 45, label: 'Small' });
+  Progress.bar('#variant-slot', { size: 'sm', color: 'success', value: 80, label: 'Success' });
+  Progress.bar('#variant-slot', { indeterminate: true, size: 'sm', label: 'Indeterminate, small' });
+</script>
+</body>
+</html>

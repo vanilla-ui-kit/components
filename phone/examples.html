@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Phone Input — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='4' width='14' height='8' rx='2.5' fill='%235b5bd6'/%3E%3Crect x='3' y='6.5' width='4' height='3' rx='1' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .card .demo .vph { width: 100%; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .out {
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+    background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px;
+    padding: 10px 12px; width: 100%; white-space: pre-wrap; word-break: break-all;
+  }
+  .out b { color: var(--text); font-weight: 600; }
+  .out .ok { color: #1f9d5b; } .out .bad { color: #e5484d; }
+  button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .cdn { margin: 40px 0 32px; }
+  .cdn pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 12px; padding: 14px 16px; font-family: var(--mono);
+    font-size: 13px; overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Phone Input <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Phone numbers, <em>one file</em>.</h1>
+  <p class="lede">242 countries, SVG flags drawn by a 2&nbsp;KB engine, as-you-type
+  formatting, E.164 out. Zero dependencies — every card below is live.</p>
+
+  <div class="cdn">
+    <pre>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/phone/phone.js"&gt;&lt;/script&gt;
+new PhoneInput('#phone', { country: 'ae' })</pre>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic + live output</h3>
+      <p>Type a number — the parsed value updates on every keystroke.</p>
+      <div class="demo">
+        <input id="basic">
+        <div class="out" id="basic-out">—</div>
+      </div>
+      <pre>new PhoneInput('#basic', {
+  country: 'us',
+  onChange: v => show(v)   // {e164, national, country, valid}
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Preferred countries</h3>
+      <p>Pin the markets you serve to the top of the dropdown.</p>
+      <div class="demo">
+        <input id="preferred">
+      </div>
+      <pre>new PhoneInput('#preferred', {
+  country: 'ae',
+  preferredCountries: ['ae','sa','kw','qa','bh','om']
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Auto-detect from paste</h3>
+      <p>Paste (or click to paste) an international number — the flag follows the dial code.</p>
+      <div class="demo">
+        <input id="detect">
+        <button type="button" class="demo-btn" data-paste="+971501234567">Paste +971 50…</button>
+        <button type="button" class="demo-btn" data-paste="+447911123456">Paste +44 79…</button>
+        <button type="button" class="demo-btn" data-paste="+81312345678">Paste +81 3…</button>
+      </div>
+      <pre>// typing '+9715…' switches the flag to 🇦🇪
+// longest-prefix match, +1/+7/+44 area-aware</pre>
+    </div>
+
+    <div class="card">
+      <h3>Validation states</h3>
+      <p><code>validate: 'blur'</code> (default) waits until you leave the field;
+      <code>'live'</code> judges every keystroke.</p>
+      <div class="demo">
+        <input id="val-blur" aria-label="Validate on blur">
+        <input id="val-live" aria-label="Validate live">
+        <div class="out" id="val-out">validity: —</div>
+      </div>
+      <pre>new PhoneInput('#a', { validate: 'blur' })  // Maz-style
+new PhoneInput('#b', { validate: 'live',
+  onValidityChange: ok => … })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Inside a real form</h3>
+      <p>Container mode builds the control and a hidden <code>name</code>d input
+      carrying the E.164 value.</p>
+      <div class="demo">
+        <form id="form" style="display:contents">
+          <div id="form-phone" style="width:100%"></div>
+          <button type="submit" class="demo-btn">Submit</button>
+          <div class="out" id="form-out">submits: —</div>
+        </form>
+      </div>
+      <pre>&lt;div id="form-phone"&gt;&lt;/div&gt;
+new PhoneInput('#form-phone', { name: 'phone' })
+// &lt;input type="hidden" name="phone" value="+9715…"&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>National vs E.164 display</h3>
+      <p>Same value, two displays — output is always E.164 either way.</p>
+      <div class="demo">
+        <input id="mode-nat" aria-label="National display">
+        <input id="mode-e164" aria-label="International display">
+      </div>
+      <pre>new PhoneInput('#a', { nationalMode: true })
+// shows  050 123 4567
+new PhoneInput('#b', { nationalMode: false })
+// shows  +971 50 123 4567</pre>
+    </div>
+  </div>
+</div>
+
+<script src="./phone.js"></script>
+<script>
+  // Theme switch — the inputs follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  // Basic + live output
+  var basicOut = document.getElementById('basic-out');
+  function renderOut(v) {
+    basicOut.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    function row(k, val, cls) {
+      var b = document.createElement('b'); b.textContent = k + ': ';
+      var s = document.createElement('span');
+      if (cls) s.className = cls;
+      s.textContent = val;
+      frag.appendChild(b); frag.appendChild(s);
+      frag.appendChild(document.createTextNode('\n'));
+    }
+    row('e164', v.e164 || '—');
+    row('national', v.national || '—');
+    row('country', v.country);
+    row('valid', String(v.valid), v.valid ? 'ok' : 'bad');
+    basicOut.appendChild(frag);
+  }
+  var basic = new PhoneInput('#basic', { country: 'us', onChange: renderOut });
+  renderOut(basic.getValue());
+
+  new PhoneInput('#preferred', {
+    country: 'ae',
+    preferredCountries: ['ae', 'sa', 'kw', 'qa', 'bh', 'om']
+  });
+
+  // Auto-detect from paste
+  var detect = new PhoneInput('#detect', { country: 'us' });
+  var pasteBtns = document.querySelectorAll('[data-paste]');
+  for (var k = 0; k < pasteBtns.length; k++) {
+    pasteBtns[k].addEventListener('click', function () {
+      detect.setValue(this.getAttribute('data-paste'));
+      detect.focus();
+    });
+  }
+
+  // Validation states
+  var valOut = document.getElementById('val-out');
+  new PhoneInput('#val-blur', { country: 'gb', placeholder: 'blur me half-typed…' });
+  new PhoneInput('#val-live', {
+    country: 'gb',
+    validate: 'live',
+    placeholder: 'judged as you type…',
+    onValidityChange: function (ok) {
+      valOut.textContent = 'validity: ' + (ok ? 'valid ✓' : 'invalid ✗');
+    }
+  });
+
+  // Real form
+  var formPhone = new PhoneInput('#form-phone', { name: 'phone', country: 'ae' });
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = new FormData(this);
+    document.getElementById('form-out').textContent =
+      'submits: phone=' + (data.get('phone') || '(empty)');
+  });
+
+  // National vs E.164
+  new PhoneInput('#mode-nat', { country: 'ae' }).setValue('+971501234567');
+  new PhoneInput('#mode-e164', { country: 'ae', nationalMode: false }).setValue('+971501234567');
+</script>
+</body>
+</html>

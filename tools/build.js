@@ -20,11 +20,32 @@ var ROOT = path.join(__dirname, '..');
 var DIST = path.join(ROOT, 'dist');
 var VERSION = require(path.join(ROOT, 'package.json')).version;
 
-var FILES = [
-  'core/core.js',
-  'datepicker/datepicker.js',
-  'toast/toast.js'
+// One row per component: [source file, browser global, dist stylesheet, css banner name].
+var COMPONENTS = [
+  ['datepicker/datepicker.js', 'DatePicker', 'datepicker.css', 'vanilla-datepicker'],
+  ['toast/toast.js', 'Toast', 'toast.css', 'vanilla-toast'],
+  ['tooltip/tooltip.js', 'Tooltip', 'tooltip.css', 'vanilla-tooltip'],
+  ['menu/menu.js', 'Menu', 'menu.css', 'vanilla-menu'],
+  ['modal/modal.js', 'Modal', 'modal.css', 'vanilla-modal'],
+  ['tabs/tabs.js', 'Tabs', 'tabs.css', 'vanilla-tabs'],
+  ['select/select.js', 'Select', 'select.css', 'vanilla-select'],
+  ['command/command.js', 'CommandPalette', 'command.css', 'vanilla-command'],
+  ['form/form.js', 'Form', 'form.css', 'vanilla-form'],
+  ['phone/phone.js', 'PhoneInput', 'phone.css', 'vanilla-phone'],
+  ['drawer/drawer.js', 'Drawer', 'drawer.css', 'vanilla-drawer'],
+  ['segmented/segmented.js', 'Segmented', 'segmented.css', 'vanilla-segmented'],
+  ['progress/progress.js', 'Progress', 'progress.css', 'vanilla-progress'],
+  ['popconfirm/popconfirm.js', 'Popconfirm', 'popconfirm.css', 'vanilla-popconfirm'],
+  ['rating/rating.js', 'Rating', 'rating.css', 'vanilla-rating'],
+  ['autocomplete/autocomplete.js', 'Autocomplete', 'autocomplete.css', 'vanilla-autocomplete'],
+  ['upload/upload.js', 'Upload', 'upload.css', 'vanilla-upload'],
+  ['slider/slider.js', 'Slider', 'slider.css', 'vanilla-slider'],
+  ['number/number.js', 'NumberInput', 'number.css', 'vanilla-number'],
+  ['pagination/pagination.js', 'Pagination', 'pagination.css', 'vanilla-pagination'],
+  ['empty/empty.js', 'EmptyState', 'empty.css', 'vanilla-empty']
 ];
+
+var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));
 
 var banner = '/*!\n' +
   ' * vanilla-ui-kit v' + VERSION + ' — single-file, zero-dependency UI components\n' +
@@ -45,8 +66,9 @@ var bundle = banner +
   '  cjsModule.exports = {\n' +
   '    VC: global.VC,\n' +
   '    VanillaUI: global.VanillaUI,\n' +
-  '    DatePicker: global.DatePicker,\n' +
-  '    Toast: global.Toast\n' +
+  COMPONENTS.map(function (c) {
+    return '    ' + c[1] + ': global.' + c[1];
+  }).join(',\n') + '\n' +
   '  };\n' +
   '}\n' +
   '})(typeof globalThis !== \'undefined\' ? globalThis :\n' +
@@ -62,13 +84,9 @@ var cssBanner = function (name) {
     ' * headless mode (styles: false) to own the styling. License: MIT */\n';
 };
 
-var DatePicker = require(path.join(ROOT, 'datepicker/datepicker.js'));
-var Toast = require(path.join(ROOT, 'toast/toast.js'));
-
-var sheets = [
-  ['datepicker.css', 'vanilla-datepicker', DatePicker.css],
-  ['toast.css', 'vanilla-toast', Toast.css]
-];
+var sheets = COMPONENTS.map(function (c) {
+  return [c[2], c[3], require(path.join(ROOT, c[0])).css];
+});
 
 var all = '';
 sheets.forEach(function (s) {

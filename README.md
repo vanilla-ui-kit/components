@@ -9,6 +9,8 @@ line of unified theming.
 *Exactly what it says: a UI kit for vanilla JavaScript — the script tag, the
 global, the single file, the way the web has always worked.*
 
+**Live demos: [vanilla-ui-kit.github.io/components](https://vanilla-ui-kit.github.io/components/)**
+
 Beautiful by default, automatic light/dark, fully keyboard-accessible — and
 **headless when you want**: every component can run with zero injected CSS so
 you bring your own design.
@@ -19,9 +21,29 @@ you bring your own design.
 |---|---|---|---|
 | Date picker (single, range, multi-pane, presets) | `DatePicker` | [`datepicker/datepicker.js`](./datepicker/datepicker.js) | [README](./datepicker/README.md) |
 | Toasts / notifications | `Toast` | [`toast/toast.js`](./toast/toast.js) | [README](./toast/README.md) |
+| Tooltips / popovers | `Tooltip` | [`tooltip/tooltip.js`](./tooltip/tooltip.js) | [README](./tooltip/README.md) |
+| Dropdown / context menus | `Menu` | [`menu/menu.js`](./menu/menu.js) | [README](./menu/README.md) |
+| Modals / dialogs (alert, confirm, prompt) | `Modal` | [`modal/modal.js`](./modal/modal.js) | [README](./modal/README.md) |
+| Tabs | `Tabs` | [`tabs/tabs.js`](./tabs/tabs.js) | [README](./tabs/README.md) |
+| Select / combobox (search, multiple, groups) | `Select` | [`select/select.js`](./select/select.js) | [README](./select/README.md) |
+| Command palette (Ctrl/⌘+K) | `CommandPalette` | [`command/command.js`](./command/command.js) | [README](./command/README.md) |
+| Forms (reactive, validation, honeypot) | `Form` | [`form/form.js`](./form/form.js) | [README](./form/README.md) |
+| Phone input (flags, formatting, validation) | `PhoneInput` | [`phone/phone.js`](./phone/phone.js) | [README](./phone/README.md) |
+| Drawers / side sheets | `Drawer` | [`drawer/drawer.js`](./drawer/drawer.js) | [README](./drawer/README.md) |
+| Segmented control | `Segmented` | [`segmented/segmented.js`](./segmented/segmented.js) | [README](./segmented/README.md) |
+| Progress bars / spinners / skeletons | `Progress` | [`progress/progress.js`](./progress/progress.js) | [README](./progress/README.md) |
+| Popconfirm (inline are-you-sure) | `Popconfirm` | [`popconfirm/popconfirm.js`](./popconfirm/popconfirm.js) | [README](./popconfirm/README.md) |
+| Rating (stars, hearts, half-steps) | `Rating` | [`rating/rating.js`](./rating/rating.js) | [README](./rating/README.md) |
+| Autocomplete / typeahead | `Autocomplete` | [`autocomplete/autocomplete.js`](./autocomplete/autocomplete.js) | [README](./autocomplete/README.md) |
+| File upload / dropzone | `Upload` | [`upload/upload.js`](./upload/upload.js) | [README](./upload/README.md) |
+| Slider (single and dual-thumb) | `Slider` | [`slider/slider.js`](./slider/slider.js) | [README](./slider/README.md) |
+| Number / currency input | `NumberInput` | [`number/number.js`](./number/number.js) | [README](./number/README.md) |
+| Pagination | `Pagination` | [`pagination/pagination.js`](./pagination/pagination.js) | [README](./pagination/README.md) |
+| Empty states | `EmptyState` | [`empty/empty.js`](./empty/empty.js) | [README](./empty/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
+Twenty-one components, one contract. Missing something? Open an issue —
+new family members follow the same DNA.
 
 ## Get it any way you like
 

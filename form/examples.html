@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Form — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='2' width='14' height='4' rx='2' fill='%235b5bd6'/%3E%3Crect x='1' y='8' width='14' height='4' rx='2' fill='%239b9bf0'/%3E%3Crect x='1' y='13.2' width='7' height='1.8' rx='.9' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 24px; max-width: 60ch; }
+  pre.cdn {
+    margin: 0 0 40px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .card button.demo-btn {
+    align-self: flex-start; font: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text); background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card .log {
+    background: var(--code-bg); border: 1px dashed var(--faint); border-radius: 10px;
+    padding: 10px 12px; font-family: var(--mono); font-size: 12px; color: var(--muted);
+    min-height: 38px; white-space: pre-wrap;
+  }
+  /* the enhance-mode demo form is plain HTML — give it minimal layout only */
+  #contact label { display: block; font-weight: 600; font-size: 13.5px; margin: 0 0 6px; }
+  #contact .row { margin: 0 0 16px; }
+  #contact button {
+    font: inherit; font-size: 14px; font-weight: 600; color: #fff;
+    background: var(--accent); border: 0; border-radius: 10px;
+    padding: 10px 18px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Form <small>v1.0.0 · <a href="../toast/examples.html">toast →</a> <a href="../select/examples.html">select →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Forms, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency reactive forms: schema or enhancement, sync +
+  async validation, loading-state submission, server error mapping, and a
+  honeypot bots fall into. Every card below is live.</p>
+  <pre class="cdn">&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/form/form.js"&gt;&lt;/script&gt;</pre>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Schema mode — signup</h3>
+      <p>Async username check (try <code>taken</code>), password toggle, fake
+      2s submit with loading state and success.</p>
+      <div id="signup"></div>
+      <pre>new Form('#signup', {
+  fields: [
+    { name: 'username', required: true,
+      validate: v => checkTaken(v) },  // async!
+    { name: 'email', type: 'email', required: true },
+    { name: 'password', type: 'password',
+      required: true, minlength: 8 }
+  ],
+  onSubmit: values => api.signup(values)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Enhance mode — contact</h3>
+      <p>A plain HTML <code>&lt;form&gt;</code>, adopted: its
+      <code>required</code>/<code>type</code> attributes seed the validators.
+      Submitting simulates a server <strong>422</strong> whose
+      <code>{errors:{…}}</code> body is mapped onto the fields.</p>
+      <form id="contact">
+        <div class="row">
+          <label for="c-email">Email</label>
+          <input id="c-email" name="email" type="email" required>
+        </div>
+        <div class="row">
+          <label for="c-msg">Message</label>
+          <textarea id="c-msg" name="message" rows="3" required minlength="10"></textarea>
+        </div>
+        <button type="submit">Send</button>
+      </form>
+      <pre>new Form(formEl, {
+  onSubmit: function () {
+    // server says 422 {errors:{email:…}}
+    return Promise.reject({ errors: {
+      email: 'This address is blocked',
+      message: 'Please keep it under 500 chars'
+    }})
+  }
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Honeypot — what bots see</h3>
+      <p>An off-viewport decoy input (<em>not</em> <code>display:none</code> —
+      bots check for that) plus a time gate. Fill it "like a bot" and the form
+      pretends to succeed while <code>onSpam</code> logs the catch. Humans
+      never see it: it sits at <code>left:-9999px</code>, out of the tab
+      order, hidden from screen readers.</p>
+      <div id="hpform"></div>
+      <button type="button" class="demo-btn" id="botfill">Fill honeypot like a bot, then submit</button>
+      <div class="log" id="hplog">spam log: (empty)</div>
+      <pre>new Form('#el', {
+  honeypot: true,        // default
+  minFillTime: 1500,     // ms time gate
+  onSpam: values => log(values)
+})
+// client honeypots stop dumb bots only —
+// ALWAYS validate on the server too (_hp_t helps)</pre>
+    </div>
+
+    <div class="card">
+      <h3>Checks, switches, radios</h3>
+      <p>Single-boolean checkbox, styled switch, fieldset/legend radio group —
+      all reactive. Watch the live snapshot update.</p>
+      <div id="prefs"></div>
+      <div class="log" id="prefslog"></div>
+      <pre>form.watch(function (values) {
+  render(values)   // any change
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Family upgrades</h3>
+      <p>This page loads <code>../select/select.js</code> and
+      <code>../datepicker/datepicker.js</code>, so the <code>select</code> and
+      <code>date</code> fields below auto-upgrade to the family widgets. The
+      <code>phone</code> field stays a native <code>&lt;input type=tel&gt;</code>
+      because no PhoneInput is loaded — graceful degradation, no code changes.</p>
+      <div id="family"></div>
+      <div class="log" id="famlog"></div>
+      <pre>&lt;script src="../select/select.js"&gt;&lt;/script&gt;
+&lt;script src="../datepicker/datepicker.js"&gt;&lt;/script&gt;
+&lt;script src="./form.js"&gt;&lt;/script&gt;
+// fields: [{name:'plan', type:'select', …},
+//          {name:'start', type:'date'},
+//          {name:'phone', type:'phone'}]</pre>
+    </div>
+
+    <div class="card">
+      <h3>Programmatic API</h3>
+      <p><code>setValues</code>, <code>setError</code>, <code>reset</code>,
+      <code>disable</code> — the instance is the single source of truth.</p>
+      <div id="api"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="demo-btn" onclick="apiForm.setValues({city:'Berlin',country:'de'})">setValues</button>
+        <button type="button" class="demo-btn" onclick="apiForm.setError('city','Not deliverable')">setError</button>
+        <button type="button" class="demo-btn" onclick="apiForm.reset()">reset</button>
+        <button type="button" class="demo-btn" onclick="apiForm[this.textContent==='disable'?'disable':'enable']();this.textContent=this.textContent==='disable'?'enable':'disable'">disable</button>
+      </div>
+      <pre>form.setValues({ city: 'Berlin' })
+form.setError('city', 'Not deliverable')
+form.isDirty()  // true</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Family components load BEFORE form.js so select/date fields upgrade. -->
+<script src="../select/select.js"></script>
+<script src="../datepicker/datepicker.js"></script>
+<script src="./form.js"></script>
+<script>
+  // Theme switch — the forms follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  /* ---- 1. schema-built signup with async username validator ---- */
+  new Form('#signup', {
+    minFillTime: 0, // demo page: let humans submit instantly
+    fields: [
+      { name: 'username', label: 'Username', required: true, minlength: 3,
+        hint: 'Try "taken" to see the async validator fail.',
+        validate: function (v) {
+          return new Promise(function (resolve) {
+            setTimeout(function () {
+              resolve(v === 'taken' ? 'That username is taken' : null);
+            }, 600);
+          });
+        } },
+      { name: 'email', type: 'email', label: 'Email', required: true,
+        placeholder: 'you@example.com' },
+      { name: 'password', type: 'password', label: 'Password',
+        required: true, minlength: 8, hint: 'At least 8 characters.' }
+    ],
+    submitLabel: 'Create account',
+    successMessage: 'Account created — welcome!',
+    resetOnSuccess: true,
+    onSubmit: function () {
+      return new Promise(function (resolve) { setTimeout(resolve, 2000); });
+    }
+  });
+
+  /* ---- 2. enhance mode + server-style 422 error mapping ---- */
+  new Form(document.getElementById('contact'), {
+    minFillTime: 0,
+    onSubmit: function () {
+      // Pretend the server answered 422 with a JSON errors object.
+      return new Promise(function (_, reject) {
+        setTimeout(function () {
+          reject({ errors: {
+            email: 'This address is blocked',
+            message: 'Please keep it under 500 characters'
+          } });
+        }, 900);
+      });
+    }
+  });
+
+  /* ---- 3. honeypot visualization ---- */
+  var hpLog = document.getElementById('hplog');
+  var hpForm = new Form('#hpform', {
+    fields: [
+      { name: 'name', label: 'Name', required: true, placeholder: 'Jane Doe' }
+    ],
+    submitLabel: 'Subscribe',
+    successMessage: 'Subscribed!',
+    onSpam: function (values) {
+      hpLog.textContent = 'spam log: honeypot tripped at ' +
+        new Date().toLocaleTimeString() + ' — values ' + JSON.stringify(values) +
+        '\n(the bot saw a normal success)';
+    },
+    onSubmit: function () {
+      hpLog.textContent = 'spam log: clean submit — onSubmit ran';
+      return Promise.resolve();
+    }
+  });
+  document.getElementById('botfill').addEventListener('click', function () {
+    // What a bot does: fill every input it finds, including the decoy.
+    hpForm.setValue('name', 'Totally Real Person');
+    hpForm.form.querySelector('.vfm-hp input').value = 'https://spam.example';
+    hpForm.submit();
+  });
+
+  /* ---- 4. checkbox / switch / radio showcase ---- */
+  var prefsLog = document.getElementById('prefslog');
+  var prefs = new Form('#prefs', {
+    minFillTime: 0,
+    submitLabel: false,
+    fields: [
+      { name: 'newsletter', type: 'checkbox', label: 'Email me the newsletter', value: true },
+      { name: 'darkmode', type: 'switch', label: 'Use dark mode' },
+      { name: 'plan', type: 'radio', label: 'Plan',
+        options: ['Free', 'Pro', 'Team'], value: 'Free' }
+    ]
+  });
+  function renderPrefs() { prefsLog.textContent = JSON.stringify(prefs.values); }
+  prefs.watch(renderPrefs);
+  renderPrefs();
+
+  /* ---- 5. family-upgrade demo ---- */
+  var famLog = document.getElementById('famlog');
+  var fam = new Form('#family', {
+    minFillTime: 0,
+    submitLabel: false,
+    fields: [
+      { name: 'plan', type: 'select', label: 'Plan', placeholder: 'Choose a plan…',
+        options: ['Free', 'Pro', 'Team'] },
+      { name: 'start', type: 'date', label: 'Start date' },
+      { name: 'phone', type: 'phone', label: 'Phone',
+        hint: 'Native tel input — no PhoneInput loaded.' }
+    ]
+  });
+  fam.watch(function (values) { famLog.textContent = JSON.stringify(values); });
+  famLog.textContent = JSON.stringify(fam.values);
+
+  /* ---- 6. programmatic API ---- */
+  var apiForm = new Form('#api', {
+    minFillTime: 0,
+    submitLabel: false,
+    fields: [
+      { name: 'city', label: 'City', placeholder: 'City' },
+      { name: 'country', type: 'select', label: 'Country', placeholder: 'Country…',
+        options: [{ value: 'de', label: 'Germany' }, { value: 'fr', label: 'France' },
+                  { value: 'jp', label: 'Japan' }] }
+    ]
+  });
+</script>
+</body>
+</html>

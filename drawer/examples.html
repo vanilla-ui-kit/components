@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Drawer — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='8' height='14' rx='2' fill='%239b9bf0'/%3E%3Crect x='10' y='1' width='5' height='14' rx='2' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  /* Content used by the enhance-mode demo (lives in the page, adopted on open) */
+  .cart-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--faint); }
+  .cart-row small { color: var(--muted); display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Drawer <small>v1.0.0 · <a href="../modal/examples.html">modal →</a> <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Side sheets, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency drawers for filters, carts and mobile nav —
+  focus-trapped, scroll-locked, theme-aware. Click anything below — every
+  card is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Four sides</h3>
+      <p>Right is the default; top/bottom take a height instead of a width.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Drawer.open({ title: 'Right (default)', content: 'A 360px sheet from the right edge.' })">Right</button>
+        <button class="demo-btn" onclick="
+          Drawer.open({ side: 'left', title: 'Navigation', content: 'Menus feel at home on the left.' })">Left</button>
+        <button class="demo-btn" onclick="
+          Drawer.open({ side: 'top', size: '220px', title: 'Announcement', content: 'Top sheets take a height.' })">Top</button>
+        <button class="demo-btn" onclick="
+          Drawer.open({ side: 'bottom', size: '40vh', title: 'Bottom sheet', content: 'Any CSS length works: 40vh here.' })">Bottom</button>
+      </div>
+      <pre>Drawer.open({ side: 'left',
+  title: 'Navigation',
+  size: '320px' })       // width, or height
+                         // for top/bottom</pre>
+    </div>
+
+    <div class="card">
+      <h3>Enhance existing markup</h3>
+      <p>The hidden <code>#cart-panel</code> below this card is adopted into
+      the drawer and restored on close.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vdr-open="#cart-panel">Open cart (declarative)</button>
+        <button class="demo-btn" onclick="
+          (Drawer.get('#cart-panel') || new Drawer('#cart-panel')).open()">Open cart (JS)</button>
+      </div>
+      <pre>&lt;button data-vdr-open="#cart-panel"&gt;
+&lt;div id="cart-panel" hidden
+     data-vdr-title="Your cart"&gt;…
+// or: new Drawer('#cart-panel').open()</pre>
+    </div>
+
+    <div class="card">
+      <h3>Buttons footer</h3>
+      <p>Same shape as Modal's buttons — <code>close</code> becomes the
+      <code>onClose</code> result; return <code>false</code> to stay open.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Drawer.open({
+            title: 'Filters',
+            content: 'Imagine a stack of filter controls here.',
+            buttons: [
+              { label: 'Reset', onClick: function () { return false; } },
+              { label: 'Apply', variant: 'primary', close: 'applied' }
+            ],
+            onClose: function (result) {
+              if (result === 'applied' && window.Toast) Toast.success('Filters applied');
+            }
+          })">Filters…</button>
+      </div>
+      <pre>Drawer.open({
+  buttons: [
+    { label: 'Reset', onClick: h => false },
+    { label: 'Apply', variant: 'primary',
+      close: 'applied' }
+  ],
+  onClose: r => r === 'applied' && apply()
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Non-dismissible</h3>
+      <p>No ✕, and Esc / backdrop clicks are ignored — only the button
+      closes it.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Drawer.open({
+            title: 'Finish setup',
+            content: 'This one ignores Esc and backdrop clicks.',
+            dismissible: false,
+            buttons: [{ label: 'Done', variant: 'primary', close: true }]
+          })">Open</button>
+      </div>
+      <pre>Drawer.open({ dismissible: false,
+  buttons: [{ label: 'Done',
+    variant: 'primary', close: true }] })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Nested / stacked</h3>
+      <p>Each drawer opens above the last; Esc peels only the top one.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Drawer.open({
+            title: 'Cart',
+            content: 'Now open the details sheet from the footer.',
+            buttons: [{ label: 'Item details…', variant: 'primary',
+              onClick: function () {
+                Drawer.open({ side: 'bottom', size: '35vh', title: 'Item details',
+                  content: 'A second drawer, stacked above the first.' });
+                return false; // keep the cart open underneath
+              } }]
+          })">Open two</button>
+      </div>
+      <pre>// inside a button's onClick:
+Drawer.open({ side: 'bottom', … })
+return false   // keep the first one open</pre>
+    </div>
+
+    <div class="card">
+      <h3>Family theming</h3>
+      <p>With the VC core loaded, one call themes every component.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          if (window.VC) { VC.config({ accent: '#b45309' });
+            Drawer.open({ title: 'Amber', content: 'Family accent is amber now.',
+              buttons: [{ label: 'Nice', variant: 'primary', close: true }] }); }
+          else alert('Load dist/vanilla-ui-kit.js to get VC');">Amber accent</button>
+        <button class="demo-btn" onclick="
+          if (window.VC) { VC.config({ accent: null }); }
+          else alert('Load dist/vanilla-ui-kit.js to get VC');">Reset</button>
+      </div>
+      <pre>VC.config({ accent: '#b45309' })</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Enhance-mode content: adopted into the drawer on open, restored after -->
+<div id="cart-panel" hidden data-vdr-title="Your cart" data-vdr-size="380px">
+  <div class="cart-row"><span>Wool socks <small>Qty 2</small></span><strong>$18</strong></div>
+  <div class="cart-row"><span>Enamel mug <small>Qty 1</small></span><strong>$14</strong></div>
+  <div class="cart-row"><span>Field notebook <small>Qty 3</small></span><strong>$27</strong></div>
+  <p style="text-align:right;margin:12px 0 4px;"><strong>Total $59</strong></p>
+  <p><button type="button" class="demo-btn" data-vdr-close>Continue shopping</button></p>
+</div>
+
+<script src="drawer.js"></script>
+<script>
+  // Theme switch — the drawers follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+</script>
+</body>
+</html>

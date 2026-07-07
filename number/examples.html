@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit NumberInput — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='4' width='10' height='8' rx='2' fill='%235b5bd6'/%3E%3Crect x='12' y='4' width='3' height='3.5' rx='1' fill='%239b9bf0'/%3E%3Crect x='12' y='8.5' width='3' height='3.5' rx='1' fill='%239b9bf0'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .out { font-family: var(--mono); font-size: 12.5px; color: var(--muted); min-height: 1.2em; }
+  .out b { color: var(--accent); font-weight: 600; }
+  button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit NumberInput <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Numbers, <em>one file</em>.</h1>
+  <p class="lede">A formatted numeric input with live thousands grouping,
+  clamping, precision rounding and hold-to-repeat steppers. Try the arrow
+  keys (Shift for ×10), Enter to commit, Esc to revert — every card is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Currency</h3>
+      <p>'$' prefix, 2 decimals. Blur or press Enter to commit — the value
+      is a plain number, never '$1,234.50'.</p>
+      <div class="demo"><input id="price" value="1234.5" aria-label="Price"></div>
+      <div class="out" id="price-out">value: <b>—</b></div>
+      <pre>new NumberInput('#price', {
+  prefix: '$', precision: 2, min: 0
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Quantity</h3>
+      <p>Integer steps with the +/− buttons — hold one down: 500&thinsp;ms
+      delay, 60&thinsp;ms repeat, ×10 after 2&thinsp;s.</p>
+      <div class="demo"><div id="qty"></div></div>
+      <div class="out" id="qty-out">value: <b>—</b></div>
+      <pre>new NumberInput('#qty', {
+  value: 1, min: 0, max: 500, step: 1
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Weight</h3>
+      <p>A ' kg' suffix and step 0.5 — precision is inferred from the step
+      (one decimal).</p>
+      <div class="demo"><div id="weight"></div></div>
+      <div class="out" id="weight-out">value: <b>—</b></div>
+      <pre>new NumberInput('#weight', {
+  suffix: ' kg', step: 0.5, min: 0,
+  placeholder: '0.0'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>European format</h3>
+      <p>Decimal comma, dot thousands: type 1234567,89 — or paste
+      '1.234,56'.</p>
+      <div class="demo"><div id="euro"></div></div>
+      <div class="out" id="euro-out">value: <b>—</b></div>
+      <pre>new NumberInput('#euro', {
+  decimal: ',', thousands: '.',
+  precision: 2, suffix: ' €'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Min/max clamping</h3>
+      <p>10–100. Type 500 — the border warns while typing, the commit clamps
+      it. Empty commits to <code>null</code>, not 0.</p>
+      <div class="demo">
+        <div id="clamp"></div>
+        <button class="demo-btn" type="button" id="clamp-set">setValue(9999)</button>
+      </div>
+      <div class="out" id="clamp-out">value: <b>—</b></div>
+      <pre>new NumberInput('#clamp', {
+  min: 10, max: 100, value: 50
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>In a real form</h3>
+      <p>With <code>name</code>, a hidden input carries the raw value — the
+      server never sees the formatting.</p>
+      <form id="pay-form" class="demo">
+        <div id="amount"></div>
+        <button class="demo-btn" type="submit">Submit</button>
+      </form>
+      <div class="out" id="form-out">submits: <b>—</b></div>
+      <pre>new NumberInput('#amount', {
+  name: 'amount', prefix: '$',
+  precision: 2, value: 1234.5
+})
+// → amount=1234.5</pre>
+    </div>
+  </div>
+</div>
+
+<script src="number.js"></script>
+<script>
+  function wire(id, outId) {
+    var out = document.getElementById(outId);
+    return function (v) { out.innerHTML = 'value: <b>' + JSON.stringify(v) + '</b>'; };
+  }
+
+  new NumberInput('#price', {
+    prefix: '$', precision: 2, min: 0,
+    onChange: wire('price', 'price-out')
+  });
+
+  new NumberInput('#qty', {
+    value: 1, min: 0, max: 500, step: 1,
+    onChange: wire('qty', 'qty-out')
+  });
+
+  new NumberInput('#weight', {
+    suffix: ' kg', step: 0.5, min: 0, placeholder: '0.0',
+    onChange: wire('weight', 'weight-out')
+  });
+
+  new NumberInput('#euro', {
+    decimal: ',', thousands: '.', precision: 2, suffix: ' €',
+    onChange: wire('euro', 'euro-out')
+  });
+
+  var clamp = new NumberInput('#clamp', {
+    min: 10, max: 100, value: 50,
+    onChange: wire('clamp', 'clamp-out')
+  });
+  document.getElementById('clamp-set').addEventListener('click', function () {
+    clamp.setValue(9999); // → clamped to 100
+  });
+
+  new NumberInput('#amount', {
+    name: 'amount', prefix: '$', precision: 2, value: 1234.5
+  });
+  document.getElementById('pay-form').addEventListener('submit', function (e) {
+    e.preventDefault(); // demo only — show what WOULD be submitted
+    var raw = this.querySelector('input[name="amount"]').value;
+    document.getElementById('form-out').innerHTML =
+      'submits: <b>amount=' + (raw === '' ? '(empty)' : raw) + '</b>';
+  });
+
+  // Theme switch — the inputs follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+</script>
+</body>
+</html>

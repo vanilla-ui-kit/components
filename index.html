@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanilla UI Kit — single-file, zero-dependency UI components</title>
+<meta name="description" content="Single-file, zero-dependency UI components for vanilla JavaScript. Beautiful by default, headless when you want, converging when used together.">
+<style>
+  :root{
+    --accent:#5b5bd6; --bg:#fbfbfd; --surface:#ffffff; --text:#1c1d21;
+    --muted:#72747e; --faint:#e7e7ec; --code:#f4f4f8;
+    --shadow:0 10px 28px rgba(24,25,32,.10),0 2px 8px rgba(24,25,32,.06);
+  }
+  [data-theme=dark]{
+    --accent:#7b7bea; --bg:#131419; --surface:#1b1d24; --text:#e9eaf0;
+    --muted:#989aa6; --faint:#31343f; --code:#22242d;
+    --shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    transition:background .2s ease,color .2s ease;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
+  header{padding:72px 0 40px;text-align:center}
+  h1{font-size:44px;line-height:1.15;margin:0 0 14px;letter-spacing:-.02em}
+  h1 .accent{color:var(--accent)}
+  .lede{max-width:640px;margin:0 auto;color:var(--muted);font-size:19px}
+  .cta{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:10px;border:1px solid var(--faint);
+    background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;
+    cursor:pointer;font-size:15px;transition:border-color .15s ease,transform .1s ease;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  .theme-toggle{position:fixed;top:18px;right:18px;z-index:10}
+  pre{
+    background:var(--code);border:1px solid var(--faint);border-radius:12px;
+    padding:16px 18px;overflow-x:auto;font-size:13.5px;line-height:1.55;
+  }
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .snippet{max-width:720px;margin:36px auto 0;text-align:left}
+  section{padding:40px 0}
+  h2{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .card{
+    background:var(--surface);border:1px solid var(--faint);border-radius:14px;
+    padding:20px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);
+  }
+  .card h3{margin:0;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14.5px;flex:1}
+  .card .links{display:flex;gap:14px;margin-top:8px;font-size:14px}
+  .card a{color:var(--accent);text-decoration:none;font-weight:600}
+  .card a:hover{text-decoration:underline}
+  .card .try{margin-top:10px}
+  .pill{
+    display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--accent);background:transparent;
+    border:1px solid var(--accent);border-radius:99px;padding:1px 9px;align-self:flex-start;
+  }
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:8px}
+  .fact{border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+  .fact b{display:block;font-size:15.5px}
+  .fact span{color:var(--muted);font-size:14px}
+  footer{padding:48px 0 64px;color:var(--muted);font-size:14.5px;text-align:center;border-top:1px solid var(--faint);margin-top:32px}
+  footer a{color:var(--accent);text-decoration:none}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<button class="btn theme-toggle" id="themeToggle" aria-label="Toggle color theme">🌗 Theme</button>
+
+<header class="wrap">
+  <h1>Vanilla <span class="accent">UI Kit</span></h1>
+  <p class="lede">Single-file, zero-dependency UI components for vanilla JavaScript.
+  Drop in one script tag — no build step, no framework. Beautiful by default,
+  automatic light/dark, fully keyboard-accessible, headless when you want.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/vanilla-ui-kit/components">GitHub</a>
+    <button class="btn" id="heroToast">Try a toast</button>
+    <button class="btn" id="heroPalette">⌘K palette</button>
+  </div>
+  <div class="snippet">
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/vanilla-ui-kit.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  new DatePicker('#date')
+  Toast.success('Saved')
+&lt;/script&gt;</code></pre>
+  </div>
+</header>
+
+<section class="wrap">
+  <h2>Components</h2>
+  <p class="sub">Every component is one standalone file — use one, some, or the whole family.
+  Together they share one theme engine, one positioning engine, one line of unified theming.</p>
+  <div class="grid">
+    <div class="card">
+      <span class="pill">DatePicker</span>
+      <h3>Date picker</h3>
+      <p>Single, range, multi-pane, presets, min/max, disabled dates. Follows your page's theme on its own.</p>
+      <div class="links"><a href="./datepicker/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/datepicker">Docs</a></div>
+      <div class="try"><input id="tryDate" placeholder="Pick a date…" style="font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;background:var(--surface);color:var(--text);width:100%"></div>
+    </div>
+    <div class="card">
+      <span class="pill">Toast</span>
+      <h3>Toasts / notifications</h3>
+      <p>Stacked notifications with actions, promise tracking, hover-pause, and six positions.</p>
+      <div class="links"><a href="./toast/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/toast">Docs</a></div>
+      <div class="try"><button class="btn" data-demo="toast">Show toast</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Tooltip</span>
+      <h3>Tooltips / popovers</h3>
+      <p>Hover, click, focus or manual triggers, four placements with auto-flip, interactive panels.</p>
+      <div class="links"><a href="./tooltip/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/tooltip">Docs</a></div>
+      <div class="try"><button class="btn" id="tryTooltip">Hover me</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Menu</span>
+      <h3>Dropdown / context menus</h3>
+      <p>Action menus with icons, hints, submenus, typeahead, and one-shot context menus at any coordinates.</p>
+      <div class="links"><a href="./menu/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/menu">Docs</a></div>
+      <div class="try"><button class="btn" id="tryMenu">Open menu</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Modal</span>
+      <h3>Modals / dialogs</h3>
+      <p>Native &lt;dialog&gt; top layer, focus management, and promise-based alert, confirm, and prompt.</p>
+      <div class="links"><a href="./modal/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/modal">Docs</a></div>
+      <div class="try"><button class="btn" data-demo="modal">Open dialog</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Tabs</span>
+      <h3>Tabs</h3>
+      <p>Enhance your markup or build from data. Roving tabindex, arrow keys, animated indicator.</p>
+      <div class="links"><a href="./tabs/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/tabs">Docs</a></div>
+    </div>
+    <div class="card">
+      <span class="pill">Select</span>
+      <h3>Select / combobox</h3>
+      <p>The styleable select. Search, multiple with tags, groups — and your native form keeps working.</p>
+      <div class="links"><a href="./select/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/select">Docs</a></div>
+      <div class="try"><select id="trySelect"><option value="">Choose a fruit…</option><option>Apple</option><option>Mango</option><option>Pomegranate</option><option>Yuzu</option></select></div>
+    </div>
+    <div class="card">
+      <span class="pill">CommandPalette</span>
+      <h3>Command palette</h3>
+      <p>Ctrl/⌘+K. Fuzzy matching with highlights, groups, recents, and a zero-setup static registry.</p>
+      <div class="links"><a href="./command/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/command">Docs</a></div>
+      <div class="try"><button class="btn" data-demo="palette">Open palette</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Form</span>
+      <h3>Forms</h3>
+      <p>Reactive values and errors, async validation, fetch submission with server error mapping, and a silent honeypot built in.</p>
+      <div class="links"><a href="./form/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/form">Docs</a></div>
+      <div class="try" id="tryForm"></div>
+    </div>
+    <div class="card">
+      <span class="pill">PhoneInput</span>
+      <h3>Phone input</h3>
+      <p>International phone field: SVG flags, searchable country dropdown, as-you-type formatting, validation, E.164 output.</p>
+      <div class="links"><a href="./phone/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/phone">Docs</a></div>
+      <div class="try"><input id="tryPhone" placeholder="Phone number…" style="font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;background:var(--surface);color:var(--text);width:100%"></div>
+    </div>
+    <div class="card">
+      <span class="pill">Drawer</span>
+      <h3>Drawers / side sheets</h3>
+      <p>Slide-in panels from any side on the same native-dialog machinery as Modal.</p>
+      <div class="links"><a href="./drawer/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/drawer">Docs</a></div>
+      <div class="try"><button class="btn" id="tryDrawer">Open drawer</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Autocomplete</span>
+      <h3>Autocomplete / typeahead</h3>
+      <p>Free-text suggestions from arrays or async sources, race-safe, with match highlighting.</p>
+      <div class="links"><a href="./autocomplete/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/autocomplete">Docs</a></div>
+      <div class="try"><input id="tryAutocomplete" placeholder="Try a city…" style="font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;background:var(--surface);color:var(--text);width:100%"></div>
+    </div>
+    <div class="card">
+      <span class="pill">Slider</span>
+      <h3>Slider</h3>
+      <p>Single and dual-thumb ranges with marks, tooltips, and full keyboard support.</p>
+      <div class="links"><a href="./slider/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/slider">Docs</a></div>
+      <div class="try"><div id="trySlider"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Popconfirm</span>
+      <h3>Popconfirm</h3>
+      <p>Inline are-you-sure anchored to the button. A promise, not a modal.</p>
+      <div class="links"><a href="./popconfirm/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/popconfirm">Docs</a></div>
+      <div class="try"><button class="btn" id="tryPopconfirm">Delete everything</button></div>
+    </div>
+    <div class="card">
+      <span class="pill">Segmented</span>
+      <h3>Segmented control</h3>
+      <p>The modern radio group with an animated sliding thumb.</p>
+      <div class="links"><a href="./segmented/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/segmented">Docs</a></div>
+      <div class="try"><div id="trySegmented"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Upload</span>
+      <h3>File upload / dropzone</h3>
+      <p>Drag-and-drop, paste, image previews, per-file progress with retry.</p>
+      <div class="links"><a href="./upload/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/upload">Docs</a></div>
+    </div>
+    <div class="card">
+      <span class="pill">NumberInput</span>
+      <h3>Number / currency input</h3>
+      <p>Thousands grouping while you type, steppers with acceleration, raw values for forms.</p>
+      <div class="links"><a href="./number/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/number">Docs</a></div>
+      <div class="try"><div id="tryNumber"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Progress</span>
+      <h3>Progress / skeletons</h3>
+      <p>Bars, spinners, and shimmering skeleton placeholders that restore what they cover.</p>
+      <div class="links"><a href="./progress/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/progress">Docs</a></div>
+      <div class="try"><div id="tryProgress"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">Pagination</span>
+      <h3>Pagination</h3>
+      <p>Constant-width ellipsis logic, go-to jump, and totals — the data-page workhorse.</p>
+      <div class="links"><a href="./pagination/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/pagination">Docs</a></div>
+      <div class="try"><div id="tryPagination"></div></div>
+    </div>
+    <div class="card">
+      <span class="pill">EmptyState</span>
+      <h3>Empty states</h3>
+      <p>Icon, title, description, action — the screen every app forgets to design.</p>
+      <div class="links"><a href="./empty/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/empty">Docs</a></div>
+    </div>
+    <div class="card">
+      <span class="pill">Rating</span>
+      <h3>Rating</h3>
+      <p>Stars or hearts, half-steps, fractional averages, keyboard accessible.</p>
+      <div class="links"><a href="./rating/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/rating">Docs</a></div>
+      <div class="try"><div id="tryRating"></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>The contract</h2>
+  <p class="sub">Every component keeps the same promises.</p>
+  <div class="facts">
+    <div class="fact"><b>One file each</b><span>UMD, ES5, SSR-safe. CDN, npm, or copy-paste.</span></div>
+    <div class="fact"><b>Zero dependencies</b><span>No framework, no build step, nothing else to load.</span></div>
+    <div class="fact"><b>Headless when you want</b><span>styles: false injects nothing; bring your own CSS.</span></div>
+    <div class="fact"><b>Converging, not coupled</b><span>With the optional core: one theme engine, one config call.</span></div>
+    <div class="fact"><b>Accessible</b><span>WAI-ARIA patterns, full keyboard support, reduced motion.</span></div>
+    <div class="fact"><b>Isolated</b><span>A salt namespace keeps host-page CSS from breaking things.</span></div>
+  </div>
+  <div class="snippet">
+<pre><code>// One call themes the whole family:
+VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    MIT licensed · <a href="https://github.com/vanilla-ui-kit/components">github.com/vanilla-ui-kit/components</a>
+    · <a href="https://www.jsdelivr.com/package/gh/vanilla-ui-kit/components">jsDelivr</a>
+  </div>
+</footer>
+
+<script src="./dist/vanilla-ui-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  // Theme toggle — VC.theme.set stamps <html data-theme>; every component follows.
+  var toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('click', function () {
+    var next = VC.theme.resolve() === 'dark' ? 'light' : 'dark';
+    VC.theme.set(next);
+  });
+  VC.theme.watch(function () {
+    document.documentElement.setAttribute('data-theme', VC.theme.resolve());
+  });
+  document.documentElement.setAttribute('data-theme', VC.theme.resolve());
+
+  // Live demos, powered by the same bundle the CDN serves.
+  var toastMsgs = [
+    ['success', 'Saved — that easy.'],
+    ['info', 'One file. Zero dependencies.'],
+    ['warning', 'Careful: may reduce bundle anxiety.'],
+    ['error', 'Not an actual error. Just showing off.']
+  ];
+  var toastIdx = 0;
+  function showToast() {
+    var m = toastMsgs[toastIdx++ % toastMsgs.length];
+    Toast[m[0]](m[1]);
+  }
+  document.getElementById('heroToast').addEventListener('click', showToast);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-demo=toast]'), function (b) {
+    b.addEventListener('click', showToast);
+  });
+
+  new DatePicker('#tryDate');
+  if (window.PhoneInput && document.getElementById('tryPhone')) {
+    new PhoneInput('#tryPhone');
+  }
+  new Select('#trySelect', { searchable: true });
+  if (window.Form && document.getElementById('tryForm')) {
+    new Form('#tryForm', {
+      fields: [{ name: 'email', type: 'email', placeholder: 'you@example.com', required: true }],
+      labels: { submit: 'Subscribe' },
+      onSubmit: function () { Toast.success('Subscribed (not really).'); }
+    });
+  }
+  new Tooltip('#tryTooltip', { content: 'Exactly what it says on the tin.', placement: 'top' });
+  new Menu('#tryMenu', { items: [
+    { label: 'Duplicate', hint: '⌘D', onSelect: function () { Toast.info('Duplicated'); } },
+    { label: 'Rename', onSelect: function () { Toast.info('Renamed'); } },
+    { type: 'separator' },
+    { label: 'Delete', danger: true, onSelect: function () { Toast.error('Deleted'); } }
+  ]});
+
+  function openDemoModal() {
+    Modal.confirm({
+      title: 'Like what you see?',
+      content: 'Every component here is one self-contained file.',
+      labels: { ok: 'Star the repo', cancel: 'Later' }
+    }).then(function (yes) {
+      if (yes) window.open('https://github.com/vanilla-ui-kit/components', '_blank');
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-demo=modal]'), function (b) {
+    b.addEventListener('click', openDemoModal);
+  });
+
+  CommandPalette.register([
+    { id: 'toast', label: 'Show a toast', group: 'Demos', action: showToast },
+    { id: 'modal', label: 'Open the dialog', group: 'Demos', action: openDemoModal },
+    { id: 'dark', label: 'Switch to dark theme', keywords: 'night', group: 'Theme', action: function () { VC.theme.set('dark'); } },
+    { id: 'light', label: 'Switch to light theme', keywords: 'day', group: 'Theme', action: function () { VC.theme.set('light'); } },
+    { id: 'github', label: 'Open GitHub repository', group: 'Links', action: function () { window.open('https://github.com/vanilla-ui-kit/components', '_blank'); } }
+  ]);
+  document.getElementById('heroPalette').addEventListener('click', CommandPalette.open);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-demo=palette]'), function (b) {
+    b.addEventListener('click', CommandPalette.open);
+  });
+
+  // Wave-2 live demos.
+  document.getElementById('tryDrawer').addEventListener('click', function () {
+    Drawer.open({
+      title: 'Hello from the side',
+      content: 'Same focus management and scroll lock as Modal, sliding in from any edge.',
+      buttons: [{ label: 'Nice', variant: 'primary', close: true }]
+    });
+  });
+  new Autocomplete('#tryAutocomplete', {
+    source: ['Amsterdam', 'Athens', 'Austin', 'Barcelona', 'Berlin', 'Bogotá',
+      'Cairo', 'Dubai', 'Lisbon', 'London', 'Madrid', 'Nairobi', 'Oslo',
+      'Paris', 'São Paulo', 'Seoul', 'Singapore', 'Tokyo', 'Toronto', 'Zürich'],
+    openOnFocus: true
+  });
+  new Slider('#trySlider', {
+    value: [20, 80], prefix: '$', tooltip: 'drag',
+    onChange: function () {}
+  });
+  document.getElementById('tryPopconfirm').addEventListener('click', function () {
+    Popconfirm.ask('#tryPopconfirm', { message: 'Delete everything?', danger: true, okLabel: 'Delete' })
+      .then(function (yes) {
+        if (yes) Toast.error('Everything deleted. (Not really.)');
+      });
+  });
+  new Segmented('#trySegmented', { options: ['Day', 'Week', 'Month'], value: 'Week' });
+  new NumberInput('#tryNumber', { prefix: '$', precision: 2, value: 1234.5, step: 10 });
+  Progress.bar('#tryProgress', { indeterminate: true, label: 'Always busy…' });
+  new Pagination('#tryPagination', { pages: 12, page: 4, compact: true });
+  new Rating('#tryRating', { value: 3.5, half: true });
+})();
+</script>
+</body>
+</html>
