@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanilla Coffee Roasters — Orders</title>
+<meta name="description" content="Admin demo app built exclusively with Vanilla UI Kit's 21 components.">
+<style>
+  :root{
+    --accent:#5b5bd6; --bg:#fbfbfd; --surface:#ffffff; --text:#1c1d21;
+    --muted:#72747e; --faint:#e7e7ec; --code:#f4f4f8;
+    --shadow:0 10px 28px rgba(24,25,32,.10),0 2px 8px rgba(24,25,32,.06);
+  }
+  [data-theme=dark]{
+    --accent:#7b7bea; --bg:#131419; --surface:#1b1d24; --text:#e9eaf0;
+    --muted:#989aa6; --faint:#31343f; --code:#22242d;
+    --shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    transition:background .2s ease,color .2s ease;
+  }
+  .btn{
+    display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid var(--faint);
+    background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;
+    cursor:pointer;font-size:14px;font-family:inherit;
+    transition:border-color .15s ease,transform .1s ease;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  .input{
+    font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;
+    background:var(--surface);color:var(--text);
+  }
+  .input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* ---- top bar ---- */
+  .topbar{
+    position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--faint);
+  }
+  .brand{display:flex;align-items:baseline;gap:8px;white-space:nowrap;font-size:15px}
+  .brand b{letter-spacing:-.01em}
+  .brand-sub{color:var(--muted);font-size:13px;border-left:1px solid var(--faint);padding-left:8px}
+  .search{flex:1 1 200px;min-width:160px}
+  .search .input{width:100%;max-width:340px}
+  .topbar-actions{display:flex;gap:8px;margin-left:auto}
+
+  /* ---- layout ---- */
+  .wrap{max-width:960px;margin:0 auto;padding:20px 20px 40px;display:flex;flex-direction:column;gap:16px}
+  .card{
+    background:var(--surface);border:1px solid var(--faint);border-radius:14px;
+    padding:16px 18px;box-shadow:var(--shadow);
+  }
+
+  /* ---- stats ---- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .stat h2{margin:0 0 10px;font-size:13px;font-weight:600;letter-spacing:.03em;
+    text-transform:uppercase;color:var(--muted)}
+  .live{display:flex;align-items:center;gap:10px;min-height:34px;font-size:14px}
+
+  /* ---- filters ---- */
+  .filters{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  #minTotal{width:150px}
+  #dateRange{width:230px}
+  .filters-spacer{flex:1}
+
+  /* ---- order list ---- */
+  .listcard{padding:6px 0 14px}
+  .order{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 18px;border-bottom:1px solid var(--faint);
+    transition:background .15s ease,box-shadow .3s ease;
+  }
+  .order:last-of-type{border-bottom:0}
+  .order.is-flash{
+    background:color-mix(in srgb,var(--accent) 10%,transparent);
+    box-shadow:inset 3px 0 0 var(--accent);
+  }
+  .o-main{flex:1 1 240px;min-width:0}
+  .o-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .o-top strong{font-size:14.5px}
+  .o-id{color:var(--muted);font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .o-sub{color:var(--muted);font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+  .o-side{display:flex;align-items:center;gap:14px}
+  .o-total{font-weight:700;font-size:14.5px;min-width:72px;text-align:right}
+  .btn-icon{
+    padding:4px 10px;border-radius:8px;border:1px solid transparent;background:transparent;
+    color:var(--muted);cursor:pointer;font:inherit;font-size:18px;line-height:1;
+  }
+  .btn-icon:hover{border-color:var(--faint);color:var(--text)}
+  .btn-icon:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+  .pill{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;border-radius:99px;padding:2px 9px;
+  }
+  .pill-pending{color:#b45309;background:rgba(180,83,9,.12)}
+  .pill-roasting{color:#5b5bd6;background:rgba(91,91,214,.12)}
+  .pill-shipped{color:#15803d;background:rgba(21,128,61,.12)}
+  .pill-cancelled{color:#b91c1c;background:rgba(185,28,28,.10)}
+  [data-theme=dark] .pill-pending{color:#f2a457}
+  [data-theme=dark] .pill-roasting{color:#9d9df2}
+  [data-theme=dark] .pill-shipped{color:#5fc98a}
+  [data-theme=dark] .pill-cancelled{color:#ef8a8a}
+
+  #pager{padding:14px 18px 0}
+  #orderList{min-height:120px}
+
+  /* ---- order detail modal ---- */
+  .detail{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:8px 0 0;font-size:14px}
+  .detail dt{color:var(--muted)}
+  .detail dd{margin:0;min-width:0}
+
+  footer{padding:8px 20px 40px;color:var(--muted);font-size:13.5px;text-align:center}
+  footer a{color:var(--accent);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  @media (max-width:720px){
+    .stats{grid-template-columns:1fr}
+    .search{order:9;flex-basis:100%}
+    .search .input{max-width:none}
+  }
+  @media (max-width:460px){
+    .wrap{padding:14px 10px 32px}
+    .card{padding:14px}
+    .filters #dateRange,.filters #minTotal{width:100%}
+    .o-side{width:100%;justify-content:space-between}
+    .o-total{text-align:left;min-width:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">☕ <b>Vanilla Coffee Roasters</b><span class="brand-sub">Orders</span></div>
+  <div class="search">
+    <input id="globalSearch" class="input" type="text" placeholder="Search customers…"
+           aria-label="Search orders by customer name" autocomplete="off">
+  </div>
+  <div class="topbar-actions">
+    <button class="btn" id="cmdkBtn" aria-label="Open command palette">⌘K</button>
+    <button class="btn" id="themeToggle" aria-label="Toggle color theme">🌗</button>
+    <button class="btn primary" id="newOrderBtn">New order</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="stats" aria-label="Today at a glance">
+    <div class="card stat" id="statToday">
+      <h2>Roast slots today</h2>
+      <div id="barToday"></div>
+    </div>
+    <div class="card stat" id="statRevenue">
+      <h2>Revenue this month</h2>
+      <div id="barRevenue"></div>
+    </div>
+    <div class="card stat" id="statLive">
+      <h2>Roaster · live</h2>
+      <div class="live"><span id="liveSpin"></span><span id="liveText">connecting…</span></div>
+    </div>
+  </section>
+
+  <section class="card filters" aria-label="Order filters">
+    <div id="segStatus"></div>
+    <div class="filters-spacer"></div>
+    <div id="minTotal"></div>
+    <input id="dateRange" class="input" type="text" placeholder="Order dates"
+           aria-label="Filter by order date range">
+  </section>
+
+  <section class="card listcard" aria-label="Orders">
+    <div id="listWrap">
+      <div id="orderList"></div>
+      <div id="pager"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  One page, every component — built with
+  <a href="../index.html">Vanilla UI Kit</a>.
+</footer>
+
+<!-- Drawer panel: enhanced markup, adopted by Drawer while open -->
+<div id="newOrderPanel" hidden>
+  <div id="orderForm"></div>
+</div>
+
+<script src="../dist/vanilla-ui-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ================================================================ *
+   * Theme — the guarded pattern from index.html, verbatim.
+   * The watcher observes <html data-theme>, so writing it
+   * unconditionally would re-trigger the observer forever.
+   * ================================================================ */
+  function applyTheme() {
+    var t = VC.theme.resolve();
+    if (document.documentElement.getAttribute('data-theme') !== t) {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  }
+  VC.theme.watch(applyTheme);
+  applyTheme();
+
+  function toggleTheme() {
+    VC.theme.set(VC.theme.resolve() === 'dark' ? 'light' : 'dark');
+  }
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+  var REDUCED = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================================================================ *
+   * Deterministic fake data — seeded PRNG, no external sources.
+   * ================================================================ */
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rng = mulberry32(20260707);
+
+  var BEANS = [
+    { name: 'Ethiopia Yirgacheffe', price: 24 },
+    { name: 'Colombia Huila',       price: 21 },
+    { name: 'Kenya AA',             price: 26 },
+    { name: 'Sumatra Mandheling',   price: 22 },
+    { name: 'Guatemala Antigua',    price: 20 },
+    { name: 'Brazil Cerrado',       price: 18 },
+    { name: 'Costa Rica Tarrazú',   price: 23 },
+    { name: 'Yemen Mokha',          price: 34 }
+  ];
+
+  var CUSTOMERS = [
+    'Amelia Hart', 'Yusuf Rahman', 'Ingrid Sørensen', 'Marco Bellini',
+    'Priya Nair', 'Tomás Herrera', 'Hana Kobayashi', 'Lucas Meyer',
+    'Fatima Al-Sayed', 'Nina Petrova', 'Owen Gallagher', 'Zeynep Aydın',
+    'Carlos Mendoza', 'Elsa Lindqvist', 'David Okafor', 'Mei-Ling Chen',
+    'Rafael Souza', 'Aisha Diallo', 'Jonas Weber', 'Clara Dubois',
+    'Mateo Rossi', 'Leila Haddad', 'Erik Johansson', 'Sofia Papadopoulos',
+    'Noah Fischer', 'Amara Osei', 'Felix Braun', 'Isabella Conti',
+    'Kenji Tanaka', 'Maria Santos', 'Oliver Nowak', 'Salma Idrissi',
+    'Anders Holm', 'Chloe Martin', 'Diego Vargas', 'Emma Kowalski',
+    'Farid Karimi', 'Greta Novak', 'Henrik Vestergaard', 'Ines Almeida'
+  ];
+
+  // [iso2, fixed prefix, random digits to append] — plausible mobile shapes.
+  var PHONE_SHAPES = [
+    ['us', '415555', 4], ['us', '646555', 4], ['ca', '604555', 4],
+    ['gb', '7700900', 3], ['de', '1511', 7],  ['fr', '612', 6],
+    ['ae', '50', 7],      ['jp', '90', 8],    ['br', '119', 8],
+    ['es', '612', 6]
+  ];
+
+  var NOTE_POOL = [
+    '', 'Whole beans — do not grind.', 'Espresso grind, please.',
+    'Gift order: include a card.', 'Deliver to the back entrance.',
+    '', 'Repeat customer — usual roast profile.', 'Coarse grind for French press.'
+  ];
+
+  var STATUS_LABEL = {
+    pending: 'Pending', roasting: 'Roasting',
+    shipped: 'Shipped', cancelled: 'Cancelled'
+  };
+
+  function randDigits(n) {
+    var s = '';
+    while (n--) s += Math.floor(rng() * 10);
+    return s;
+  }
+
+  function makeOrders() {
+    var out = [];
+    for (var i = 0; i < CUSTOMERS.length; i++) {
+      var shape = PHONE_SHAPES[Math.floor(rng() * PHONE_SHAPES.length)];
+      var nItems = 1 + Math.floor(rng() * 3);
+      var items = [], used = {}, total = 0;
+      for (var k = 0; k < nItems; k++) {
+        var b = BEANS[Math.floor(rng() * BEANS.length)];
+        if (used[b.name]) continue;
+        used[b.name] = true;
+        var kg = (1 + Math.floor(rng() * 6)) * 0.5;          // 0.5 – 3 kg
+        items.push({ bean: b.name, kg: kg });
+        total += b.price * kg;
+      }
+      var r = rng();
+      var status = r < 0.28 ? 'pending' : r < 0.55 ? 'roasting'
+                 : r < 0.85 ? 'shipped' : 'cancelled';
+      var d = new Date();
+      if (i < 5) {                                            // a few today
+        d.setHours(8 + i, 15, 0, 0);
+      } else {
+        d.setDate(d.getDate() - (1 + Math.floor(rng() * 29)));
+        d.setHours(7 + Math.floor(rng() * 11), 30, 0, 0);
+      }
+      out.push({
+        customer: CUSTOMERS[i],
+        phoneCountry: shape[0],
+        phoneDigits: shape[1] + randDigits(shape[2]),
+        items: items,
+        total: Math.round(total * 100) / 100,
+        status: status,
+        rating: Math.round((2.5 + rng() * 2.5) * 10) / 10,
+        date: d,
+        notes: NOTE_POOL[Math.floor(rng() * NOTE_POOL.length)]
+      });
+    }
+    out.sort(function (a, b) { return b.date - a.date; });
+    for (var j = 0; j < out.length; j++) out[j].id = 'VC-' + (1000 + out.length - j);
+    return out;
+  }
+
+  var orders = makeOrders();
+  var idCounter = 1000 + orders.length;
+  function nextId() { return 'VC-' + (++idCounter); }
+
+  /* ================================================================ *
+   * Small helpers.
+   * ================================================================ */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function money(v) { return '$' + NumberInput.format(v, { precision: 2 }); }
+  function fmtDate(d) { return DatePicker.formatDate(d, 'DD MMM YYYY'); }
+  function fmtPhone(o) { return PhoneInput.format(o.phoneDigits, o.phoneCountry); }
+  function itemsSummary(o) {
+    return o.items.map(function (i) { return i.kg + ' kg ' + i.bean; }).join(', ');
+  }
+  function isToday(d) {
+    var n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() &&
+           d.getDate() === n.getDate();
+  }
+  function sameMonth(d) {
+    var n = new Date();
+    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
+  }
+  function dayStart(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); }
+  function dayEnd(d)   { var x = new Date(d); x.setHours(23, 59, 59, 999); return x.getTime(); }
+
+  /* ================================================================ *
+   * Stats row — Progress bars + a live spinner.
+   * ================================================================ */
+  var CAPACITY = 14, GOAL = 4500;
+
+  var barToday = Progress.bar('#barToday', {
+    value: 0, max: CAPACITY, showValue: true, label: '…'
+  });
+  var barRevenue = Progress.bar('#barRevenue', {
+    value: 0, max: GOAL, showValue: true, color: 'success', label: '…'
+  });
+  Progress.spinner('#liveSpin', { size: 18, label: 'Live roaster feed' });
+  var liveText = document.getElementById('liveText');
+
+  function updateStats() {
+    var today = orders.filter(function (o) {
+      return isToday(o.date) && o.status !== 'cancelled';
+    }).length;
+    barToday.set(today);
+    barToday.setLabel(today + ' of ' + CAPACITY + ' slots booked');
+
+    var rev = orders.reduce(function (s, o) {
+      return s + (sameMonth(o.date) && o.status !== 'cancelled' ? o.total : 0);
+    }, 0);
+    barRevenue.set(Math.min(rev, GOAL));
+    barRevenue.setLabel(money(Math.round(rev)) + ' of ' + money(GOAL) + ' goal');
+    tickLive();
+  }
+  function tickLive() {
+    var roasting = orders.filter(function (o) { return o.status === 'roasting'; }).length;
+    liveText.textContent = roasting + ' batches roasting · feed is live';
+  }
+  setInterval(tickLive, 3000);
+
+  new Tooltip('#statToday',   { content: 'Non-cancelled orders placed today vs. daily roasting capacity.' });
+  new Tooltip('#statRevenue', { content: 'Revenue from this month’s non-cancelled orders vs. the monthly goal.' });
+  new Tooltip('#statLive',    { content: 'Simulated live feed from the roastery floor.' });
+  new Tooltip('#cmdkBtn',     { content: 'Command palette — press Ctrl/⌘ K anywhere.', placement: 'bottom' });
+
+  /* ================================================================ *
+   * Filters — Segmented + NumberInput + DatePicker (range).
+   * ================================================================ */
+  var state = { status: 'all', minTotal: null, range: null, page: 1 };
+  var PER_PAGE = 8;
+  var filtered = orders.slice();
+
+  var seg = new Segmented('#segStatus', {
+    options: [
+      { value: 'all', label: 'All' },
+      { value: 'pending', label: 'Pending' },
+      { value: 'roasting', label: 'Roasting' },
+      { value: 'shipped', label: 'Shipped' },
+      { value: 'cancelled', label: 'Cancelled' }
+    ],
+    value: 'all',
+    size: 'sm',
+    label: 'Filter by status',
+    onChange: function (v) { state.status = v; refresh(true); }
+  });
+
+  var minTotalInput = new NumberInput('#minTotal', {
+    prefix: '$', min: 0, step: 5, precision: 0, placeholder: 'Min total',
+    onChange: function (v) { state.minTotal = v; refresh(true); }
+  });
+
+  var rangePicker = new DatePicker('#dateRange', {
+    range: true, panes: 1, presets: 'last7,last30,thisMonth',
+    format: 'DD MMM YYYY',
+    onSelect: function (value) {
+      state.range = (value && value.start && value.end) ? value : null;
+      refresh(true);
+    },
+    onClear: function () { state.range = null; refresh(true); }
+  });
+
+  function applyFilters() {
+    return orders.filter(function (o) {
+      if (state.status !== 'all' && o.status !== state.status) return false;
+      if (state.minTotal != null && o.total < state.minTotal) return false;
+      if (state.range) {
+        var t = o.date.getTime();
+        if (t < dayStart(state.range.start) || t > dayEnd(state.range.end)) return false;
+      }
+      return true;
+    });
+  }
+
+  function quietResetFilters() {
+    seg.setValue('all', { silent: true });
+    state.status = 'all';
+    minTotalInput.setValue(null, { silent: true });
+    state.minTotal = null;
+    if (state.range || rangePicker.getDate()) rangePicker.setDate(null, { silent: true });
+    state.range = null;
+  }
+
+  function resetFilters() {
+    quietResetFilters();
+    refresh(true);
+  }
+
+  /* ================================================================ *
+   * Order list — rows + Rating + Menu, Pagination, EmptyState.
+   * ================================================================ */
+  var listEl = document.getElementById('orderList');
+  var pagerEl = document.getElementById('pager');
+  var rowWidgets = [];   // Rating/Menu instances for the visible page
+
+  var pager = new Pagination('#pager', {
+    total: orders.length, perPage: PER_PAGE, showTotal: true,
+    onChange: function (p) { state.page = p; renderRows(); }
+  });
+
+  function refresh(resetPage) {
+    filtered = applyFilters();
+    if (resetPage) state.page = 1;
+    var pages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    if (state.page > pages) state.page = pages;
+    pager.update({ total: filtered.length });
+    pager.setPage(state.page, { silent: true });
+    pagerEl.style.display = filtered.length ? '' : 'none';
+    renderRows();
+  }
+
+  function destroyRowWidgets() {
+    rowWidgets.forEach(function (w) {
+      if (w && typeof w.destroy === 'function') { try { w.destroy(); } catch (e) {} }
+    });
+    rowWidgets = [];
+  }
+
+  function renderRows() {
+    destroyRowWidgets();
+    listEl.innerHTML = '';
+
+    if (!filtered.length) {
+      EmptyState.render(listEl, {
+        icon: 'search',
+        title: 'No orders match your filters',
+        description: 'Try widening the date range or lowering the minimum total.',
+        action: { label: 'Reset filters', onClick: resetFilters }
+      });
+      return;
+    }
+
+    var start = (state.page - 1) * PER_PAGE;
+    filtered.slice(start, start + PER_PAGE).forEach(function (o) {
+      listEl.appendChild(buildRow(o));
+    });
+  }
+
+  function buildRow(o) {
+    var row = document.createElement('article');
+    row.className = 'order';
+    row.setAttribute('data-id', o.id);
+    row.innerHTML =
+      '<div class="o-main">' +
+        '<div class="o-top"><strong>' + esc(o.customer) + '</strong>' +
+        '<span class="o-id">' + esc(o.id) + '</span>' +
+        '<span class="pill pill-' + o.status + '">' + STATUS_LABEL[o.status] + '</span></div>' +
+        '<div class="o-sub">' + esc(fmtPhone(o)) + ' · ' + esc(itemsSummary(o)) +
+        ' · ' + esc(fmtDate(o.date)) + '</div>' +
+      '</div>' +
+      '<div class="o-side">' +
+        '<span class="o-total">' + money(o.total) + '</span>' +
+        '<span class="o-rating"></span>' +
+        '<button type="button" class="btn-icon" aria-label="Actions for order ' +
+          esc(o.id) + '">⋯</button>' +
+      '</div>';
+
+    rowWidgets.push(new Rating(row.querySelector('.o-rating'), {
+      value: o.rating, readOnly: true, half: true, size: 14
+    }));
+
+    var menuBtn = row.querySelector('.btn-icon');
+    rowWidgets.push(new Menu(menuBtn, {
+      placement: 'bottom-end',
+      items: [
+        { label: 'View order', onSelect: function () { viewOrder(o); } },
+        { label: 'Mark shipped',
+          disabled: o.status === 'shipped' || o.status === 'cancelled',
+          onSelect: function () { markShipped(o); } },
+        { type: 'separator' },
+        { label: 'Delete', danger: true,
+          onSelect: function () { confirmDelete(o, menuBtn); } }
+      ]
+    }));
+    return row;
+  }
+
+  function flashRow(id) {
+    var row = listEl.querySelector('[data-id="' + id + '"]');
+    if (!row) return;
+    row.scrollIntoView({ block: 'center', behavior: REDUCED ? 'auto' : 'smooth' });
+    row.classList.add('is-flash');
+    setTimeout(function () { row.classList.remove('is-flash'); }, 1800);
+  }
+
+  /* ---- row actions ---- */
+
+  function viewOrder(o) {
+    var box = document.createElement('div');
+    var nav = document.createElement('nav');
+    ['Details', 'Notes'].forEach(function (label) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      nav.appendChild(b);
+    });
+
+    var details = document.createElement('section');
+    var dl = document.createElement('dl');
+    dl.className = 'detail';
+    [
+      ['Customer', o.customer],
+      ['Phone', fmtPhone(o)],
+      ['Beans', itemsSummary(o)],
+      ['Total', money(o.total)],
+      ['Status', STATUS_LABEL[o.status]],
+      ['Ordered', fmtDate(o.date)]
+    ].forEach(function (pair) {
+      var dt = document.createElement('dt'); dt.textContent = pair[0];
+      var dd = document.createElement('dd'); dd.textContent = pair[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    var dtR = document.createElement('dt'); dtR.textContent = 'Rating';
+    var ddR = document.createElement('dd');
+    var ratingHost = document.createElement('span');
+    ddR.appendChild(ratingHost);
+    dl.appendChild(dtR); dl.appendChild(ddR);
+    details.appendChild(dl);
+
+    var notes = document.createElement('section');
+    notes.textContent = o.notes || 'No notes for this order.';
+
+    box.appendChild(nav); box.appendChild(details); box.appendChild(notes);
+
+    Modal.open({
+      title: 'Order ' + o.id + ' — ' + o.customer,
+      content: box,
+      buttons: [{ label: 'Close', close: true }],
+      onOpen: function () {
+        new Tabs(box);
+        new Rating(ratingHost, { value: o.rating, readOnly: true, half: true, size: 15 });
+      }
+    });
+  }
+
+  function markShipped(o) {
+    o.status = 'shipped';
+    Toast.success(o.id + ' marked as shipped', { title: o.customer });
+    updateStats();
+    refresh(false);
+  }
+
+  function confirmDelete(o, anchor) {
+    Popconfirm.ask(anchor, {
+      title: 'Delete order',
+      message: 'Delete ' + o.id + ' for ' + o.customer + '? This cannot be undone.',
+      danger: true, okLabel: 'Delete'
+    }).then(function (ok) {
+      if (!ok) return;
+      var i = orders.indexOf(o);
+      if (i !== -1) orders.splice(i, 1);
+      Toast.success(o.id + ' deleted');
+      updateStats();
+      refresh(false);
+    });
+  }
+
+  /* ================================================================ *
+   * Global search — Autocomplete over customer names.
+   * ================================================================ */
+  new Autocomplete('#globalSearch', {
+    source: CUSTOMERS.slice().sort(),
+    openOnFocus: true,
+    maxResults: 8,
+    onSelect: function (item) {
+      revealOrder(typeof item === 'string' ? item : item.value);
+    }
+  });
+
+  function revealOrder(customer) {
+    var order = null;
+    for (var i = 0; i < orders.length; i++) {
+      if (orders[i].customer === customer) { order = orders[i]; break; }
+    }
+    if (!order) { Toast.info('No order found for ' + customer); return; }
+    quietResetFilters();
+    filtered = applyFilters();
+    state.page = Math.floor(filtered.indexOf(order) / PER_PAGE) + 1;
+    pager.update({ total: filtered.length });
+    pager.setPage(state.page, { silent: true });
+    pagerEl.style.display = filtered.length ? '' : 'none';
+    renderRows();
+    flashRow(order.id);
+  }
+
+  /* ================================================================ *
+   * New order — Drawer + Form (PhoneInput / DatePicker / Select
+   * family upgrades) + NumberInput + Upload.
+   * ================================================================ */
+  Select.defaults.searchable = true;   // the beans field upgrades to a searchable Select
+
+  var beanOptions = [{ value: '', label: 'Choose beans…' }].concat(
+    BEANS.map(function (b) {
+      return { value: b.name, label: b.name + ' — $' + b.price + '/kg' };
+    })
+  );
+
+  var orderForm = new Form('#orderForm', {
+    fields: [
+      { name: 'customer', type: 'text', label: 'Customer', placeholder: 'Full name',
+        required: true, minlength: 2 },
+      { name: 'phone', type: 'phone', label: 'Phone', required: true },
+      { name: 'roast', type: 'date', label: 'Roast date', required: true, min: 'today',
+        hint: 'Earliest available roast day' },
+      { name: 'beans', type: 'select', label: 'Beans', required: true, options: beanOptions },
+      { name: 'quantity', type: 'number', label: 'Quantity (kg)', value: 1,
+        required: true, min: 0.5, max: 25 },
+      { name: 'notes', type: 'textarea', label: 'Notes', rows: 3, autoGrow: true,
+        placeholder: 'Grind, delivery instructions…' }
+    ],
+    labels: { submit: 'Create order' },
+    onSubmit: handleCreate
+  });
+
+  // Upgrade the quantity field to the family NumberInput (0.5 kg steps).
+  var formEl = document.querySelector('#orderForm form');
+  var phoneEl = formEl.querySelector('input[type="tel"]');
+  var qtyInput = new NumberInput(formEl.querySelector('input[name="quantity"]'), {
+    min: 0.5, max: 25, step: 0.5, precision: 1, suffix: ' kg'
+  });
+
+  // Attachment field (Upload, manual — no autoUpload), slotted before the actions row.
+  var uploadField = document.createElement('div');
+  uploadField.className = 'vfm-field';
+  uploadField.innerHTML = '<label class="vfm-label" id="attachLabel">Attachment</label>' +
+                          '<div id="uploadBox" aria-labelledby="attachLabel"></div>';
+  formEl.insertBefore(uploadField, formEl.querySelector('.vfm-actions'));
+  var upload = new Upload('#uploadBox', {
+    multiple: true, accept: 'image/*,.pdf', maxSize: 2 * 1024 * 1024, maxFiles: 3,
+    autoUpload: false, name: 'attachment'
+  });
+
+  var drawer = new Drawer('#newOrderPanel', {
+    side: 'right', title: 'New order', size: 'min(440px, 100vw)'
+  });
+  function openNewOrder() { drawer.open(); }
+  document.getElementById('newOrderBtn').addEventListener('click', openNewOrder);
+
+  function handleCreate(values) {
+    var qty = NumberInput.parse(String(values.quantity == null ? '' : values.quantity));
+    if (qty == null) qty = qtyInput.getValue();
+    if (qty == null) qty = 1;
+
+    var pi = phoneEl ? PhoneInput.get(phoneEl) : null;
+    var pv = pi ? pi.getValue() : null;
+
+    var bean = null;
+    for (var i = 0; i < BEANS.length; i++) {
+      if (BEANS[i].name === values.beans) { bean = BEANS[i]; break; }
+    }
+    bean = bean || BEANS[0];
+    var files = upload.getFiles();
+
+    var save = new Promise(function (res) { setTimeout(res, 900); }).then(function () {
+      var o = {
+        id: nextId(),
+        customer: values.customer,
+        phoneCountry: pv ? pv.country : 'us',
+        phoneDigits: (pv && pv.national ? pv.national : String(values.phone || ''))
+          .replace(/\D/g, ''),
+        items: [{ bean: bean.name, kg: qty }],
+        total: Math.round(bean.price * qty * 100) / 100,
+        status: 'pending',
+        rating: 0,
+        date: new Date(),
+        notes: (values.notes || '') +
+          (files.length ? (values.notes ? ' · ' : '') + files.length + ' attachment(s)' : '')
+      };
+      orders.unshift(o);
+      return o;
+    });
+
+    Toast.promise(save, {
+      loading: 'Saving order…',
+      success: function (o) { return o.id + ' created for ' + o.customer; },
+      error: function () { return 'Could not save the order'; }
+    });
+
+    save.then(function (o) {
+      drawer.close();
+      orderForm.reset();
+      upload.clear();
+      qtyInput.setValue(1, { silent: true });
+      quietResetFilters();
+      updateStats();
+      refresh(true);
+      flashRow(o.id);
+    });
+
+    return save;   // Form shows its own pending state on the submit button
+  }
+
+  /* ================================================================ *
+   * Command palette — Ctrl/⌘+K everywhere, plus the ⌘K button.
+   * ================================================================ */
+  function setStatusFilter(s) {
+    seg.setValue(s, { silent: true });
+    state.status = s;
+    refresh(true);
+  }
+
+  CommandPalette.register([
+    { id: 'new-order', label: 'New order', group: 'Actions', keywords: 'create add',
+      action: openNewOrder },
+    { id: 'toggle-theme', label: 'Toggle light/dark theme', group: 'Appearance',
+      keywords: 'dark light night day', action: toggleTheme },
+    { id: 'filter-all', label: 'Show all orders', group: 'Filters',
+      action: function () { setStatusFilter('all'); } },
+    { id: 'filter-pending', label: 'Filter: Pending', group: 'Filters',
+      action: function () { setStatusFilter('pending'); } },
+    { id: 'filter-roasting', label: 'Filter: Roasting', group: 'Filters',
+      action: function () { setStatusFilter('roasting'); } },
+    { id: 'filter-shipped', label: 'Filter: Shipped', group: 'Filters',
+      action: function () { setStatusFilter('shipped'); } },
+    { id: 'filter-cancelled', label: 'Filter: Cancelled', group: 'Filters',
+      action: function () { setStatusFilter('cancelled'); } },
+    { id: 'site', label: 'Go to Vanilla UI Kit components site', group: 'Links',
+      keywords: 'docs home', action: function () { location.href = '../index.html'; } }
+  ]);
+  document.getElementById('cmdkBtn').addEventListener('click', CommandPalette.open);
+
+  /* ================================================================ *
+   * Boot — first render behind a short skeleton shimmer.
+   * ================================================================ */
+  updateStats();
+  refresh(true);
+  var skeleton = Progress.skeleton('#listWrap', { lines: 6, header: true, avatar: true });
+  setTimeout(function () { skeleton.release(); }, 800);
+})();
+</script>
+</body>
+</html>
