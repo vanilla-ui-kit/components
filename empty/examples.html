@@ -524,6 +524,120 @@ EmptyState.create(target, options?)  // also an alias</code></pre>
     input.</li>
   </ul>
 </div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> EmptyState injects no CSS at all — the full
+  behavior (rendering, adoption, <code>update()</code>/<code>remove()</code>),
+  the accessibility contract and the stable <code>.ves-*</code> class hooks all
+  remain; you bring the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — <code>aria-hidden</code> illustration, title,
+      description and two real <code>&lt;button&gt;</code>s. Zero CSS was
+      injected; the actions still fire.</p>
+      <iframe id="hl-raw" class="hl-frame" title="EmptyState with styles: false — unstyled" height="220"></iframe>
+      <pre>EmptyState.render('#demo', {
+  icon: 'inbox',
+  title: 'No messages yet',
+  description: 'Anything sent to you will land here.',
+  action: { label: 'Compose', onClick: function () { /* … */ } },
+  styles: false   // ← zero CSS injected
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — a tilted gradient illustration tile, pill actions,
+      its own palette. Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="EmptyState styled with Tailwind" height="360" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .ves          { @apply mx-auto flex max-w-sm flex-col items-center
+                  px-6 py-10 text-center; }
+  .ves-art      { @apply mb-5 grid h-24 w-24 rotate-3 place-items-center
+                  rounded-3xl bg-gradient-to-br from-amber-200 to-orange-300
+                  text-orange-700 shadow-lg shadow-orange-200; }
+  .ves-art svg  { @apply h-10 w-10; }
+  .ves-title    { @apply text-lg font-extrabold tracking-tight
+                  text-slate-800; }
+  .ves-desc     { @apply mt-1.5 text-sm leading-relaxed text-slate-500; }
+  .ves-actions  { @apply mt-5 flex items-center gap-3; }
+  .ves-action   { @apply cursor-pointer rounded-full border-0 bg-orange-500
+                  px-5 py-2.5 text-sm font-bold text-white shadow-md
+                  shadow-orange-200 hover:bg-orange-600; }
+  .ves-action-quiet { @apply cursor-pointer rounded-full border-0
+                  bg-transparent px-4 py-2.5 text-sm font-semibold
+                  text-slate-500 hover:text-slate-700; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'empty.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<body style="margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui">',
+    '<div id="demo"></div>',
+    '<script src="empty.js"><\/script>',
+    '<script>',
+    'EmptyState.render("#demo", {',
+    '  icon: "inbox", title: "No messages yet",',
+    '  description: "Anything sent to you will land here.",',
+    '  action: { label: "Compose", onClick: function () {} },',
+    '  styles: false });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="empty.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .ves          { @apply mx-auto flex max-w-sm flex-col items-center px-6 py-10 text-center; }',
+    '  .ves-art      { @apply mb-5 grid h-24 w-24 rotate-3 place-items-center rounded-3xl bg-gradient-to-br from-amber-200 to-orange-300 text-orange-700 shadow-lg shadow-orange-200; }',
+    '  .ves-art svg  { @apply h-10 w-10; }',
+    '  .ves-title    { @apply text-lg font-extrabold tracking-tight text-slate-800; }',
+    '  .ves-desc     { @apply mt-1.5 text-sm leading-relaxed text-slate-500; }',
+    '  .ves-actions  { @apply mt-5 flex items-center gap-3; }',
+    '  .ves-action   { @apply cursor-pointer rounded-full border-0 bg-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-200 hover:bg-orange-600; }',
+    '  .ves-action-quiet { @apply cursor-pointer rounded-full border-0 bg-transparent px-4 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-amber-50 to-orange-100 font-sans">',
+    '<div id="demo" class="w-full"></div>',
+    '<script>',
+    'EmptyState.render("#demo", {',
+    '  icon: "folder", title: "No projects yet",',
+    '  description: "Create your first project to see it here.",',
+    '  action: { label: "New project", onClick: function () {} },',
+    '  secondaryAction: { label: "Learn more", onClick: function () {} },',
+    '  styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

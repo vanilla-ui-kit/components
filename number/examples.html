@@ -557,6 +557,111 @@ NumberInput.format(1234.56, { decimal: ',', thousands: '.', precision: 2 })
   to a valid number are rejected; <code>-</code> is allowed only when
   <code>allowNegative</code> and only leading. Reduced motion is respected.</p>
 </div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> NumberInput injects no CSS at all — the full
+  behavior (formatting, caret math, steppers), the ARIA contract and the stable
+  <code>.vnum-*</code> class hooks all remain; you bring the stylesheet. The demos
+  below each run in their own <code>&lt;iframe&gt;</code>: the styled examples
+  above have already injected the component stylesheet into this page, so only a
+  separate, clean document can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a native input with
+      <code>role="spinbutton"</code>, two real stepper buttons, prefix adornment.
+      Zero CSS was injected, yet typing, arrows, steppers and Enter-to-commit all
+      work.</p>
+      <iframe id="hl-raw" class="hl-frame" title="NumberInput with styles: false — unstyled" height="140"></iframe>
+      <pre>new NumberInput('#demo', {
+  ariaLabel: 'Amount', value: 1234.5,
+  prefix: '$', precision: 2, min: 0,
+  styles: false   // ← zero CSS injected
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — solid stepper column, soft ring, its own palette.
+      Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="NumberInput styled with Tailwind" height="180" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vnum        { @apply inline-flex items-stretch overflow-hidden rounded-2xl
+                 bg-white ring-2 ring-emerald-200 shadow-lg shadow-emerald-100
+                 focus-within:ring-emerald-500; }
+  .vnum-affix  { @apply flex items-center bg-emerald-50 px-3 text-sm
+                 font-bold text-emerald-600; }
+  .vnum-input  { @apply w-32 border-0 bg-transparent px-3 py-2.5 text-right
+                 text-base font-semibold text-slate-800 outline-none; }
+  .vnum-steps  { @apply flex flex-col; }
+  .vnum-btn    { @apply flex flex-1 cursor-pointer items-center justify-center
+                 border-0 bg-emerald-500 px-3 text-white hover:bg-emerald-600
+                 active:bg-emerald-700; }
+  .vnum-down   { @apply border-t border-emerald-400; }
+  .vnum.vnum-invalid  { @apply ring-rose-400; }
+  .vnum.vnum-disabled { @apply opacity-40; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'number.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<body style="margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui">',
+    '<div id="demo"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">committed: 1234.5</p>',
+    '<script src="number.js"><\/script>',
+    '<script>',
+    'new NumberInput("#demo", { ariaLabel: "Amount", value: 1234.5,',
+    '  prefix: "$", precision: 2, min: 0, styles: false,',
+    '  onChange: function (v) { document.getElementById("out").textContent = "committed: " + v; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="number.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vnum        { @apply inline-flex items-stretch overflow-hidden rounded-2xl bg-white ring-2 ring-emerald-200 shadow-lg shadow-emerald-100 focus-within:ring-emerald-500; }',
+    '  .vnum-affix  { @apply flex items-center bg-emerald-50 px-3 text-sm font-bold text-emerald-600; }',
+    '  .vnum-input  { @apply w-32 border-0 bg-transparent px-3 py-2.5 text-right text-base font-semibold text-slate-800 outline-none; }',
+    '  .vnum-steps  { @apply flex flex-col; }',
+    '  .vnum-btn    { @apply flex flex-1 cursor-pointer items-center justify-center border-0 bg-emerald-500 px-3 text-white hover:bg-emerald-600 active:bg-emerald-700; }',
+    '  .vnum-down   { @apply border-t border-emerald-400; }',
+    '  .vnum.vnum-invalid  { @apply ring-rose-400; }',
+    '  .vnum.vnum-disabled { @apply opacity-40; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-emerald-50 to-teal-100 font-sans">',
+    '<div id="demo"></div>',
+    '<script>',
+    'new NumberInput("#demo", { ariaLabel: "Price", value: 1234.5,',
+    '  prefix: "$", precision: 2, min: 0, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

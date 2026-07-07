@@ -494,6 +494,113 @@ Pagination.create(target, options?)  // same as new</code></pre>
     form. Reduced motion is respected.</li>
   </ul>
 </div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Pagination injects no CSS at all — the full
+  behavior (windowing, clamping, callbacks), native keyboard access, the ARIA
+  contract and the stable <code>.vpn-*</code> class hooks all remain; you bring
+  the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a real <code>&lt;nav&gt;</code> of native
+      <code>&lt;button&gt;</code>s with <code>aria-current="page"</code> on the
+      current one. Zero CSS was injected, yet it is a fully working pager —
+      click around.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Pagination with styles: false — unstyled working pager" height="120"></iframe>
+      <pre>new Pagination('#pager', {
+  total: 97, page: 3,
+  showTotal: true,
+  styles: false,   // ← zero CSS injected
+  onChange: function (p) { /* … */ }
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — pill buttons, a filled <code>aria-current</code>
+      state, a rounded jump field. Nothing loads from the CDN until you
+      click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Pagination styled with Tailwind" height="150" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vpn        { @apply flex flex-wrap items-center gap-1.5; }
+  .vpn-total  { @apply mr-2 text-xs font-medium text-slate-500; }
+  .vpn-pages  { @apply flex items-center gap-1.5; }
+  .vpn-btn    { @apply h-9 min-w-9 cursor-pointer rounded-full border-0
+                bg-white px-3 text-sm font-semibold text-slate-600 shadow-sm
+                ring-1 ring-slate-200 hover:bg-sky-50 hover:text-sky-700
+                hover:ring-sky-300 disabled:cursor-not-allowed
+                disabled:opacity-40; }
+  .vpn-btn[aria-current="page"] { @apply bg-sky-600 text-white ring-sky-600
+                shadow-md shadow-sky-200; }
+  .vpn-gap    { @apply px-1 text-slate-400; }
+  .vpn-jump   { @apply ml-2 flex items-center gap-1.5 text-xs text-slate-500; }
+  .vpn-jump input { @apply w-14 rounded-lg border-0 px-2 py-1.5 text-sm
+                ring-1 ring-slate-200 outline-none focus:ring-2
+                focus:ring-sky-500; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'pagination.js' resolves
+  // to the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<body style="margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui">',
+    '<div id="pager"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">page: 3</p>',
+    '<script src="pagination.js"><\/script>',
+    '<script>',
+    'new Pagination("#pager", { total: 97, page: 3, showTotal: true, styles: false,',
+    '  onChange: function (p) { document.getElementById("out").textContent = "page: " + p; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="pagination.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vpn        { @apply flex flex-wrap items-center gap-1.5; }',
+    '  .vpn-total  { @apply mr-2 text-xs font-medium text-slate-500; }',
+    '  .vpn-pages  { @apply flex items-center gap-1.5; }',
+    '  .vpn-btn    { @apply h-9 min-w-9 cursor-pointer rounded-full border-0 bg-white px-3 text-sm font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:ring-sky-300 disabled:cursor-not-allowed disabled:opacity-40; }',
+    '  .vpn-btn[aria-current="page"] { @apply bg-sky-600 text-white ring-sky-600 shadow-md shadow-sky-200; }',
+    '  .vpn-gap    { @apply px-1 text-slate-400; }',
+    '  .vpn-jump   { @apply ml-2 flex items-center gap-1.5 text-xs text-slate-500; }',
+    '  .vpn-jump input { @apply w-14 rounded-lg border-0 px-2 py-1.5 text-sm ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-sky-500; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-sky-50 to-indigo-100 font-sans">',
+    '<div id="pager"></div>',
+    '<script>',
+    'new Pagination("#pager", { total: 97, page: 3, showJump: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

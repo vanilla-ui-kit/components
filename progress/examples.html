@@ -603,6 +603,140 @@ sk.release()                      // or: Progress.skeleton.release('#card')</cod
     movement.</li>
   </ul>
 </div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Progress injects no CSS at all — the full
+  behavior (value updates, promotion to determinate, hide/restore), the ARIA
+  contract and the stable <code>.vpg-*</code> class hooks all remain; you bring
+  the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>Bar, spinner and skeleton with zero injected CSS — label text, a live
+      <code>role="progressbar"</code>, a static SVG arc and bare skeleton boxes.
+      The frame adds three lines of its own CSS purely so the empty
+      <code>&lt;div&gt;</code>s are visible at all.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Progress with styles: false — unstyled bar, spinner and skeleton" height="240"></iframe>
+      <pre>Progress.bar('#bar', { label: 'Uploading…', showValue: true,
+                       value: 42, styles: false })
+Progress.spinner('#spin', { label: 'Loading…', styles: false })
+Progress.skeleton('#skel', { lines: 3, avatar: true, styles: false })
+
+/* the component injected nothing — this baseline is the page's,
+   so the bare boxes show up: */
+.vpg-fill   { height: 8px; background: #888; }
+.vpg-line   { background: #ddd; }
+.vpg-avatar { width: 40px; height: 40px; background: #ddd; }</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — gradient fill, pulsing skeleton, spinning arc.
+      Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Progress styled with Tailwind" height="360" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vpg-bar       { @apply w-full; }
+  .vpg-top       { @apply mb-2 flex items-baseline justify-between; }
+  .vpg-labeltext { @apply text-sm font-semibold text-slate-700; }
+  .vpg-value     { @apply text-xs font-bold tabular-nums text-purple-600; }
+  .vpg-track     { @apply h-3 overflow-hidden rounded-full bg-slate-100
+                   shadow-inner; }
+  .vpg-fill      { @apply h-full rounded-full bg-gradient-to-r
+                   from-fuchsia-500 via-purple-500 to-indigo-500
+                   transition-all duration-300; }
+  .vpg-spinner   { @apply inline-flex text-purple-600; }
+  .vpg-spin      { @apply h-6 w-6 animate-spin; }
+  .vpg-sr        { @apply sr-only; }
+  .vpg-skeleton  { @apply flex items-start gap-4; }
+  .vpg-avatar    { @apply h-12 w-12 flex-none animate-pulse rounded-2xl
+                   bg-slate-200; }
+  .vpg-lines     { @apply flex-1 space-y-2.5; }
+  .vpg-line      { @apply animate-pulse rounded-full bg-slate-200; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'progress.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<style>',
+    'body{margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui}',
+    '/* the page\'s own baseline — the component injected nothing: */',
+    '.vpg-fill{height:8px;background:#888}',
+    '.vpg-line{background:#ddd}',
+    '.vpg-avatar{width:40px;height:40px;background:#ddd}',
+    '</style>',
+    '<body>',
+    '<div id="bar"></div>',
+    '<div id="spin" style="margin-top:14px"></div>',
+    '<div id="skel" style="margin-top:14px"></div>',
+    '<script src="progress.js"><\/script>',
+    '<script>',
+    'Progress.bar("#bar", { label: "Uploading…", showValue: true, value: 42, styles: false });',
+    'Progress.spinner("#spin", { label: "Loading…", styles: false });',
+    'Progress.skeleton("#skel", { lines: 3, avatar: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="progress.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vpg-bar       { @apply w-full; }',
+    '  .vpg-top       { @apply mb-2 flex items-baseline justify-between; }',
+    '  .vpg-labeltext { @apply text-sm font-semibold text-slate-700; }',
+    '  .vpg-value     { @apply text-xs font-bold tabular-nums text-purple-600; }',
+    '  .vpg-track     { @apply h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner; }',
+    '  .vpg-fill      { @apply h-full rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 transition-all duration-300; }',
+    '  .vpg-spinner   { @apply inline-flex text-purple-600; }',
+    '  .vpg-spin      { @apply h-6 w-6 animate-spin; }',
+    '  .vpg-sr        { @apply sr-only; }',
+    '  .vpg-skeleton  { @apply flex items-start gap-4; }',
+    '  .vpg-avatar    { @apply h-12 w-12 flex-none animate-pulse rounded-2xl bg-slate-200; }',
+    '  .vpg-lines     { @apply flex-1 space-y-2.5; }',
+    '  .vpg-line      { @apply animate-pulse rounded-full bg-slate-200; }',
+    '</style>',
+    '<body class="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 p-6 font-sans">',
+    '<div class="mx-auto max-w-md space-y-5">',
+    '  <div class="rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><div id="bar"></div></div>',
+    '  <div class="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><span id="spin"></span><span class="text-sm text-slate-500">Fetching workspace…</span></div>',
+    '  <div class="rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><div id="skel"></div></div>',
+    '</div>',
+    '<script>',
+    'var b = Progress.bar("#bar", { label: "Syncing library", showValue: true, value: 0, styles: false });',
+    'var v = 0;',
+    'setInterval(function () { v = v >= 100 ? 0 : v + 4; b.set(v); }, 400);',
+    'Progress.spinner("#spin", { label: "Loading…", styles: false });',
+    'Progress.skeleton("#skel", { lines: 3, avatar: true, header: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

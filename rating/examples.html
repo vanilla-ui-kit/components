@@ -516,6 +516,124 @@ new Rating('#score')   // submits score=3.5</code></pre>
     respected (the hover scale transition is disabled).</li>
   </ul>
 </div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Rating injects no CSS at all — the full
+  behavior (hover preview, keyboard, form sync), the <code>role="slider"</code>
+  ARIA contract and the stable <code>.vrt-*</code> class hooks all remain; you
+  bring the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>Zero injected CSS — no colors, no sizes, no transitions. The frame adds
+      only the five structural lines below (the overlay-clip geometry every
+      design needs), and hover, click, keyboard and half-stars all work.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Rating with styles: false — unstyled interactive stars" height="110"></iframe>
+      <pre>new Rating('#stars', {
+  value: 3.5,
+  styles: false,   // ← zero CSS injected
+  onChange: function (v) { /* … */ }
+})
+
+/* the component injected nothing — this structural minimum
+   is the page's own (no colors, no sizes anywhere): */
+.vrt-star { display: inline-block; position: relative; }
+.vrt-star svg { display: block; width: 100%; height: 100%; }
+.vrt-star-empty, .vrt-star-fill { position: absolute; inset: 0; }
+.vrt-star-fill { overflow: hidden; }
+.vrt-star-full { display: block; height: 100%; }</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — hearts instead of stars, a rose palette, a scale-up
+      hover. Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Rating styled with Tailwind" height="140" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vrt        { @apply inline-flex items-center gap-3; }
+  .vrt-stars  { @apply inline-flex gap-1 rounded-xl bg-white/70 p-2
+                shadow ring-1 ring-rose-100 outline-none
+                focus-visible:ring-2 focus-visible:ring-rose-400; }
+  .vrt-star   { @apply relative inline-block cursor-pointer text-rose-200
+                transition-transform hover:scale-125; }
+  .vrt-star svg { @apply block h-full w-full; }
+  .vrt-star-empty, .vrt-star-fill { @apply absolute inset-0; }
+  .vrt-star-fill  { @apply overflow-hidden text-rose-500 drop-shadow; }
+  .vrt-star-full  { @apply block h-full; }
+  .vrt-value  { @apply text-sm font-bold tabular-nums text-rose-600; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'rating.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<style>',
+    'body{margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui}',
+    '/* the page\'s own structural minimum — the component injected nothing: */',
+    '.vrt-star{display:inline-block;position:relative}',
+    '.vrt-star svg{display:block;width:100%;height:100%}',
+    '.vrt-star-empty,.vrt-star-fill{position:absolute;inset:0}',
+    '.vrt-star-fill{overflow:hidden}',
+    '.vrt-star-full{display:block;height:100%}',
+    '</style>',
+    '<body>',
+    '<div id="stars" aria-label="Rate this"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">value: 3.5</p>',
+    '<script src="rating.js"><\/script>',
+    '<script>',
+    'new Rating("#stars", { value: 3.5, styles: false,',
+    '  onChange: function (v) { document.getElementById("out").textContent = "value: " + v; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="rating.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vrt        { @apply inline-flex items-center gap-3; }',
+    '  .vrt-stars  { @apply inline-flex gap-1 rounded-xl bg-white/70 p-2 shadow ring-1 ring-rose-100 outline-none focus-visible:ring-2 focus-visible:ring-rose-400; }',
+    '  .vrt-star   { @apply relative inline-block cursor-pointer text-rose-200 transition-transform hover:scale-125; }',
+    '  .vrt-star svg { @apply block h-full w-full; }',
+    '  .vrt-star-empty, .vrt-star-fill { @apply absolute inset-0; }',
+    '  .vrt-star-fill  { @apply overflow-hidden text-rose-500 drop-shadow; }',
+    '  .vrt-star-full  { @apply block h-full; }',
+    '  .vrt-value  { @apply text-sm font-bold tabular-nums text-rose-600; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-rose-50 to-pink-100 font-sans">',
+    '<div id="stars" aria-label="How much do you love it?"></div>',
+    '<script>',
+    'new Rating("#stars", { value: 3.5, size: 28, icon: "heart",',
+    '  showValue: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
