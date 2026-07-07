@@ -18,6 +18,7 @@
     "./phone": "./phone/phone.js",
     "./drawer": "./drawer/drawer.js",
     "./segmented": "./segmented/segmented.js",
+    "./progress": "./progress/progress.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -30,6 +31,7 @@
     "./phone.css": "./dist/phone.css",
     "./drawer.css": "./dist/drawer.css",
     "./segmented.css": "./dist/segmented.css",
+    "./progress.css": "./dist/progress.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -47,6 +49,7 @@
     "phone",
     "drawer",
     "segmented",
+    "progress",
     "dist"
   ],
   "scripts": {

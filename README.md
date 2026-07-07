@@ -31,10 +31,11 @@ you bring your own design.
 | Phone input (flags, formatting, validation) | `PhoneInput` | [`phone/phone.js`](./phone/phone.js) | [README](./phone/README.md) |
 | Drawers / side sheets | `Drawer` | [`drawer/drawer.js`](./drawer/drawer.js) | [README](./drawer/README.md) |
 | Segmented control | `Segmented` | [`segmented/segmented.js`](./segmented/segmented.js) | [README](./segmented/README.md) |
+| Progress bars / spinners / skeletons | `Progress` | [`progress/progress.js`](./progress/progress.js) | [README](./progress/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
 Roadmap: autocomplete, slider, popconfirm, upload, number input,
-progress/skeletons, pagination, empty state, rating — same contract, same DNA.
+pagination, empty state, rating — same contract, same DNA.
 
 ## Get it any way you like
 

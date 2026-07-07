@@ -35,6 +35,7 @@ const FAMILY = [
   ['PhoneInput', 'phone/phone.js', 'vph', ['create', 'get', 'autoInit', 'parse', 'format', 'isValid', 'flag']],
   ['Drawer', 'drawer/drawer.js', 'vdr', ['open', 'create', 'get', 'autoInit']],
   ['Segmented', 'segmented/segmented.js', 'vsg', ['create', 'get', 'autoInit']],
+  ['Progress', 'progress/progress.js', 'vpg', ['bar', 'spinner', 'skeleton', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -217,6 +218,17 @@ test('Segmented specifics: SSR no-op instance', () => {
   }
   assert.doesNotThrow(() => s.setValue('b'));
   assert.doesNotThrow(() => s.update(['c', 'd']));
+});
+
+test('Progress specifics: SSR no-op handles for bar/spinner/skeleton', () => {
+  const Progress = components[12].mod;
+  const b = Progress.bar(null, { value: 10 });
+  assert.doesNotThrow(() => b.set(50));
+  assert.doesNotThrow(() => b.done());
+  assert.doesNotThrow(() => b.remove());
+  assert.doesNotThrow(() => Progress.spinner(null).remove());
+  assert.doesNotThrow(() => Progress.skeleton(null).release());
+  assert.doesNotThrow(() => Progress.skeleton.release(null));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

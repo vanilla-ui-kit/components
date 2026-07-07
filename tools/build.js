@@ -33,7 +33,8 @@ var COMPONENTS = [
   ['form/form.js', 'Form', 'form.css', 'vanilla-form'],
   ['phone/phone.js', 'PhoneInput', 'phone.css', 'vanilla-phone'],
   ['drawer/drawer.js', 'Drawer', 'drawer.css', 'vanilla-drawer'],
-  ['segmented/segmented.js', 'Segmented', 'segmented.css', 'vanilla-segmented']
+  ['segmented/segmented.js', 'Segmented', 'segmented.css', 'vanilla-segmented'],
+  ['progress/progress.js', 'Progress', 'progress.css', 'vanilla-progress']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));
