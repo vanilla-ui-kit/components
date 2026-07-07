@@ -9,9 +9,9 @@ line of unified theming.
 *Exactly what it says: a UI kit for vanilla JavaScript — the script tag, the
 global, the single file, the way the web has always worked.*
 
-**Live demos: [vanilla-ui-kit.github.io/components](https://vanilla-ui-kit.github.io/components/)**
-· **[Theme builder](https://vanilla-ui-kit.github.io/components/theme.html)**
-· **[Demo app](https://vanilla-ui-kit.github.io/components/demo/admin.html)**
+**Live demos: [vanilla-ui-kit.github.io](https://vanilla-ui-kit.github.io/)**
+· **[Theme builder](https://vanilla-ui-kit.github.io/theme.html)**
+· **[Demo app](https://vanilla-ui-kit.github.io/demo/admin.html)**
 
 Beautiful by default, automatic light/dark, fully keyboard-accessible — and
 **headless when you want**: every component can run with zero injected CSS so
