@@ -365,6 +365,495 @@ form.isDirty()  // true</pre>
     ]
   });
 </script>
+<style>
+  /* API reference — scoped to .api-doc only */
+  .api-doc { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .api-doc .api-rule { border: 0; border-top: 1px solid var(--faint); margin: 72px 0 0; }
+  .api-doc h2 {
+    font-family: var(--display); font-size: clamp(26px, 3.6vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 56px 0 10px;
+  }
+  .api-doc h3 { font-size: 18px; font-weight: 650; margin: 48px 0 10px; }
+  .api-doc h4 { font-size: 15px; font-weight: 650; margin: 28px 0 8px; }
+  .api-doc p { max-width: 72ch; }
+  .api-doc p, .api-doc li { color: var(--text); font-size: 14.5px; }
+  .api-doc .api-note { color: var(--muted); font-size: 13.5px; }
+  .api-doc .api-toc { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .api-doc .api-toc a {
+    display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 999px; padding: 4px 12px;
+  }
+  .api-doc .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-doc a { color: var(--accent); }
+  .api-doc code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px; white-space: nowrap;
+  }
+  .api-doc pre {
+    margin: 12px 0 20px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-doc pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+  .api-doc table {
+    width: 100%; border-collapse: collapse; margin: 12px 0 20px;
+    font-size: 13.5px; line-height: 1.5;
+  }
+  .api-doc th {
+    text-align: left; font-weight: 650; color: var(--text); background: var(--surface);
+    border: 1px solid var(--faint); padding: 8px 12px; white-space: nowrap;
+  }
+  .api-doc td {
+    border: 1px solid var(--faint); padding: 8px 12px; vertical-align: top; color: var(--text);
+  }
+  .api-doc td:last-child { color: var(--muted); }
+  .api-doc [role="region"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<section class="api-doc" aria-labelledby="api">
+  <hr class="api-rule">
+  <h2 id="api">API reference</h2>
+  <p class="api-note">Complete reference for <code>Form</code> v1.0.0, matching the source of
+  <code>form.js</code>. Everything below also applies via the family bundle
+  (<code>dist/vanilla-ui-kit.js</code>) and npm (<code>vanilla-ui-kit/form</code>).</p>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options &amp; field spec</a></li>
+    <li><a href="#api-methods">Instance methods</a></li>
+    <li><a href="#api-statics">Statics &amp; validators</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-data">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <pre><code>new Form(target, options?)   // target: CSS selector string or Element
+Form.create(target, options?)  // identical to new Form(target, options)</code></pre>
+  <p>The constructor picks one of two modes based on the target element:</p>
+  <p><strong>Schema mode</strong> — the target is any container (not a
+  <code>&lt;form&gt;</code>) and you pass a <code>fields</code> array. The whole form is built
+  for you: labels, hints, per-field error regions, submit button, error banner, status live
+  region, and honeypot.</p>
+  <pre><code>var form = new Form('#signup', {
+  fields: [
+    { name: 'email',    type: 'email',    label: 'Email',    required: true },
+    { name: 'password', type: 'password', label: 'Password', required: true, minlength: 8 }
+  ],
+  successMessage: 'Account created',
+  onSubmit: function (values) { return api.signup(values) }  // may return a Promise
+})</code></pre>
+  <p><strong>Enhance mode</strong> — the target is an existing <code>&lt;form&gt;</code>
+  element. Its named controls become the reactive state; its validation attributes
+  (<code>required</code>, <code>pattern</code>, <code>min</code>, <code>max</code>,
+  <code>minlength</code>, <code>maxlength</code>, <code>type="email"|"url"|"number"</code>)
+  seed the validators; honeypot and submission handling are added. If no
+  <code>onSubmit</code>/<code>action</code> option is given, the form's own
+  <code>action</code>/<code>method</code> attributes are adopted and submitted via fetch as
+  <code>FormData</code> (<code>encoding: 'form'</code>). <code>destroy()</code> restores the
+  original form untouched.</p>
+  <pre><code>var form = new Form(document.querySelector('form.contact'))</code></pre>
+  <p class="api-note">Behavior notes from source: passing a selector that matches nothing
+  throws <code>Error('Form: target element not found: …')</code>. Constructing on an element
+  that already has an instance destroys the old instance first. SSR-safe: with no DOM, or with
+  <code>new Form(null, …)</code>, the constructor returns an inert no-op handle with the full
+  method surface. Native constraint popups are suppressed (<code>novalidate</code>) in favor of
+  the kit's own rendering.</p>
+
+  <h3 id="api-options">Options</h3>
+  <p>Second constructor argument. Every key of <code>Form.defaults</code> is listed; change any
+  default once, page-wide, via <code>Form.defaults</code>.</p>
+  <div tabindex="0" role="region" aria-label="Constructor options" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>fields</code></td><td>array</td><td><code>null</code></td>
+          <td>Schema mode: array of field specs (see table below). Specs without a <code>name</code> are skipped. Ignored in enhance mode.</td></tr>
+        <tr><td><code>validateOn</code></td><td>string</td><td><code>'blur'</code></td>
+          <td><code>'blur'</code> validates a field when it loses focus; <code>'change'</code> validates live on every change; <code>'submit'</code> only at submit time. In every mode, once a field has an error it re-validates live on each input so the message clears the moment the value is fixed. Submit always runs a full pass.</td></tr>
+        <tr><td><code>onSubmit</code></td><td>function</td><td><code>null</code></td>
+          <td><code>fn(values, form)</code>, may return a Promise. Resolve = success; reject/throw = error handling. See <a href="#api-events">Events &amp; callbacks</a>.</td></tr>
+        <tr><td><code>onError</code></td><td>function</td><td><code>null</code></td>
+          <td><code>fn(err, form)</code>, fired after a rejected submit has been rendered (banner or field errors).</td></tr>
+        <tr><td><code>onChange</code></td><td>function</td><td><code>null</code></td>
+          <td><code>fn(values, form)</code> on any value change.</td></tr>
+        <tr><td><code>onSpam</code></td><td>function</td><td><code>null</code></td>
+          <td><code>fn(values)</code> when the honeypot decoy or the time gate trips. The bot still sees the normal success UX.</td></tr>
+        <tr><td><code>action</code></td><td>string</td><td><code>null</code></td>
+          <td>URL — the form fetches for you (see <code>encoding</code>). In enhance mode, a form <code>action</code> attribute is adopted automatically when this option is not given. Non-2xx responses become errors; 2xx resolves with the parsed JSON body. Falls back to <code>XMLHttpRequest</code> when <code>fetch</code> is missing. For <code>GET</code>/<code>HEAD</code>, values are serialized into the query string instead of a body.</td></tr>
+        <tr><td><code>method</code></td><td>string</td><td><code>null</code></td>
+          <td>HTTP method for <code>action</code> submits. Defaults to the form's <code>method</code> attribute (enhance mode), else <code>POST</code>.</td></tr>
+        <tr><td><code>encoding</code></td><td>string</td><td><code>'json'</code></td>
+          <td><code>'json'</code> sends a JSON body with <code>Content-Type: application/json</code>; <code>'form'</code> sends <code>FormData</code> (booleans append <code>'1'</code> when true, are omitted when false). When enhance mode adopts an <code>action</code> attribute, encoding defaults to <code>'form'</code>.</td></tr>
+        <tr><td><code>headers</code></td><td>object</td><td><code>null</code></td>
+          <td>Extra request headers for <code>action</code> submits, e.g. <code>{'X-CSRF-Token': token}</code>. Requests are sent with <code>credentials: 'same-origin'</code>.</td></tr>
+        <tr><td><code>honeypot</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Adds the off-viewport decoy field plus the minimum-fill-time gate, and a hidden <code>_hp_t</code> input that carries the elapsed milliseconds to your server on <code>action</code> submits. <code>false</code> disables both traps.</td></tr>
+        <tr><td><code>honeypotName</code></td><td>string</td><td><code>null</code></td>
+          <td>Decoy field name. When <code>null</code>, a realistic name is picked from <code>website_url</code> / <code>company_website</code> / <code>homepage_url</code> / <code>contact_website</code> (suffixed if it would shadow a real field).</td></tr>
+        <tr><td><code>minFillTime</code></td><td>number</td><td><code>1500</code></td>
+          <td>Milliseconds after render; faster submits are treated as bots (silent fake success + <code>onSpam</code>).</td></tr>
+        <tr><td><code>resetOnSuccess</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Reset the form to its initial values after a successful submit.</td></tr>
+        <tr><td><code>successMessage</code></td><td>string</td><td><code>null</code></td>
+          <td>Rendered in the polite status live region on success — or shown as <code>Toast.success(…)</code> when the family Toast is on the page.</td></tr>
+        <tr><td><code>submitLabel</code></td><td>string | false</td><td><code>null</code></td>
+          <td>Schema-mode submit button text; <code>null</code> uses <code>labels.submit</code> (<code>'Submit'</code>); <code>false</code> renders no button at all.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> follows the page theme live; pin with <code>'light'</code> or <code>'dark'</code>. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is ever injected; style the stable <code>.vfm-*</code> class hooks yourself. The honeypot stays hidden via inline styles even headless.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td>see below</td>
+          <td>Every user-facing string; merged shallowly over the defaults, so you can override single keys (also the localization hook). Keys in the next table.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>labels keys</h4>
+  <div tabindex="0" role="region" aria-label="labels option keys and default strings" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>required</code></td><td><code>'This field is required'</code></td><td>Empty required field</td></tr>
+        <tr><td><code>email</code></td><td><code>'Enter a valid email address'</code></td><td>Email format</td></tr>
+        <tr><td><code>url</code></td><td><code>'Enter a valid URL'</code></td><td>URL format</td></tr>
+        <tr><td><code>number</code></td><td><code>'Enter a number'</code></td><td>Non-numeric value in a number field</td></tr>
+        <tr><td><code>min</code></td><td><code>'Must be at least {min}'</code></td><td>Number below <code>min</code>; <code>{min}</code> is interpolated</td></tr>
+        <tr><td><code>max</code></td><td><code>'Must be at most {max}'</code></td><td>Number above <code>max</code>; <code>{max}</code> is interpolated</td></tr>
+        <tr><td><code>minlength</code></td><td><code>'Must be at least {min} characters'</code></td><td>Too-short value; <code>{min}</code> is interpolated</td></tr>
+        <tr><td><code>maxlength</code></td><td><code>'Must be at most {max} characters'</code></td><td>Too-long value; <code>{max}</code> is interpolated</td></tr>
+        <tr><td><code>pattern</code></td><td><code>'Does not match the expected format'</code></td><td>Pattern mismatch</td></tr>
+        <tr><td><code>phone</code></td><td><code>'Enter a valid phone number'</code></td><td>Phone field whose PhoneInput upgrade reports <code>valid === false</code></td></tr>
+        <tr><td><code>submit</code></td><td><code>'Submit'</code></td><td>Default submit button text (schema mode)</td></tr>
+        <tr><td><code>submitError</code></td><td><code>'Something went wrong. Please try again.'</code></td><td>Generic form-level error banner</td></tr>
+        <tr><td><code>showPassword</code></td><td><code>'Show password'</code></td><td><code>aria-label</code> of the password toggle</td></tr>
+        <tr><td><code>hidePassword</code></td><td><code>'Hide password'</code></td><td><code>aria-label</code> of the password toggle when visible</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Field spec (schema mode)</h4>
+  <p>Each entry of <code>fields</code> is a plain object. Labels, hints and messages are
+  rendered with <code>textContent</code>; user values are never rendered as HTML.</p>
+  <div tabindex="0" role="region" aria-label="Field spec properties" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>string</td><td>— (required)</td>
+          <td>Control name and the key in <code>form.values</code>. Specs without a name are skipped.</td></tr>
+        <tr><td><code>type</code></td><td>string</td><td><code>'text'</code></td>
+          <td>One of <code>text</code>, <code>email</code>, <code>password</code>, <code>number</code>, <code>url</code>, <code>tel</code>, <code>textarea</code>, <code>checkbox</code>, <code>switch</code>, <code>radio</code>, <code>select</code>, <code>date</code>, <code>phone</code>, <code>hidden</code> (see field types below).</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td>the field's <code>name</code></td>
+          <td>Visible <code>&lt;label&gt;</code> (or <code>&lt;legend&gt;</code> for radio groups). Required fields get a decorative <code>*</code> (<code>aria-hidden</code>).</td></tr>
+        <tr><td><code>placeholder</code></td><td>string</td><td>—</td>
+          <td>Input placeholder. On <code>select</code>, renders an empty-value first option with this text.</td></tr>
+        <tr><td><code>hint</code></td><td>string</td><td>—</td>
+          <td>Help text under the label, wired via <code>aria-describedby</code>. Plain text unless <code>html: true</code>.</td></tr>
+        <tr><td><code>value</code></td><td>any</td><td>—</td>
+          <td>Initial value. Boolean for <code>checkbox</code>/<code>switch</code>; matched against option values for <code>radio</code>/<code>select</code>.</td></tr>
+        <tr><td><code>required</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Adds the required validator and the native <code>required</code> attribute.</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Renders the control disabled (per-option for radio via option objects).</td></tr>
+        <tr><td><code>options</code></td><td>array</td><td>—</td>
+          <td>For <code>radio</code>/<code>select</code>: <code>['a', 'b']</code> shorthand or <code>[{value, label, disabled}]</code> objects.</td></tr>
+        <tr><td><code>min</code> / <code>max</code></td><td>number | string</td><td>—</td>
+          <td>Number range validator + native attributes; also forwarded to a DatePicker upgrade as its <code>min</code>/<code>max</code>.</td></tr>
+        <tr><td><code>minlength</code> / <code>maxlength</code></td><td>number</td><td>—</td>
+          <td>Length validator + native attributes.</td></tr>
+        <tr><td><code>pattern</code></td><td>string | RegExp</td><td>—</td>
+          <td>Pattern validator. A string is compiled as <code>^(?:pattern)$</code> (and also set as the native attribute); a RegExp is used as-is (no native attribute). A broken pattern is ignored rather than breaking the form.</td></tr>
+        <tr><td><code>validate</code></td><td>function | function[]</td><td>—</td>
+          <td>Custom validator(s): <code>fn(value, values)</code> returning <code>null</code> when valid, a message string when invalid — or a Promise of either for async checks. Stale async verdicts are discarded when the value changes mid-flight. A thrown error's <code>message</code> becomes the error text.</td></tr>
+        <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Per-field opt-in to render the <code>hint</code> as trusted HTML markup. Applies to the hint only.</td></tr>
+        <tr><td><code>rows</code></td><td>number</td><td><code>3</code></td>
+          <td><code>textarea</code> only: initial rows.</td></tr>
+        <tr><td><code>autoGrow</code></td><td>boolean</td><td><code>false</code></td>
+          <td><code>textarea</code> only: grows with content as the user types.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Field types</h4>
+  <div tabindex="0" role="region" aria-label="Field types and what they render" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>type</th><th>Renders</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>text</code> / <code>email</code> / <code>password</code> / <code>number</code> / <code>url</code> / <code>tel</code></td><td><code>&lt;input&gt;</code></td>
+          <td><code>password</code> gets a show/hide toggle button; <code>email</code>/<code>url</code>/<code>number</code> get format validators.</td></tr>
+        <tr><td><code>textarea</code></td><td><code>&lt;textarea&gt;</code></td><td><code>rows</code>, <code>autoGrow: true</code> for grow-with-content.</td></tr>
+        <tr><td><code>checkbox</code></td><td>checkbox</td><td>Single boolean value.</td></tr>
+        <tr><td><code>switch</code></td><td>styled checkbox</td><td>Same boolean semantics, toggle look.</td></tr>
+        <tr><td><code>radio</code></td><td>radio group</td><td><code>options</code> array; rendered in a <code>&lt;fieldset&gt;</code> with <code>&lt;legend&gt;</code>.</td></tr>
+        <tr><td><code>select</code></td><td><code>&lt;select&gt;</code></td><td><code>options</code> array; family-upgrades to Select when <code>window.Select</code> exists.</td></tr>
+        <tr><td><code>date</code></td><td><code>&lt;input type=date&gt;</code></td><td>Family-upgrades to DatePicker (rendered as a text input when DatePicker is present at build time).</td></tr>
+        <tr><td><code>phone</code></td><td><code>&lt;input type=tel&gt;</code></td><td>Family-upgrades to PhoneInput; its <code>.valid</code> flag feeds a phone-format validator.</td></tr>
+        <tr><td><code>hidden</code></td><td><code>&lt;input type=hidden&gt;</code></td><td>Value included in submissions, no UI, no label/error region.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="api-note">Family upgrades are never required — without <code>Select</code>/<code>DatePicker</code>/<code>PhoneInput</code>
+  (standalone globals or via <code>window.VC.components</code>) you keep fully working native
+  fields. A failing upgrade degrades to the native control. Enhance mode never upgrades
+  adopted controls.</p>
+
+  <h3 id="api-methods">Instance methods &amp; properties</h3>
+  <div tabindex="0" role="region" aria-label="Instance methods" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>submit()</code></td><td><code>Promise&lt;boolean&gt;</code></td>
+          <td>Programmatic submit: honeypot check, full validation, then <code>onSubmit</code>/<code>action</code>. Resolves <code>true</code> on success, <code>false</code> on validation failure or submit error. No-op (resolves <code>false</code>) while already submitting or disabled.</td></tr>
+        <tr><td><code>validate(config?)</code></td><td><code>Promise&lt;boolean&gt;</code></td>
+          <td>Full validation pass over every field, async validators included; resolves <code>true</code> when clean. <code>{silent: true}</code> skips rendering (no messages, no <code>aria-invalid</code>).</td></tr>
+        <tr><td><code>isValid()</code></td><td><code>boolean</code></td>
+          <td>Synchronous verdict using sync validators only, no rendering; async validators still in flight count as valid.</td></tr>
+        <tr><td><code>getValue(name)</code></td><td>any</td>
+          <td>Current value of one field (<code>undefined</code> for unknown names). Booleans for checkbox/switch, arrays for multi-selects and same-name checkbox groups.</td></tr>
+        <tr><td><code>setValue(name, value, config?)</code></td><td><code>this</code></td>
+          <td>Write a field's value and run the normal change pipeline (watchers, <code>onChange</code>, live re-validation of erroring fields). <code>{silent: true}</code> updates the value and dirty state without notifying.</td></tr>
+        <tr><td><code>setValues(obj, config?)</code></td><td><code>this</code></td>
+          <td><code>setValue</code> for every key of <code>obj</code>; same optional <code>{silent: true}</code>.</td></tr>
+        <tr><td><code>setError(name, message)</code></td><td><code>this</code></td>
+          <td>Set (or clear, with a falsy message) a field's error manually — e.g. mapping your own server responses.</td></tr>
+        <tr><td><code>clearErrors()</code></td><td><code>this</code></td>
+          <td>Clear all field errors and the form-level banner.</td></tr>
+        <tr><td><code>isDirty()</code></td><td><code>boolean</code></td>
+          <td><code>true</code> when any field differs from its initial value.</td></tr>
+        <tr><td><code>watch(name?, fn)</code></td><td>function</td>
+          <td><code>watch('email', fn(value, meta))</code> for one field, or <code>watch(fn(values, changedName, meta))</code> for any change; <code>meta</code> is <code>{dirty, touched, error}</code>. Returns an unsubscribe function.</td></tr>
+        <tr><td><code>reset()</code></td><td><code>this</code></td>
+          <td>Back to initial values; errors, banner, status, dirty/touched flags, and in-flight async verdicts all cleared.</td></tr>
+        <tr><td><code>enable()</code> / <code>disable()</code></td><td><code>this</code></td>
+          <td>Enable/disable every control (family upgrades included) and the submit button; <code>disable()</code> adds <code>is-disabled</code> on the form and blocks <code>submit()</code>. <code>enable()</code> restores each control's original disabled state.</td></tr>
+        <tr><td><code>destroy()</code></td><td><code>this</code></td>
+          <td>Tear down: schema mode removes the built DOM; enhance mode restores the original form (listeners, classes, attributes, and added nodes removed). Family upgrades are destroyed too.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div tabindex="0" role="region" aria-label="Instance properties" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>values</code></td><td>object (getter)</td>
+          <td>Plain-object snapshot of all field values — this is the "getValues/serialize" of the API. Fresh copy on each read.</td></tr>
+        <tr><td><code>errors</code></td><td>object (getter)</td>
+          <td><code>{name: message}</code> snapshot of current errors.</td></tr>
+        <tr><td><code>el</code></td><td>Element</td>
+          <td>The target element you passed (container in schema mode, the <code>&lt;form&gt;</code> in enhance mode).</td></tr>
+        <tr><td><code>form</code></td><td>HTMLFormElement</td>
+          <td>The live <code>&lt;form&gt;</code> element (<code>null</code> after <code>destroy()</code>).</td></tr>
+        <tr><td><code>opts</code></td><td>object</td>
+          <td>The resolved options (defaults merged with what you passed).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="api-note">Per-field meta is tracked automatically: <code>dirty</code> compares
+  against the initial value, <code>touched</code> is set on first blur. On an inert SSR handle
+  all of these methods exist and are harmless no-ops.</p>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div tabindex="0" role="region" aria-label="Static members" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Form.create(target, options?)</code></td><td>Identical to <code>new Form(target, options)</code>.</td></tr>
+        <tr><td><code>Form.get(target)</code></td><td>Returns the live instance attached to an element (or selector), or <code>null</code>.</td></tr>
+        <tr><td><code>Form.autoInit(root?)</code></td><td>Initializes every <code>&lt;form data-vfm&gt;</code> under <code>root</code> (default: <code>document</code>) that has no instance yet; returns the array of created instances. Runs once automatically on <code>DOMContentLoaded</code>. One bad form logs an error without aborting the rest.</td></tr>
+        <tr><td><code>Form.validators</code></td><td>The pure built-in validators (table below) — no DOM needed, usable in Node to share rules with your server.</td></tr>
+        <tr><td><code>Form.defaults</code></td><td>The live defaults object — change any default once, page-wide (see <a href="#api-options">Options</a>).</td></tr>
+        <tr><td><code>Form.version</code></td><td>Version string, <code>'1.0.0'</code>.</td></tr>
+        <tr><td><code>Form.salt</code></td><td>CSS salt namespace token, default <code>'vc1'</code>. Set your own token or <code>false</code> (no salting) <em>before</em> the first form is created.</td></tr>
+        <tr><td><code>Form.css</code></td><td>The full embedded stylesheet as a string, rendered with the current salt — a starting point for headless styling (also shipped as <code>dist/form.css</code>).</td></tr>
+        <tr><td><code>Form.rootClass</code></td><td><code>'vfm'</code> — the root class stamped on every form.</td></tr>
+        <tr><td><code>Form.themeVars</code> / <code>Form.varScopes</code></td><td>Convergence metadata for the VC core: the theme variables it may bridge (<code>accent</code>, <code>radius</code>, <code>font</code>) and the scopes where variables are defined (<code>'.vfm'</code>, <code>'.vfm[data-theme=dark]'</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Form.validators</h4>
+  <p>Contract: each returns <code>null</code> when valid, a message string when invalid. Format
+  validators pass on empty values — pair them with <code>required</code>. The optional
+  <code>labels</code> argument supplies the message strings and defaults to
+  <code>Form.defaults.labels</code>.</p>
+  <div tabindex="0" role="region" aria-label="Built-in validators" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Validator</th><th>Signature</th><th>Behavior</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>required</code></td><td><code>required(value, values?, labels?)</code></td>
+          <td>Invalid when the value is empty: <code>null</code>/<code>undefined</code>, <code>false</code>, an empty array, or a whitespace-only string.</td></tr>
+        <tr><td><code>email</code></td><td><code>email(value, values?, labels?)</code></td>
+          <td>Pragmatic email check (<code>something@something.tld</code>, no spaces).</td></tr>
+        <tr><td><code>url</code></td><td><code>url(value, values?, labels?)</code></td>
+          <td>Requires an absolute <code>http://</code> or <code>https://</code> URL.</td></tr>
+        <tr><td><code>number</code></td><td><code>number(value, min, max, labels?)</code></td>
+          <td>Invalid when not numeric, below <code>min</code>, or above <code>max</code> (either bound may be <code>null</code>/omitted).</td></tr>
+        <tr><td><code>length</code></td><td><code>length(value, min, max, labels?)</code></td>
+          <td>String-length bounds; either bound may be <code>null</code>/omitted.</td></tr>
+        <tr><td><code>pattern</code></td><td><code>pattern(value, pattern, labels?)</code></td>
+          <td>Tests against a RegExp, or a string compiled as <code>^(?:pattern)$</code>. An invalid pattern string returns <code>null</code> (never breaks the form).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>Form.validators.email('a@b.co')   // null (valid)
+Form.validators.email('nope')     // 'Enter a valid email address'
+Form.validators.number('5', 1, 10)  // null</code></pre>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>All eventing is via option callbacks and <code>watch()</code> — the component dispatches
+  <strong>no custom DOM events</strong> (it listens to the native <code>submit</code>,
+  <code>input</code>, <code>change</code>, and <code>focusout</code> events internally).</p>
+  <div tabindex="0" role="region" aria-label="Callbacks and their payloads" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>Payload</th><th>Fires</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onSubmit(values, form)</code></td><td><code>values</code>: plain-object snapshot; <code>form</code>: the instance</td>
+          <td>After a clean validation pass on submit. May return a Promise: while pending, the submit button is disabled with a spinner (<code>is-loading</code>, <code>aria-busy</code>) and repeat submits are ignored. Resolve = success (<code>resetOnSuccess</code>, <code>successMessage</code>); reject/throw = error contract below.</td></tr>
+        <tr><td><code>onError(err, form)</code></td><td>The rejection value, unchanged</td>
+          <td>After a rejected submit has been rendered. Error contract: an <code>Error</code> shows its message in the focused <code>role="alert"</code> banner; a plain object <code>{field: message}</code> or <code>{errors: {field: message}}</code> (e.g. a server 422 JSON body) is distributed to matching fields with the first one focused (unknown field names fall back to the generic banner); anything else shows <code>labels.submitError</code>.</td></tr>
+        <tr><td><code>onChange(values, form)</code></td><td>Fresh values snapshot; the instance</td>
+          <td>On any value change — typing, family upgrades, or non-silent <code>setValue</code>/<code>setValues</code>.</td></tr>
+        <tr><td><code>onSpam(values)</code></td><td>Values snapshot at the moment the trap fired</td>
+          <td>When the honeypot decoy has a value or the submit beat <code>minFillTime</code>. The form then fakes a normal success.</td></tr>
+        <tr><td><code>watch('name', fn)</code></td><td><code>fn(value, meta)</code>, <code>meta = {dirty, touched, error}</code></td>
+          <td>On every change of that one field. Returns an unsubscribe function.</td></tr>
+        <tr><td><code>watch(fn)</code></td><td><code>fn(values, changedName, meta)</code></td>
+          <td>On any change of any field. Returns an unsubscribe function.</td></tr>
+        <tr><td>field <code>validate</code></td><td><code>fn(value, values)</code> → <code>null</code> | message | Promise</td>
+          <td>During validation of that field (see the field-spec table).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-data">Declarative init (data-* attributes)</h3>
+  <p>Any <code>&lt;form data-vfm&gt;</code> is enhanced automatically on
+  <code>DOMContentLoaded</code> (immediately if the script loads later) — zero JS required.
+  For markup added after page load, call <code>Form.autoInit(rootEl)</code>. Options map to
+  attributes:</p>
+  <div tabindex="0" role="region" aria-label="Declarative data attributes" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Option</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vfm</code></td><td>—</td><td>Marker: opts the form into auto-init (enhance mode).</td></tr>
+        <tr><td><code>data-vfm-validate-on</code></td><td><code>validateOn</code></td><td><code>blur</code> | <code>change</code> | <code>submit</code></td></tr>
+        <tr><td><code>data-vfm-encoding</code></td><td><code>encoding</code></td><td><code>json</code> | <code>form</code></td></tr>
+        <tr><td><code>data-vfm-action</code></td><td><code>action</code></td><td>Overrides the form's <code>action</code> attribute.</td></tr>
+        <tr><td><code>data-vfm-method</code></td><td><code>method</code></td><td>Overrides the form's <code>method</code> attribute.</td></tr>
+        <tr><td><code>data-vfm-success</code></td><td><code>successMessage</code></td><td>Success text (Toast if present).</td></tr>
+        <tr><td><code>data-vfm-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code></td></tr>
+        <tr><td><code>data-vfm-honeypot-name</code></td><td><code>honeypotName</code></td><td>Decoy field name.</td></tr>
+        <tr><td><code>data-vfm-min-fill-time</code></td><td><code>minFillTime</code></td><td>Parsed as a number (ms).</td></tr>
+        <tr><td><code>data-vfm-honeypot</code></td><td><code>honeypot</code></td><td>Boolean: <code>"false"</code> or <code>"0"</code> = off, anything else = on.</td></tr>
+        <tr><td><code>data-vfm-styles</code></td><td><code>styles</code></td><td>Boolean, same parsing; <code>"false"</code> = headless.</td></tr>
+        <tr><td><code>data-vfm-reset</code></td><td><code>resetOnSuccess</code></td><td>Boolean, same parsing.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>&lt;form data-vfm data-vfm-success="Thanks!" data-vfm-reset action="/api/contact" method="post"&gt;
+  &lt;label for="e"&gt;Email&lt;/label&gt;
+  &lt;input id="e" name="email" type="email" required&gt;
+  &lt;button&gt;Send&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order: <code>&lt;html data-theme&gt;</code> /
+  <code>data-bs-theme</code> → <code>.dark</code>/<code>.light</code> class on
+  <code>&lt;html&gt;</code> → <code>prefers-color-scheme</code>, re-resolved live (media-query
+  listener + <code>MutationObserver</code>). Pin per instance with <code>theme: 'light'</code>
+  or <code>'dark'</code>. All colors are CSS custom properties on <code>.vfm</code>:</p>
+  <div tabindex="0" role="region" aria-label="CSS custom properties" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vfm-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td><td>Focus rings, submit button, checks, switches</td></tr>
+        <tr><td><code>--vfm-danger</code></td><td><code>#e5484d</code></td><td><code>#f2555a</code></td><td>Error text, invalid borders, banner</td></tr>
+        <tr><td><code>--vfm-success</code></td><td><code>#1f9d5b</code></td><td><code>#4ccb8f</code></td><td>Success status text</td></tr>
+        <tr><td><code>--vfm-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td><td>Input background</td></tr>
+        <tr><td><code>--vfm-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td><td>Disabled inputs, hover surfaces</td></tr>
+        <tr><td><code>--vfm-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td><td>Text color</td></tr>
+        <tr><td><code>--vfm-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td><td>Hints, placeholders, secondary icons</td></tr>
+        <tr><td><code>--vfm-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td><td>Borders, switch track</td></tr>
+        <tr><td><code>--vfm-accent-soft</code></td><td><code>rgba(91,91,214,.13)</code></td><td>inherits light rule</td><td>Focus ring glow; derived via <code>color-mix</code> (14% of accent) where supported, so it follows a custom accent automatically</td></tr>
+        <tr><td><code>--vfm-danger-soft</code></td><td><code>rgba(229,72,77,.12)</code></td><td>inherits light rule</td><td>Invalid focus ring, banner background; <code>color-mix</code> (13% of danger) where supported</td></tr>
+        <tr><td><code>--vfm-shadow</code></td><td><code>0 10px 28px rgba(24,25,32,.14), 0 2px 8px rgba(24,25,32,.08)</code></td><td><code>0 10px 28px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.35)</code></td><td>Elevation shadow token</td></tr>
+        <tr><td><code>--vfm-radius</code></td><td><code>12px</code></td><td>same</td><td>Banner corner radius token</td></tr>
+        <tr><td><code>--vfm-font</code></td><td><code>system-ui, …</code></td><td>same</td><td>Form font stack</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>.vfm { --vfm-accent: #b45309; }               /* page-wide */
+.vfm[data-theme="dark"] { --vfm-accent: …; }  /* per theme */</code></pre>
+  <p class="api-note"><strong>CSS isolation:</strong> forms render as
+  <code>class="vfm vc1"</code> and all structural rules ship salted
+  (<code>.vfm.vc1 .vfm-input { … }</code>) so host-page design systems can't override the
+  fields — while the <code>--vfm-*</code> variable definitions are deliberately unsalted so
+  your overrides keep working. Custom token: <code>Form.salt = 'acme'</code> before the first
+  form; disable with <code>Form.salt = false</code>. With the VC core loaded,
+  <code>VC.config({ accent: '#b45309' })</code> themes forms and every family component at
+  once.</p>
+  <p><strong>Headless:</strong> <code>styles: false</code> (or
+  <code>Form.defaults.styles = false</code> page-wide) never injects CSS while keeping the full
+  behavior — reactive state, validation, submission, honeypot, ARIA — and stable class hooks:
+  <code>.vfm-field</code>, <code>.vfm-label</code>, <code>.vfm-hint</code>,
+  <code>.vfm-input</code>, <code>.vfm-error</code>, <code>.vfm-check</code>,
+  <code>.vfm-switch</code>, <code>.vfm-fieldset</code>, <code>.vfm-option</code>,
+  <code>.vfm-inputwrap</code>, <code>.vfm-eye</code>, <code>.vfm-banner</code>,
+  <code>.vfm-status</code>, <code>.vfm-actions</code>, <code>.vfm-submit</code>, plus state
+  classes <code>is-invalid</code>, <code>is-loading</code>, <code>is-disabled</code>. Start
+  from <code>Form.css</code> (string) or <code>dist/form.css</code> (file). The honeypot stays
+  hidden headless too (inline off-viewport styles).</p>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>All controls are native form elements, so the keyboard model is the platform's own:</p>
+  <div tabindex="0" role="region" aria-label="Keyboard interaction" style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Where</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Tab</code> / <code>Shift+Tab</code></td><td>anywhere</td><td>Move between fields; the honeypot is excluded from the tab order (<code>tabindex="-1"</code>).</td></tr>
+        <tr><td><code>Enter</code></td><td>text-style inputs, submit button</td><td>Submit the form (runs the kit's validation; native popups are suppressed via <code>novalidate</code>).</td></tr>
+        <tr><td><code>Space</code></td><td>checkbox / switch, radio, password toggle</td><td>Toggle the control / select the radio / show-hide the password.</td></tr>
+        <tr><td><code>Arrow keys</code></td><td>radio group, select</td><td>Move selection within the group (native behavior; upgraded Select/DatePicker keep their own documented keyboard maps).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li>Every field gets a real <code>&lt;label for&gt;</code>/<code>id</code> pair; radio groups use <code>&lt;fieldset&gt;</code>/<code>&lt;legend&gt;</code>; the required marker <code>*</code> is <code>aria-hidden</code>.</li>
+    <li>Hint and error text are wired to the control via <code>aria-describedby</code>; failing fields get <code>aria-invalid="true"</code> (removed once fixed) and the <code>is-invalid</code> class.</li>
+    <li>Each field's error region is an <code>aria-live="polite"</code> element, present up-front so screen readers announce message changes.</li>
+    <li>The form-level banner is <code>role="alert"</code> with <code>tabindex="-1"</code>, and is focused when shown; success messages go to a polite live region (or a Toast when present).</li>
+    <li>A failed submit focuses the first invalid field (an upgraded Select's control included); server error maps focus the first matched field.</li>
+    <li>While a submit is pending, the button gets <code>aria-busy="true"</code> and is disabled; the spinner is decorative.</li>
+    <li>The password toggle is a real <code>&lt;button&gt;</code> with <code>aria-pressed</code> and a show/hide <code>aria-label</code> (<code>labels.showPassword</code> / <code>labels.hidePassword</code>); it returns focus to the input.</li>
+    <li>The honeypot wrapper is <code>aria-hidden="true"</code>, off-viewport (not <code>display:none</code>), and out of the tab order — invisible to humans and assistive tech alike.</li>
+    <li><code>:focus-visible</code> outlines everywhere; <code>prefers-reduced-motion</code> disables all transitions and animations, spinner included.</li>
+  </ul>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
