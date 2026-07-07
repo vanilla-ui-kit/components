@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Tooltip — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='9' rx='3' fill='%235b5bd6'/%3E%3Cpath d='M8 15L5.5 10h5L8 15z' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card a.demo-link { color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Tooltip <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Tooltips &amp; popovers, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency tooltips that follow your page's theme on
+  their own. Hover, click, and tab through everything below — every card is
+  live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Placements</h3>
+      <p>Four sides with auto-flip when there's no room, plus an arrow that
+      tracks the trigger.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vtt="I'm on top" data-vtt-placement="top">Top</button>
+        <button class="demo-btn" data-vtt="I'm below" data-vtt-placement="bottom">Bottom</button>
+        <button class="demo-btn" data-vtt="To the left" data-vtt-placement="left">Left</button>
+        <button class="demo-btn" data-vtt="To the right" data-vtt-placement="right">Right</button>
+      </div>
+      <pre>&lt;button data-vtt="I'm on top"
+        data-vtt-placement="top"&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Triggers</h3>
+      <p>Hover (also shows on keyboard focus), click, or focus-only —
+      try tabbing through.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vtt="Shown on hover and focus">Hover</button>
+        <button class="demo-btn" data-vtt="Click me again (or press Escape) to close"
+          data-vtt-trigger="click">Click</button>
+        <input class="demo-btn" style="cursor:text" placeholder="Focus me"
+          aria-label="Focus demo" data-vtt="Shown only while focused"
+          data-vtt-trigger="focus" data-vtt-placement="bottom">
+      </div>
+      <pre>new Tooltip('#save', {
+  trigger: 'click'   // hover | click | focus | manual
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Interactive popover</h3>
+      <p>The panel stays open while your pointer or focus is inside it, so
+      it can hold links and buttons.</p>
+      <div class="demo">
+        <button class="demo-btn" id="popover-btn">Delete account…</button>
+      </div>
+      <pre>new Tooltip('#del', {
+  trigger: 'click', interactive: true,
+  content: function (el) { return panelEl }
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>HTML content</h3>
+      <p>Content is text by default; <code>html: true</code> is an explicit
+      opt-in for trusted markup.</p>
+      <div class="demo">
+        <button class="demo-btn" id="html-btn">Keyboard hint</button>
+        <button class="demo-btn" id="update-btn">Live update</button>
+      </div>
+      <pre>new Tooltip('#hint', {
+  html: true,
+  content: 'Press &lt;b&gt;⌘S&lt;/b&gt; to save'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Manual + API</h3>
+      <p><code>trigger: 'manual'</code> binds nothing — you drive it with
+      <code>show()</code>, <code>hide()</code>, <code>toggle()</code>.</p>
+      <div class="demo">
+        <button class="demo-btn" id="manual-target">The target</button>
+        <button class="demo-btn" id="manual-toggle">toggle() it</button>
+      </div>
+      <pre>var tip = new Tooltip('#el', {
+  trigger: 'manual', content: '…' })
+tip.toggle()</pre>
+    </div>
+
+    <div class="card">
+      <h3>Headless &amp; family theming</h3>
+      <p><code>Tooltip.defaults.styles = false</code> injects no CSS — the
+      behavior and ARIA stay, the look is yours (see <code>Tooltip.css</code>
+      for a starting point). With the VC core loaded, one call themes every
+      family component.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          if (window.VC) { VC.config({ accent: '#b45309' }); }
+          Tooltip.get(this) || new Tooltip(this, { content: window.VC ?
+            'Family accent → amber' : 'Load dist/vanilla-ui-kit.js to get VC',
+            trigger: 'manual' });
+          Tooltip.get(this).toggle();">Amber accent</button>
+      </div>
+      <pre>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/tooltip/tooltip.js"&gt;&lt;/script&gt;
+VC.config({ accent: '#b45309' })</pre>
+    </div>
+  </div>
+</div>
+
+<script src="./tooltip.js"></script>
+<script>
+  // Theme switch — the tooltips follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  // Interactive popover with focusable content.
+  new Tooltip('#popover-btn', {
+    trigger: 'click',
+    interactive: true,
+    placement: 'bottom',
+    labels: { popover: 'Confirm deletion' },
+    content: function () {
+      var box = document.createElement('div');
+      var msg = document.createElement('div');
+      msg.textContent = 'This cannot be undone.';
+      var small = document.createElement('small');
+      small.textContent = 'Escape closes and refocuses the trigger.';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:6px;margin-top:8px';
+      var yes = document.createElement('button');
+      yes.type = 'button';
+      yes.textContent = 'Delete';
+      var no = document.createElement('button');
+      no.type = 'button';
+      no.textContent = 'Cancel';
+      yes.onclick = no.onclick = function () { Tooltip.get('#popover-btn').hide(); };
+      row.appendChild(yes); row.appendChild(no);
+      box.appendChild(msg); box.appendChild(small); box.appendChild(row);
+      return box;
+    }
+  });
+
+  // HTML content (explicit opt-in) + live update().
+  new Tooltip('#html-btn', {
+    html: true,
+    content: 'Press <b>⌘S</b> to save · <small>or Ctrl+S</small>'
+  });
+  var n = 0;
+  var updating = new Tooltip('#update-btn', { content: 'Clicked 0 times' });
+  document.getElementById('update-btn').addEventListener('click', function () {
+    updating.update('Clicked ' + (++n) + ' times').show();
+  });
+
+  // Manual trigger, driven entirely from the API.
+  var manual = new Tooltip('#manual-target', {
+    trigger: 'manual',
+    placement: 'top',
+    content: 'Only show()/hide() move me'
+  });
+  document.getElementById('manual-toggle').addEventListener('click', function () {
+    manual.toggle();
+  });
+</script>
+</body>
+</html>

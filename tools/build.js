@@ -20,11 +20,14 @@ var ROOT = path.join(__dirname, '..');
 var DIST = path.join(ROOT, 'dist');
 var VERSION = require(path.join(ROOT, 'package.json')).version;
 
-var FILES = [
-  'core/core.js',
-  'datepicker/datepicker.js',
-  'toast/toast.js'
+// One row per component: [source file, browser global, dist stylesheet, css banner name].
+var COMPONENTS = [
+  ['datepicker/datepicker.js', 'DatePicker', 'datepicker.css', 'vanilla-datepicker'],
+  ['toast/toast.js', 'Toast', 'toast.css', 'vanilla-toast'],
+  ['tooltip/tooltip.js', 'Tooltip', 'tooltip.css', 'vanilla-tooltip']
 ];
+
+var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));
 
 var banner = '/*!\n' +
   ' * vanilla-ui-kit v' + VERSION + ' — single-file, zero-dependency UI components\n' +
@@ -45,8 +48,9 @@ var bundle = banner +
   '  cjsModule.exports = {\n' +
   '    VC: global.VC,\n' +
   '    VanillaUI: global.VanillaUI,\n' +
-  '    DatePicker: global.DatePicker,\n' +
-  '    Toast: global.Toast\n' +
+  COMPONENTS.map(function (c) {
+    return '    ' + c[1] + ': global.' + c[1];
+  }).join(',\n') + '\n' +
   '  };\n' +
   '}\n' +
   '})(typeof globalThis !== \'undefined\' ? globalThis :\n' +
@@ -62,13 +66,9 @@ var cssBanner = function (name) {
     ' * headless mode (styles: false) to own the styling. License: MIT */\n';
 };
 
-var DatePicker = require(path.join(ROOT, 'datepicker/datepicker.js'));
-var Toast = require(path.join(ROOT, 'toast/toast.js'));
-
-var sheets = [
-  ['datepicker.css', 'vanilla-datepicker', DatePicker.css],
-  ['toast.css', 'vanilla-toast', Toast.css]
-];
+var sheets = COMPONENTS.map(function (c) {
+  return [c[2], c[3], require(path.join(ROOT, c[0])).css];
+});
 
 var all = '';
 sheets.forEach(function (s) {

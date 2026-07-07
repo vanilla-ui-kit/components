@@ -19,9 +19,10 @@ you bring your own design.
 |---|---|---|---|
 | Date picker (single, range, multi-pane, presets) | `DatePicker` | [`datepicker/datepicker.js`](./datepicker/datepicker.js) | [README](./datepicker/README.md) |
 | Toasts / notifications | `Toast` | [`toast/toast.js`](./toast/toast.js) | [README](./toast/README.md) |
+| Tooltips / popovers | `Tooltip` | [`tooltip/tooltip.js`](./tooltip/tooltip.js) | [README](./tooltip/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: select/combobox, modal, tooltip/popover — same contract, same DNA.
+Roadmap: select/combobox, modal, menu, tabs, command palette, phone input — same contract, same DNA.
 
 ## Get it any way you like
 

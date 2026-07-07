@@ -1,10 +1,13 @@
 'use strict';
 /*
- * Node-side test suite — zero dependencies, runs with `node --test test/`.
+ * Node-side test suite — zero dependencies, runs with `npm test` (node --test).
  *
  * Everything here must hold in an environment with no DOM: the public API
- * surface, the pure date helpers, SSR no-op behaviour, and that the committed
+ * surface, the pure helpers, SSR no-op behaviour, and that the committed
  * dist/ bundle is in sync with the sources it is built from.
+ *
+ * Adding a component: add one row to FAMILY (and a specifics test below if
+ * the component has pure helpers or notable SSR behaviour).
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -16,40 +19,63 @@ const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 const pkg = require('../package.json');
 const VC = require('../core/core.js');
-const DatePicker = require('../datepicker/datepicker.js');
-const Toast = require('../toast/toast.js');
 const bundle = require('../dist/vanilla-ui-kit.js');
 
-test('modules load in Node and expose their API', () => {
-  assert.equal(typeof DatePicker, 'function');
-  for (const fn of ['create', 'formatDate', 'parseDate', 'autoInit']) {
-    assert.equal(typeof DatePicker[fn], 'function', `DatePicker.${fn}`);
+// [display name, source file, root class, required API function names]
+const FAMILY = [
+  ['DatePicker', 'datepicker/datepicker.js', 'vdp', ['create', 'formatDate', 'parseDate', 'autoInit']],
+  ['Toast', 'toast/toast.js', 'vt', ['show', 'info', 'success', 'error', 'warning', 'loading', 'promise', 'dismissAll']],
+  ['Tooltip', 'tooltip/tooltip.js', 'vtt', ['create', 'get', 'autoInit']],
+];
+const components = FAMILY.map(([name, file, root, api]) =>
+  ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
+
+test('family contract: every component honours it', () => {
+  for (const { name, file, root, api, mod } of components) {
+    assert.ok(mod, `${file} loads in Node`);
+    for (const fn of api) {
+      assert.equal(typeof mod[fn], 'function', `${name}.${fn}`);
+    }
+    assert.equal(mod.version, pkg.version, `${name}.version matches package.json`);
+    // VC.register aliases via displayName, falling back to the function name.
+    assert.equal(mod.displayName || mod.name, name, `${name} display/function name`);
+    assert.equal(mod.rootClass, root, `${name}.rootClass`);
+    assert.equal(typeof mod.css, 'string', `${name}.css`);
+    assert.ok(mod.css.length > 500, `${name}.css is non-trivial`);
+    assert.ok(mod.css.includes(root), `${name}.css mentions its root class`);
+    assert.equal(mod.salt, 'vc1', `${name} shares the family salt`);
+    assert.equal(typeof mod.themeVars, 'object', `${name}.themeVars`);
+    for (const key of ['accent', 'radius', 'font']) {
+      assert.ok(mod.themeVars[key], `${name}.themeVars.${key}`);
+    }
+    assert.ok(Array.isArray(mod.varScopes) && mod.varScopes.length, `${name}.varScopes`);
+    assert.equal(typeof mod.defaults, 'object', `${name}.defaults`);
+    // autoInit is optional (imperative-only components like Toast skip it),
+    // but when present it must be SSR-safe.
+    if (mod.autoInit) assert.doesNotThrow(() => mod.autoInit(), `${name}.autoInit is SSR-safe`);
   }
-  for (const fn of ['show', 'info', 'success', 'error', 'warning', 'loading', 'promise', 'dismissAll']) {
-    assert.equal(typeof Toast[fn], 'function', `Toast.${fn}`);
-  }
+});
+
+test('core API surface', () => {
   for (const fn of ['register', 'autoInit', 'config', 'position', 'injectStyles']) {
     assert.equal(typeof VC[fn], 'function', `VC.${fn}`);
   }
   assert.equal(typeof VC.theme.resolve, 'function');
-});
-
-test('all versions agree with package.json', () => {
   assert.equal(VC.version, pkg.version);
-  assert.equal(DatePicker.version, pkg.version);
-  assert.equal(Toast.version, pkg.version);
 });
 
 test('bundle exports the whole family', () => {
-  assert.deepEqual(Object.keys(bundle).sort(), ['DatePicker', 'Toast', 'VC', 'VanillaUI']);
+  const expected = ['VC', 'VanillaUI', ...components.map((c) => c.name)].sort();
+  assert.deepEqual(Object.keys(bundle).sort(), expected);
   assert.equal(bundle.VanillaUI, bundle.VC);
-  assert.equal(typeof bundle.DatePicker, 'function');
-  assert.equal(bundle.VC.version, pkg.version);
-  assert.equal(bundle.DatePicker.version, pkg.version);
-  assert.equal(bundle.Toast.version, pkg.version);
+  for (const { name } of components) {
+    assert.ok(bundle[name], `bundle.${name}`);
+    assert.equal(bundle[name].version, pkg.version);
+  }
 });
 
-test('formatDate / parseDate round-trip', () => {
+test('DatePicker specifics: formatDate / parseDate round-trip', () => {
+  const DatePicker = components[0].mod;
   assert.equal(DatePicker.formatDate(new Date(2026, 6, 3), 'YYYY-MM-DD'), '2026-07-03');
   assert.equal(DatePicker.formatDate(new Date(2026, 0, 9), 'DD/MM/YYYY'), '09/01/2026');
 
@@ -59,30 +85,27 @@ test('formatDate / parseDate round-trip', () => {
   assert.equal(d.getMonth(), 6);
   assert.equal(d.getDate(), 3);
   assert.equal(DatePicker.formatDate(d, 'YYYY-MM-DD'), '2026-07-03');
-});
-
-test('parseDate rejects garbage', () => {
   assert.equal(DatePicker.parseDate('bogus', 'YYYY-MM-DD'), null);
   assert.equal(DatePicker.parseDate('', 'YYYY-MM-DD'), null);
 });
 
-test('components expose extractable, salted CSS', () => {
-  for (const C of [DatePicker, Toast]) {
-    assert.equal(typeof C.css, 'string');
-    assert.ok(C.css.length > 500, 'css is non-trivial');
-    assert.ok(C.css.includes(C.rootClass), 'css mentions its root class');
-    assert.equal(typeof C.salt, 'string');
-    assert.ok(C.salt.length > 0);
-  }
-  assert.equal(DatePicker.salt, Toast.salt, 'family shares one salt namespace');
-});
-
-test('SSR: Toast is a no-op that still returns a handle', () => {
+test('Toast specifics: SSR no-op returns a working handle', () => {
+  const Toast = components[1].mod;
   const h = Toast.info('hello from Node');
   assert.equal(h.el, null);
   assert.doesNotThrow(() => h.update({ message: 'still fine' }));
   assert.doesNotThrow(() => h.dismiss());
   assert.doesNotThrow(() => Toast.dismissAll());
+});
+
+test('Tooltip specifics: SSR no-op instance', () => {
+  const Tooltip = components[2].mod;
+  const t = Tooltip.create('#nope');
+  for (const fn of ['show', 'hide', 'toggle', 'destroy']) {
+    assert.doesNotThrow(() => t[fn](), `tooltip.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => t.update('new content'));
+  assert.equal(Tooltip.get(null), null);
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {
@@ -105,7 +128,7 @@ test('dist bundle is in sync with sources', () => {
   // up as a missing substring. CI also rebuilds and diffs; this catches it
   // locally with no git required.
   const dist = read('dist/vanilla-ui-kit.js');
-  for (const f of ['core/core.js', 'datepicker/datepicker.js', 'toast/toast.js']) {
+  for (const f of ['core/core.js', ...components.map((c) => c.file)]) {
     assert.ok(dist.includes(read(f)), `dist embeds current ${f}`);
   }
   assert.ok(dist.startsWith('/*!'), 'bundle keeps its license banner');
@@ -113,16 +136,23 @@ test('dist bundle is in sync with sources', () => {
 });
 
 test('dist stylesheets are in sync with component CSS', () => {
-  assert.ok(read('dist/datepicker.css').includes(DatePicker.css));
-  assert.ok(read('dist/toast.css').includes(Toast.css));
-  const all = read('dist/vanilla-ui-kit.css');
-  assert.ok(all.includes(DatePicker.css) && all.includes(Toast.css));
+  let all = '';
+  for (const { name, file, mod } of components) {
+    const sheet = path.basename(path.dirname(file)) + '.css';
+    assert.ok(read(`dist/${sheet}`).includes(mod.css), `dist/${sheet} embeds ${name}.css`);
+    all += mod.css;
+  }
+  const combined = read('dist/vanilla-ui-kit.css');
+  for (const { name, mod } of components) {
+    assert.ok(combined.includes(mod.css), `vanilla-ui-kit.css embeds ${name}.css`);
+  }
 });
 
 test('docs and metadata point at the canonical repo', () => {
   const canonical = 'vanilla-ui-kit/components';
   assert.ok(pkg.repository.url.includes(canonical));
-  for (const f of ['README.md', 'toast/README.md', 'datepicker/README.md']) {
+  const readmes = ['README.md', ...components.map((c) => path.dirname(c.file) + '/README.md')];
+  for (const f of readmes) {
     const text = read(f);
     assert.ok(!/abdallahk|abdullah-life|you\/vanilla/.test(text), `${f} has no stale repo paths`);
     assert.ok(text.includes(`cdn.jsdelivr.net/gh/${canonical}`), `${f} CDN snippet uses canonical path`);

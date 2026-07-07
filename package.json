@@ -8,8 +8,10 @@
     "./core": "./core/core.js",
     "./datepicker": "./datepicker/datepicker.js",
     "./toast": "./toast/toast.js",
+    "./tooltip": "./tooltip/tooltip.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
+    "./tooltip.css": "./dist/tooltip.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -17,6 +19,7 @@
     "core",
     "datepicker",
     "toast",
+    "tooltip",
     "dist"
   ],
   "scripts": {
