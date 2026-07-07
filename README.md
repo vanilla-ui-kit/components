@@ -103,6 +103,12 @@ browser. **TypeScript definitions included** for every component; script-tag
 users get the globals with
 `/// <reference types="vanilla-ui-kit/types/globals" />`.
 
+**Tree shaking:** with a bundler, `import { Toast } from 'vanilla-ui-kit'`
+keeps only Toast (~12 KB minified), not the whole kit — the package's ESM
+entry is a pure re-export barrel with `sideEffects` scoped to CSS. Import
+bindings you use (side-effect-only `import 'vanilla-ui-kit/toast'` may be
+dropped by bundlers); the default export deliberately pulls everything.
+
 ## Convergence: what the core gives you
 
 Components never *require* the core — but when it is on the page (via
