@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Tabs — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='3' width='4' height='3' rx='1' fill='%235b5bd6'/%3E%3Crect x='6' y='3' width='4' height='3' rx='1' fill='%239b9bf0'/%3E%3Crect x='11' y='3' width='4' height='3' rx='1' fill='%239b9bf0'/%3E%3Crect x='1' y='7.5' width='14' height='6.5' rx='2' fill='%235b5bd6' opacity='.35'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 24px; max-width: 56ch; }
+  pre.cdn {
+    margin: 0 0 40px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p.hint { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  /* demo panel prose only — the tabs bring their own styles */
+  .demo p { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+  .demo p strong { color: var(--text); }
+  .demo .status { font-size: 13px; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Tabs <small>v1.0.0 · <a href="../toast/examples.html">toast →</a> <a href="../datepicker/examples.html">datepicker →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Tabs, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency tabs that enhance the markup you already
+  have — full ARIA pattern, arrow-key navigation, a sliding indicator, and
+  automatic light/dark. Every card below is live.</p>
+
+  <pre class="cdn">&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/tabs/tabs.js"&gt;&lt;/script&gt;</pre>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic</h3>
+      <p class="hint">Canonical markup: strip first, panels after. Arrow keys move and select.</p>
+      <div class="demo" id="basic">
+        <nav>
+          <button>Overview</button>
+          <button>Features</button>
+          <button>Pricing</button>
+        </nav>
+        <section><p><strong>Overview.</strong> First child is the tab strip, following siblings are the panels. That's the whole contract.</p></section>
+        <section><p><strong>Features.</strong> Roving tabindex, wrap-around arrows, Home/End, hidden panels.</p></section>
+        <section><p><strong>Pricing.</strong> Free — it's one file, MIT licensed.</p></section>
+      </div>
+      <p class="demo"><span class="status" id="basic-status">Active: 0</span></p>
+      <pre>new Tabs('#basic', {
+  onChange: (i) =&gt; console.log(i)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Manual activation</h3>
+      <p class="hint">Arrows only move focus; Enter or Space selects.</p>
+      <div class="demo" id="manual">
+        <nav>
+          <button>Editor</button>
+          <button>Preview</button>
+          <button>History</button>
+        </nav>
+        <section><p><strong>Editor.</strong> Use <code>activation: 'manual'</code> when switching panels is expensive.</p></section>
+        <section><p><strong>Preview.</strong> Focus me with ArrowRight, then press Enter.</p></section>
+        <section><p><strong>History.</strong> Nothing loads until you commit.</p></section>
+      </div>
+      <pre>new Tabs('#manual', { activation: 'manual' })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Vertical</h3>
+      <p class="hint">Rail on the left, ArrowUp/ArrowDown, indicator on the rail edge.</p>
+      <div class="demo" id="vertical">
+        <nav>
+          <button>Profile</button>
+          <button>Security</button>
+          <button>Billing</button>
+        </nav>
+        <section><p><strong>Profile.</strong> The tablist gets <code>aria-orientation="vertical"</code>.</p></section>
+        <section><p><strong>Security.</strong> The ink bar slides along the rail instead of under the tabs.</p></section>
+        <section><p><strong>Billing.</strong> Same markup, one option.</p></section>
+      </div>
+      <pre>new Tabs('#vertical', { vertical: true })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Builder mode</h3>
+      <p class="hint">No markup — labels and content are text-safe by default.</p>
+      <div class="demo" id="built"></div>
+      <pre>new Tabs('#built', {
+  tabs: [
+    { label: 'One', content: 'Plain text' },
+    { label: 'Two', content: '&lt;b&gt;html&lt;/b&gt;',
+      html: true }
+  ]
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Disabled tab</h3>
+      <p class="hint">Plain <code>disabled</code> attribute; arrows skip it.</p>
+      <div class="demo" id="disabled">
+        <nav>
+          <button>Inbox</button>
+          <button disabled>Drafts</button>
+          <button>Archive</button>
+        </nav>
+        <section><p><strong>Inbox.</strong> Press ArrowRight — Drafts is skipped.</p></section>
+        <section><p>Never shown.</p></section>
+        <section><p><strong>Archive.</strong> Landed here directly.</p></section>
+      </div>
+      <pre>&lt;button disabled&gt;Drafts&lt;/button&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p class="hint">Zero JS: <code>data-vtb</code> containers init themselves.</p>
+      <div class="demo" data-vtb data-activation="auto">
+        <nav>
+          <button>HTML</button>
+          <button data-vtb-active>Attributes</button>
+        </nav>
+        <section><p><strong>HTML.</strong> No script written for this card.</p></section>
+        <section><p><strong>Attributes.</strong> <code>data-vtb-active</code> chose this tab; options ride along as <code>data-vertical</code>, <code>data-activation</code>, …</p></section>
+      </div>
+      <pre>&lt;div data-vtb&gt;…canonical markup…&lt;/div&gt;</pre>
+    </div>
+  </div>
+</div>
+
+<script src="./tabs.js"></script>
+<script>
+  // Theme switch — the tabs follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  new Tabs('#basic', {
+    onChange: function (idx) {
+      document.getElementById('basic-status').textContent = 'Active: ' + idx;
+    }
+  });
+  new Tabs('#manual', { activation: 'manual' });
+  new Tabs('#vertical', { vertical: true });
+  new Tabs('#built', {
+    tabs: [
+      { label: 'One', content: 'Plain text — rendered with textContent, always safe.' },
+      { label: 'Two', content: '<b>Bold</b> markup via the explicit <code>html: true</code> opt-in.', html: true }
+    ]
+  });
+  new Tabs('#disabled');
+  // The data-vtb card initialized itself on DOMContentLoaded.
+</script>
+</body>
+</html>

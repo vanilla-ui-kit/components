@@ -22,9 +22,10 @@ you bring your own design.
 | Tooltips / popovers | `Tooltip` | [`tooltip/tooltip.js`](./tooltip/tooltip.js) | [README](./tooltip/README.md) |
 | Dropdown / context menus | `Menu` | [`menu/menu.js`](./menu/menu.js) | [README](./menu/README.md) |
 | Modals / dialogs (alert, confirm, prompt) | `Modal` | [`modal/modal.js`](./modal/modal.js) | [README](./modal/README.md) |
+| Tabs | `Tabs` | [`tabs/tabs.js`](./tabs/tabs.js) | [README](./tabs/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: select/combobox, tabs, command palette, phone input — same contract, same DNA.
+Roadmap: select/combobox, command palette, phone input — same contract, same DNA.
 
 ## Get it any way you like
 

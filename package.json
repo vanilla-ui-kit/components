@@ -11,11 +11,13 @@
     "./tooltip": "./tooltip/tooltip.js",
     "./menu": "./menu/menu.js",
     "./modal": "./modal/modal.js",
+    "./tabs": "./tabs/tabs.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
     "./menu.css": "./dist/menu.css",
     "./modal.css": "./dist/modal.css",
+    "./tabs.css": "./dist/tabs.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -26,6 +28,7 @@
     "tooltip",
     "menu",
     "modal",
+    "tabs",
     "dist"
   ],
   "scripts": {

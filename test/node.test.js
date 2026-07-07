@@ -28,6 +28,7 @@ const FAMILY = [
   ['Tooltip', 'tooltip/tooltip.js', 'vtt', ['create', 'get', 'autoInit']],
   ['Menu', 'menu/menu.js', 'vmn', ['create', 'get', 'open', 'closeAll', 'autoInit']],
   ['Modal', 'modal/modal.js', 'vmd', ['open', 'alert', 'confirm', 'prompt', 'get', 'autoInit']],
+  ['Tabs', 'tabs/tabs.js', 'vtb', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -129,6 +130,14 @@ test('Modal specifics: SSR promises resolve to their cancel values', async () =>
   assert.equal(await Modal.alert('x'), undefined);
   assert.equal(await Modal.confirm('x'), false);
   assert.equal(await Modal.prompt('x'), null);
+});
+
+test('Tabs specifics: SSR no-op instance', () => {
+  const Tabs = components[5].mod;
+  const t = Tabs.create(null, { tabs: [{ label: 'a', content: 'A' }] });
+  assert.doesNotThrow(() => t.select(0));
+  assert.doesNotThrow(() => t.getActive());
+  assert.doesNotThrow(() => t.destroy());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {
