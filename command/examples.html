@@ -292,6 +292,411 @@ CommandPalette.unregister('secret')</pre>
     secretOn = !secretOn;
   }
 </script>
+<div class="wrap api-doc">
+<style>
+  .api-doc { padding-top: 0; }
+  .api-doc .api-divider {
+    border: 0; border-top: 1px solid var(--faint); margin: 0 0 56px;
+  }
+  .api-doc h2 {
+    font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-doc h3 {
+    font-family: var(--display); font-size: 21px; font-weight: 600;
+    margin: 48px 0 10px;
+  }
+  .api-doc h4 { font-size: 15px; font-weight: 650; margin: 24px 0 8px; }
+  .api-doc p { max-width: 72ch; }
+  .api-doc p, .api-doc ul { color: var(--text); }
+  .api-doc .api-note { color: var(--muted); font-size: 14px; }
+  .api-doc .api-toc {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; padding: 0;
+    list-style: none; font-size: 13.5px;
+  }
+  .api-doc .api-toc a {
+    display: inline-block; color: var(--muted); text-decoration: none;
+    background: var(--surface); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-doc .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-doc table {
+    width: 100%; border-collapse: collapse; margin: 12px 0 4px;
+    font-size: 14px; line-height: 1.5; background: var(--surface);
+    border: 1px solid var(--faint); border-radius: 10px;
+  }
+  .api-doc th {
+    text-align: left; font-size: 12px; font-weight: 650; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 9px 12px; border-bottom: 1px solid var(--faint);
+    background: var(--code-bg);
+  }
+  .api-doc td {
+    padding: 9px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  .api-doc tr:last-child td { border-bottom: 0; }
+  .api-doc code {
+    font-family: var(--mono); font-size: 12.5px; color: var(--text);
+    background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 5px; padding: 1px 5px; white-space: nowrap;
+  }
+  .api-doc pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; overflow-x: auto;
+  }
+  .api-doc pre code {
+    background: none; border: 0; padding: 0; white-space: pre;
+    font-size: 12.5px; line-height: 1.55; display: block;
+  }
+  .api-doc kbd {
+    font-family: var(--mono); font-size: 12px; background: var(--surface-2);
+    border: 1px solid var(--faint); border-radius: 5px; padding: 1px 6px;
+  }
+</style>
+
+<hr class="api-divider">
+<h2 id="api">API reference</h2>
+<p class="api-note">The complete surface of <code>CommandPalette</code>
+(v1.0.0), as implemented in <code>command.js</code>. Zero dependencies,
+CommonJS/AMD/global builds, SSR-safe (every method is a no-op without a DOM).</p>
+<ul class="api-toc">
+  <li><a href="#api-usage">Usage</a></li>
+  <li><a href="#api-options">Options</a></li>
+  <li><a href="#api-methods">Methods</a></li>
+  <li><a href="#api-statics">Statics</a></li>
+  <li><a href="#api-events">Events &amp; callbacks</a></li>
+  <li><a href="#api-data">Declarative init</a></li>
+  <li><a href="#api-theming">Theming</a></li>
+  <li><a href="#api-a11y">Accessibility</a></li>
+</ul>
+
+<h3 id="api-usage">Constructor &amp; usage</h3>
+<pre><code>var palette = new CommandPalette(options)   // options object, optional — every key optional</code></pre>
+<p>The constructor stores options (merged over
+<code>CommandPalette.defaults</code>), registers any <code>commands</code>
+passed in, and binds the global hotkey immediately (unless
+<code>hotkey: false</code>). The overlay DOM and stylesheet are only built and
+injected on the first <code>open()</code>.</p>
+<p>Three ways to use it:</p>
+<ul>
+  <li><strong>Static registry (zero setup)</strong> —
+    <code>CommandPalette.register(command)</code> and the other statics proxy a
+    lazily created default instance; nothing is constructed or bound until the
+    first static call. Change any default first via
+    <code>CommandPalette.defaults.placeholder = '…'</code>.</li>
+  <li><strong>Instances</strong> — <code>new CommandPalette({ commands: […], hotkey: 'ctrl+shift+p', … })</code>
+    for a palette with its own options, hotkey, and command set.</li>
+  <li><strong>Declarative opener</strong> — any element with
+    <code>data-command-open</code> opens the default palette on click
+    (see <a href="#api-data">Declarative init</a>).</li>
+</ul>
+
+<h4>Command object shape</h4>
+<p>Passed to <code>register()</code> (single object or array). Only
+<code>id</code> is required — entries without an <code>id</code> are silently
+skipped. Re-registering an existing <code>id</code> replaces the old command
+in place (list order stays stable).</p>
+<div tabindex="0" role="region" aria-label="Command object properties" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Key</th><th>Type</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>id</code></td><td>string (required)</td>
+      <td>Unique key. Coerced to string; re-registering it replaces the command in place.</td></tr>
+    <tr><td><code>label</code></td><td>string</td>
+      <td>Visible row text (searched and highlighted). Defaults to <code>id</code>.</td></tr>
+    <tr><td><code>hint</code></td><td>string</td>
+      <td>Right-aligned shortcut text, e.g. <code>'Ctrl+S'</code>. Display only — no key binding is created.</td></tr>
+    <tr><td><code>group</code></td><td>string</td>
+      <td>Section header the command is listed under in the empty-query view. Ungrouped commands lead, with no header.</td></tr>
+    <tr><td><code>icon</code></td><td>string</td>
+      <td><strong>Trusted</strong> inline SVG markup, injected via <code>innerHTML</code>. Never pass untrusted strings.</td></tr>
+    <tr><td><code>keywords</code></td><td>string[] or string</td>
+      <td>Extra match terms; a string is split on whitespace. Not displayed, never highlighted.</td></tr>
+    <tr><td><code>action</code></td><td>function</td>
+      <td><code>action(command, palette)</code> — runs on Enter/click, <em>after</em> the palette has closed.</td></tr>
+    <tr><td><code>disabled</code></td><td>boolean</td>
+      <td>Rendered grayed out with <code>aria-disabled="true"</code>; skipped by keyboard navigation, not runnable.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="api-note">The palette closes <em>before</em> calling
+<code>action</code>, so the action can open a modal or move focus without
+fighting the palette. With <code>recent: true</code> the last 5 run commands
+appear in a “Recent” group at the top of the empty-query view — in memory
+only, per page load; nothing is stored.</p>
+
+<h4>Matching</h4>
+<p>Case- and diacritic-insensitive <strong>subsequence</strong> match over
+<code>label</code> + <code>keywords</code> (spaces in the query are ignored).
+Scoring favors consecutive runs, word-starts (so <kbd>sf</kbd> finds
+<em>Save File</em>), and matches near the start of the label; keyword hits
+rank a shade below equal label hits and are never highlighted. Results are
+sorted by score (registration order breaks ties) and capped at
+<code>maxResults</code>. With an empty query all commands are shown, grouped
+in first-registration order.</p>
+
+<h3 id="api-options">Options</h3>
+<p>Every key of <code>CommandPalette.defaults</code>, plus the
+constructor-only <code>commands</code> key. Options are shallow-copied over
+the defaults (<code>labels</code> is merged one level deep); keys set to
+<code>undefined</code> are ignored. Mutate
+<code>CommandPalette.defaults</code> before the first static call to
+configure the default palette.</p>
+<div tabindex="0" role="region" aria-label="Constructor options" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>commands</code></td><td>object | object[]</td><td><code>undefined</code></td>
+      <td>Initial commands, passed straight to <code>register()</code> during construction. Constructor-only — not a key of <code>defaults</code>.</td></tr>
+    <tr><td><code>hotkey</code></td><td>string | false</td><td><code>'mod+k'</code></td>
+      <td>Global toggle binding, bound on <code>window</code>. <code>'mod'</code> = Cmd on macOS, Ctrl everywhere else. <code>false</code> (also <code>null</code>/<code>''</code>) = no global binding; open programmatically. See <a href="#api-a11y">hotkey syntax</a> below.</td></tr>
+    <tr><td><code>placeholder</code></td><td>string</td><td><code>'Type a command…'</code></td>
+      <td>Placeholder text of the search input.</td></tr>
+    <tr><td><code>maxResults</code></td><td>number</td><td><code>12</code></td>
+      <td>Cap on <em>filtered</em> results (a non-numeric value falls back to 12). An empty query shows all commands, uncapped.</td></tr>
+    <tr><td><code>emptyText</code></td><td>string</td><td><code>'No matching commands'</code></td>
+      <td>Message shown when nothing matches the query.</td></tr>
+    <tr><td><code>recent</code></td><td>boolean</td><td><code>false</code></td>
+      <td><code>true</code> = show a session-only “Recent” group (last 5 run commands) at the top of the empty-query view. In memory only — no storage.</td></tr>
+    <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+      <td><code>false</code> = headless: no CSS is ever injected; you style the <code>.vcmd-*</code> markup yourself (see <a href="#api-theming">Theming</a>).</td></tr>
+    <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+      <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto follows <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code>/<code>.light</code> class, then <code>prefers-color-scheme</code>, re-resolved live.</td></tr>
+    <tr><td><code>labels</code></td><td>object</td><td>see below</td>
+      <td>UI / ARIA strings, merged key-by-key with the defaults — override any subset (e.g. for localization).</td></tr>
+    <tr><td><code>onOpen</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn(palette)</code> — called after the palette opens. See <a href="#api-events">Events &amp; callbacks</a>.</td></tr>
+    <tr><td><code>onClose</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn(palette)</code> — called when the palette starts closing.</td></tr>
+    <tr><td><code>onRun</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn(command, palette)</code> — called after a command runs (after its <code>action</code>).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h4>The <code>labels</code> keys</h4>
+<div tabindex="0" role="region" aria-label="Labels option keys and defaults" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Key</th><th>Default</th><th>Used for</th></tr></thead>
+  <tbody>
+    <tr><td><code>title</code></td><td><code>'Command palette'</code></td><td><code>aria-label</code> of the dialog panel.</td></tr>
+    <tr><td><code>search</code></td><td><code>'Search commands'</code></td><td><code>aria-label</code> of the search input.</td></tr>
+    <tr><td><code>commands</code></td><td><code>'Commands'</code></td><td><code>aria-label</code> of the results listbox.</td></tr>
+    <tr><td><code>recent</code></td><td><code>'Recent'</code></td><td>Header of the recent-commands group.</td></tr>
+    <tr><td><code>navigate</code></td><td><code>'navigate'</code></td><td>Footer legend next to <kbd>↑</kbd><kbd>↓</kbd>.</td></tr>
+    <tr><td><code>run</code></td><td><code>'run'</code></td><td>Footer legend next to <kbd>↵</kbd>.</td></tr>
+    <tr><td><code>close</code></td><td><code>'close'</code></td><td>Footer legend next to <kbd>esc</kbd>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-methods">Instance methods</h3>
+<p>All methods return the instance, so calls chain. Readable instance
+properties: <code>isOpen</code> (boolean) and <code>commands</code> (the
+normalized command array).</p>
+<div tabindex="0" role="region" aria-label="Instance methods" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Method</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>register(command | commands[])</code></td>
+      <td>Append command(s). A command whose <code>id</code> is already registered replaces the old one in place (order stays stable). Re-renders live if the palette is open.</td></tr>
+    <tr><td><code>unregister(id)</code></td>
+      <td>Remove the command with that <code>id</code> (and drop it from the recent list). Re-renders live if open.</td></tr>
+    <tr><td><code>open()</code></td>
+      <td>Open the palette: injects styles (unless <code>styles: false</code>), builds the DOM on first use, clears the query, focuses the input, then calls <code>onOpen</code>. No-op if already open (or without a DOM).</td></tr>
+    <tr><td><code>close()</code></td>
+      <td>Close the palette and return focus to the element focused before opening; calls <code>onClose</code>. No-op if already closed.</td></tr>
+    <tr><td><code>toggle()</code></td>
+      <td><code>open()</code> if closed, <code>close()</code> if open.</td></tr>
+    <tr><td><code>destroy()</code></td>
+      <td>Unbind the global hotkey, remove the overlay from the DOM, and drop the instance from the theme watcher.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-statics">Statics &amp; helpers</h3>
+<p><code>CommandPalette.register</code> / <code>unregister</code> /
+<code>open</code> / <code>close</code> / <code>toggle</code> proxy a lazily
+created default instance — nothing is built or bound until the first call —
+and return <code>CommandPalette</code> for chaining.</p>
+<div tabindex="0" role="region" aria-label="Static methods and properties" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Static</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>CommandPalette.register(cmd | cmds[])</code></td>
+      <td>Register on the default palette (creating it on first call).</td></tr>
+    <tr><td><code>CommandPalette.unregister(id)</code></td>
+      <td>Unregister from the default palette.</td></tr>
+    <tr><td><code>CommandPalette.open()</code> / <code>.close()</code> / <code>.toggle()</code></td>
+      <td>Open / close / toggle the default palette.</td></tr>
+    <tr><td><code>CommandPalette.autoInit(root)</code></td>
+      <td>Wire every <code>[data-command-open]</code> element under <code>root</code> (default: <code>document</code>) to open the default palette on click. Idempotent — already-wired elements are skipped. Returns the array of newly wired elements. Runs automatically on DOM ready.</td></tr>
+    <tr><td><code>CommandPalette.defaults</code></td>
+      <td>The shared defaults object (see <a href="#api-options">Options</a>). Mutate before the default palette is created to configure the zero-setup surface.</td></tr>
+    <tr><td><code>CommandPalette.salt</code></td>
+      <td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> (no salting) <em>before the first open</em>. See <a href="#api-theming">Theming</a>.</td></tr>
+    <tr><td><code>CommandPalette.css</code></td>
+      <td>The full embedded stylesheet as a string, rendered with the <em>current</em> salt (a live getter where supported). Also shipped as <code>dist/command.css</code>.</td></tr>
+    <tr><td><code>CommandPalette.version</code></td>
+      <td>Version string, <code>'1.0.0'</code>.</td></tr>
+    <tr><td><code>displayName</code>, <code>rootClass</code>, <code>themeVars</code>, <code>varScopes</code></td>
+      <td>Convergence contract for the optional VC family core (<code>'CommandPalette'</code>, <code>'vcmd'</code>, the accent/radius/font variable map, and the scopes <code>VC.config()</code> writes to). Informational — not needed in normal use.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-events">Events &amp; callbacks</h3>
+<p>The palette dispatches <strong>no DOM events</strong> — all notification is
+via option callbacks and the per-command <code>action</code>:</p>
+<div tabindex="0" role="region" aria-label="Callbacks and their payloads" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Callback</th><th>Signature</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td><code>onOpen</code></td><td><code>fn(palette)</code></td>
+      <td>After the palette opens and the input is focused.</td></tr>
+    <tr><td><code>onClose</code></td><td><code>fn(palette)</code></td>
+      <td>When closing begins (focus has already been restored; the exit animation may still be running).</td></tr>
+    <tr><td><code>onRun</code></td><td><code>fn(command, palette)</code></td>
+      <td>After a command is run via Enter or click — after the palette closes and after the command's own <code>action</code>.</td></tr>
+    <tr><td><code>command.action</code></td><td><code>action(command, palette)</code></td>
+      <td>The command's own handler. Runs after the palette closes, before <code>onRun</code>.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="api-note">In all callbacks, <code>command</code> is the
+<em>normalized</em> command object (<code>{ id, label, hint, group, icon,
+keywords[], action, disabled }</code>) and <code>palette</code> is the
+instance the command ran on.</p>
+
+<h3 id="api-data">Declarative init</h3>
+<p>There is exactly one declarative hook: any element with a
+<code>data-command-open</code> attribute opens the <em>default</em> palette on
+click. Wiring happens automatically on <code>DOMContentLoaded</code> (or
+immediately if the script loads after DOM ready); for content added later,
+call <code>CommandPalette.autoInit(root)</code> — elements are only wired
+once. Commands themselves cannot be declared via <code>data-*</code>
+attributes; registration is JavaScript-only.</p>
+<pre><code>&lt;button type="button" data-command-open&gt;Open command palette&lt;/button&gt;
+
+&lt;script&gt;
+  // after injecting new markup:
+  CommandPalette.autoInit(document.getElementById('late-content'))
+&lt;/script&gt;</code></pre>
+
+<h3 id="api-theming">Theming</h3>
+<p>Auto light/dark with the family's resolution order:
+<code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+<code>.dark</code>/<code>.light</code> class → <code>prefers-color-scheme</code>,
+re-resolved live (via the VC core's watcher when loaded, otherwise a private
+<code>MutationObserver</code> + media-query listener). Pin it with
+<code>CommandPalette.defaults.theme = 'dark'</code>. All colors are CSS custom
+properties on the <code>.vcmd</code> root:</p>
+<div tabindex="0" role="region" aria-label="CSS custom properties with light and dark defaults" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>--vcmd-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td>
+      <td>Match-highlight marks, active icon, focus rings.</td></tr>
+    <tr><td><code>--vcmd-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td>
+      <td>Panel background.</td></tr>
+    <tr><td><code>--vcmd-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td>
+      <td>Active row background, footer key caps.</td></tr>
+    <tr><td><code>--vcmd-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td>
+      <td>Primary text.</td></tr>
+    <tr><td><code>--vcmd-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td>
+      <td>Placeholder, hints, group headers, icons, footer.</td></tr>
+    <tr><td><code>--vcmd-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td>
+      <td>Borders and separators.</td></tr>
+    <tr><td><code>--vcmd-shadow</code></td><td><code>0 24px 64px rgba(24,25,32,.22), 0 4px 16px rgba(24,25,32,.1)</code></td>
+      <td><code>0 24px 64px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.4)</code></td>
+      <td>Panel drop shadow.</td></tr>
+    <tr><td><code>--vcmd-backdrop</code></td><td><code>rgba(24,25,32,.42)</code></td><td><code>rgba(0,0,0,.55)</code></td>
+      <td>Full-screen backdrop color.</td></tr>
+    <tr><td><code>--vcmd-radius</code></td><td><code>14px</code></td><td>—</td>
+      <td>Panel corner radius.</td></tr>
+    <tr><td><code>--vcmd-font</code></td><td><code>system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code></td><td>—</td>
+      <td>Font family for the whole palette.</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><code>.vcmd { --vcmd-accent: #b45309; --vcmd-radius: 10px; }   /* your overrides */</code></pre>
+<p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code>
+themes the palette and every other family component in one call.</p>
+<p><strong>CSS isolation:</strong> the overlay renders as
+<code>class="vcmd vc1"</code> and all structural rules ship salted
+(<code>.vcmd.vc1 .vcmd-option { … }</code>) so host-page design systems can't
+override the palette — while the <code>--vcmd-*</code> variable overrides
+above keep working (variable <em>definitions</em> are deliberately unsalted).
+Custom token: <code>CommandPalette.salt = 'acme'</code> before the first open;
+disable with <code>CommandPalette.salt = false</code>.</p>
+<p><strong>Headless:</strong> set
+<code>CommandPalette.defaults.styles = false</code> (or per instance
+<code>styles: false</code>) and no CSS is ever injected. You keep the full
+behavior — fuzzy matching, keyboard model, ARIA, recent group — and style the
+markup contract below entirely from your own CSS. The stock stylesheet is
+available as a starting point via <code>CommandPalette.css</code> (string) or
+<code>dist/command.css</code> (file).</p>
+<pre><code>.vcmd[data-theme="dark"].vcmd-open      ← .vcmd-out while leaving
+  .vcmd-backdrop
+  .vcmd-panel                           ← role=dialog
+    .vcmd-search
+      .vcmd-glass                       ← magnifier SVG
+      .vcmd-input                       ← role=combobox
+    .vcmd-list                          ← role=listbox
+      .vcmd-group                       ← section header (role=presentation)
+      .vcmd-option.is-active            ← role=option; .is-disabled
+        .vcmd-icon                      ← only when `icon` given
+        .vcmd-label                     ← .vcmd-mark spans wrap matches
+        .vcmd-hint                      ← only when `hint` given
+      .vcmd-empty                       ← only when nothing matches
+    .vcmd-footer                        ← ↑↓ navigate · ↵ run · esc close</code></pre>
+
+<h3 id="api-a11y">Accessibility &amp; keyboard</h3>
+<div tabindex="0" role="region" aria-label="Keyboard map" style="overflow-x:auto">
+<table>
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> (configurable)</td>
+      <td>Toggle the palette. Bound on <code>window</code>; deliberately fires even while an input, textarea, or contenteditable has focus — it is the palette's only global binding, so ordinary typing is never intercepted.</td></tr>
+    <tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+      <td>Move the active command. Wraps in both directions, skips disabled commands, scrolls the row into view.</td></tr>
+    <tr><td><kbd>Enter</kbd></td>
+      <td>Run the active command (ignored mid-IME-composition). The palette closes first, then <code>action</code>, then <code>onRun</code>.</td></tr>
+    <tr><td><kbd>Esc</kbd></td>
+      <td>Clears the query first if non-empty; a <strong>second</strong> <kbd>Esc</kbd> closes the palette.</td></tr>
+    <tr><td><kbd>Tab</kbd></td>
+      <td>Trapped — focus stays in the search input (combobox pattern).</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>Hotkey syntax</h4>
+<p>Simple <code>modifier+…+key</code> strings: <code>'mod+k'</code> (default),
+<code>'ctrl+shift+p'</code>, <code>'alt+space'</code>. <code>mod</code> means
+<strong>Cmd on macOS, Ctrl everywhere else</strong>; other modifier aliases
+are <code>ctrl</code>/<code>control</code>, <code>shift</code>,
+<code>alt</code>/<code>option</code>, and
+<code>meta</code>/<code>cmd</code>/<code>command</code>/<code>win</code>.
+Set <code>hotkey: false</code> to disable the global binding.</p>
+<h4>ARIA</h4>
+<ul>
+  <li>ARIA combobox/listbox pattern: the search input is
+    <code>role="combobox"</code> with <code>aria-expanded</code>,
+    <code>aria-controls</code>, <code>aria-autocomplete="list"</code>, and
+    <code>aria-activedescendant</code> pointing at the active
+    <code>role="option"</code> row; group headers and the empty state are
+    presentational.</li>
+  <li>Focus is held in the input for the whole session (clicks inside the
+    panel don't steal it; <kbd>Tab</kbd> is trapped); on close, focus returns
+    to the element that was focused before opening.</li>
+  <li>The panel is <code>role="dialog" aria-modal="true"</code> labeled by
+    <code>labels.title</code>; the footer key legend is
+    <code>aria-hidden</code> (the same keys are conveyed by the combobox
+    semantics). Disabled options carry <code>aria-disabled="true"</code>.</li>
+  <li>Reduced motion is respected
+    (<code>prefers-reduced-motion: reduce</code> disables all transitions).</li>
+</ul>
+</div>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
