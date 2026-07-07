@@ -33,10 +33,11 @@ you bring your own design.
 | Segmented control | `Segmented` | [`segmented/segmented.js`](./segmented/segmented.js) | [README](./segmented/README.md) |
 | Progress bars / spinners / skeletons | `Progress` | [`progress/progress.js`](./progress/progress.js) | [README](./progress/README.md) |
 | Popconfirm (inline are-you-sure) | `Popconfirm` | [`popconfirm/popconfirm.js`](./popconfirm/popconfirm.js) | [README](./popconfirm/README.md) |
+| Rating (stars, hearts, half-steps) | `Rating` | [`rating/rating.js`](./rating/rating.js) | [README](./rating/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
 Roadmap: autocomplete, slider, upload, number input, pagination,
-empty state, rating — same contract, same DNA.
+empty state — same contract, same DNA.
 
 ## Get it any way you like
 

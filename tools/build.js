@@ -35,7 +35,8 @@ var COMPONENTS = [
   ['drawer/drawer.js', 'Drawer', 'drawer.css', 'vanilla-drawer'],
   ['segmented/segmented.js', 'Segmented', 'segmented.css', 'vanilla-segmented'],
   ['progress/progress.js', 'Progress', 'progress.css', 'vanilla-progress'],
-  ['popconfirm/popconfirm.js', 'Popconfirm', 'popconfirm.css', 'vanilla-popconfirm']
+  ['popconfirm/popconfirm.js', 'Popconfirm', 'popconfirm.css', 'vanilla-popconfirm'],
+  ['rating/rating.js', 'Rating', 'rating.css', 'vanilla-rating']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

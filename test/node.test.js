@@ -37,6 +37,7 @@ const FAMILY = [
   ['Segmented', 'segmented/segmented.js', 'vsg', ['create', 'get', 'autoInit']],
   ['Progress', 'progress/progress.js', 'vpg', ['bar', 'spinner', 'skeleton', 'autoInit']],
   ['Popconfirm', 'popconfirm/popconfirm.js', 'vpc', ['ask', 'create', 'get', 'autoInit']],
+  ['Rating', 'rating/rating.js', 'vrt', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -239,6 +240,15 @@ test('Popconfirm specifics: SSR ask resolves false', async () => {
   assert.doesNotThrow(() => p.show());
   assert.doesNotThrow(() => p.hide());
   assert.doesNotThrow(() => p.destroy());
+});
+
+test('Rating specifics: SSR no-op instance', () => {
+  const Rating = components[14].mod;
+  const r = Rating.create(null, { max: 5, half: true });
+  for (const fn of ['getValue', 'enable', 'disable', 'destroy']) {
+    assert.doesNotThrow(() => r[fn](), `rating.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => r.setValue(3.5));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

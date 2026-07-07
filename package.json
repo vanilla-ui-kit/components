@@ -20,6 +20,7 @@
     "./segmented": "./segmented/segmented.js",
     "./progress": "./progress/progress.js",
     "./popconfirm": "./popconfirm/popconfirm.js",
+    "./rating": "./rating/rating.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -34,6 +35,7 @@
     "./segmented.css": "./dist/segmented.css",
     "./progress.css": "./dist/progress.css",
     "./popconfirm.css": "./dist/popconfirm.css",
+    "./rating.css": "./dist/rating.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -53,6 +55,7 @@
     "segmented",
     "progress",
     "popconfirm",
+    "rating",
     "dist"
   ],
   "scripts": {
