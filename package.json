@@ -7,7 +7,7 @@
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
-      "import": "./dist/esm/vanilla-ui-kit.js",
+      "import": "./dist/esm/index.js",
       "default": "./dist/vanilla-ui-kit.js"
     },
     "./core": {
@@ -177,7 +177,9 @@
     "test": "node --test test/*.test.js",
     "test:browser": "node tools/browser-test.js"
   },
-  "sideEffects": true,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "keywords": [
     "vanillakit",
     "vanilla",

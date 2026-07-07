@@ -190,6 +190,11 @@ import 'vanilla-ui-kit/vanilla-ui-kit.css'  // everything</code></pre>
     </div>
     <p>If the package ever ships to the npm registry later, the same specifiers keep
     working — nothing in your code changes.</p>
+    <p><strong>Tree shaking:</strong> the package's ESM entry is a pure re-export
+    barrel with <code>sideEffects</code> scoped to CSS, so bundlers keep only the
+    components you import — <code>import { Toast } from 'vanilla-ui-kit'</code>
+    retains ~12&nbsp;KB minified, not the whole kit. Import bindings you use;
+    the default export deliberately pulls everything.</p>
   </div>
 </section>
 

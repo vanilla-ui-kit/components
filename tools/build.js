@@ -100,7 +100,12 @@ fs.mkdirSync(path.join(DIST, 'esm'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'vanilla-ui-kit.js'), bundle);
 fs.writeFileSync(path.join(DIST, 'esm', 'vanilla-ui-kit.js'), esmBundle);
 // Everything under dist/esm/ is ESM; .js stays for CDN-friendly URLs.
-fs.writeFileSync(path.join(DIST, 'esm', 'package.json'), '{ "type": "module" }\n');
+// sideEffects:false lives HERE because bundlers consult the NEAREST
+// package.json — without it the barrel can't tree-shake. Each module's
+// only import-time effect is attaching its own global, which is exactly
+// what dropping an unimported component should skip.
+fs.writeFileSync(path.join(DIST, 'esm', 'package.json'),
+  '{ "type": "module", "sideEffects": false }\n');
 
 // Per-component ES modules: embed the single UMD source with `self` pinned
 // to globalThis so the browser branch attaches there, then re-export.
@@ -125,6 +130,20 @@ writeEsmModule('core/core.js', 'core', ['VC', 'VanillaUI']);
 COMPONENTS.forEach(function (c) {
   writeEsmModule(c[0], c[0].split('/')[0], [c[1]]);
 });
+
+// Tree-shakeable barrel — the package's `import` entry for bundlers. Pure
+// re-exports over the per-component modules, so with sideEffects scoped to
+// CSS a bundler keeps only what you import. CDN users who want ONE request
+// keep using dist/esm/vanilla-ui-kit.js (the concatenated bundle) instead.
+var barrel =
+  '/*! vanilla-ui-kit v' + VERSION + ' — tree-shakeable ESM entry. License: MIT */\n' +
+  'import { VC, VanillaUI } from \'./core.js\';\n' +
+  COMPONENTS.map(function (c) {
+    return 'import ' + c[1] + ' from \'./' + c[0].split('/')[0] + '.js\';';
+  }).join('\n') + '\n' +
+  'export { ' + GLOBALS.join(', ') + ' };\n' +
+  'export default { ' + GLOBALS.join(', ') + ' };\n';
+fs.writeFileSync(path.join(DIST, 'esm', 'index.js'), barrel);
 
 // Extracted stylesheets — each component exposes its CSS as `Ctor.css`.
 var cssBanner = function (name) {

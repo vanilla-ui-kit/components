@@ -340,6 +340,23 @@ test('dist bundle is in sync with sources', () => {
   assert.ok(dist.includes(`vanilla-ui-kit v${pkg.version}`), 'banner carries the version');
 });
 
+test('tree-shakeable barrel: entry, exports, and the sideEffects marker', async () => {
+  const barrel = await import('../dist/esm/index.js');
+  assert.equal(barrel.VC, barrel.VanillaUI);
+  for (const { name } of components) {
+    assert.ok(barrel[name], `barrel exports ${name}`);
+  }
+  assert.equal(Object.keys(barrel.default).length, components.length + 2);
+  // package.json "." import condition must point at the barrel, not the bundle
+  assert.equal(pkg.exports['.'].import, './dist/esm/index.js');
+  // Bundlers consult the NEAREST package.json: without sideEffects:false in
+  // dist/esm/, the barrel silently stops tree-shaking (453 KB for one import).
+  const esmPkg = JSON.parse(read('dist/esm/package.json'));
+  assert.equal(esmPkg.sideEffects, false);
+  // CSS side effects stay declared at the root so `import '…/toast.css'` survives.
+  assert.deepEqual(pkg.sideEffects, ['**/*.css']);
+});
+
 test('ESM bundle and per-component modules work in Node', async () => {
   const esm = await import('../dist/esm/vanilla-ui-kit.js');
   assert.equal(esm.VC, esm.VanillaUI);
