@@ -206,6 +206,500 @@
       <pre>&lt;div data-vtb&gt;…canonical markup…&lt;/div&gt;</pre>
     </div>
   </div>
+
+  <section class="api-doc" aria-labelledby="api">
+    <style>
+      .api-doc { margin-top: 72px; }
+      .api-doc hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+      .api-doc h2 {
+        font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+        font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+      }
+      .api-doc h3 { font-size: 17px; font-weight: 650; margin: 44px 0 10px; }
+      .api-doc p { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 12px; }
+      .api-doc p strong { color: var(--text); }
+      .api-doc ul.api-toc {
+        display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 8px; padding: 0;
+        list-style: none; font-size: 13.5px;
+      }
+      .api-doc ul.api-toc a { color: var(--accent); text-decoration: none; }
+      .api-doc ul.api-toc a:hover { text-decoration: underline; }
+      .api-doc .api-table { margin: 0 0 10px; }
+      .api-doc table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+      .api-doc th {
+        text-align: left; font-weight: 600; color: var(--muted); font-size: 12px;
+        text-transform: uppercase; letter-spacing: .04em;
+        padding: 8px 12px; border-bottom: 1px solid var(--faint); white-space: nowrap;
+      }
+      .api-doc td { padding: 9px 12px; border-bottom: 1px solid var(--faint); vertical-align: top; }
+      .api-doc td:first-child { white-space: nowrap; }
+      .api-doc code {
+        font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+        border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+      }
+      .api-doc pre {
+        margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+        border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+        font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+      }
+      .api-doc pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+    </style>
+
+    <hr>
+    <h2 id="api">API reference</h2>
+    <p>The complete public surface of <code>tabs.js</code> v1.0.0 — constructor,
+    options, methods, statics, events, declarative attributes, theming and
+    accessibility.</p>
+    <ul class="api-toc" aria-label="API reference contents">
+      <li><a href="#api-usage">Usage</a></li>
+      <li><a href="#api-options">Options</a></li>
+      <li><a href="#api-methods">Methods</a></li>
+      <li><a href="#api-statics">Statics</a></li>
+      <li><a href="#api-events">Events</a></li>
+      <li><a href="#api-data">Declarative init</a></li>
+      <li><a href="#api-theming">Theming</a></li>
+      <li><a href="#api-a11y">Accessibility</a></li>
+    </ul>
+
+    <h3 id="api-usage">Constructor &amp; usage</h3>
+    <pre><code>var tabs = new Tabs(target, options?)</code></pre>
+    <p><code>target</code> is a CSS selector string or an <code>Element</code>.
+    The constructor throws if the target cannot be found, or if no tabs are
+    detected in the container. Constructing on an element that already has an
+    instance destroys the old instance first. Without a DOM (SSR), the
+    constructor returns an inert no-op instance instead of throwing. The
+    script registers a browser global <code>Tabs</code>, and also supports
+    CommonJS and AMD.</p>
+    <p>Four ways to use it:</p>
+    <pre><code>new Tabs('.my-tabs')                 // enhance canonical markup: first child = tab strip,
+                                     // following siblings = panels, in order
+new Tabs('#custom')                  // custom structure: pair explicitly with
+                                     // data-vtb-tab / data-vtb-panel attributes
+new Tabs('#host', { tabs: [ /* … */ ] })   // builder mode: renders strip + panels from data
+&lt;div data-vtb&gt;…&lt;/div&gt;                // zero JS: auto-initializes on DOMContentLoaded</code></pre>
+    <p>In canonical markup the strip's <code>&lt;button&gt;</code>s,
+    <code>&lt;a&gt;</code>s or <code>[role=tab]</code> elements become the
+    tabs; element types don't matter otherwise and panel content is left
+    untouched. With explicit pairing, a tab matches the panel carrying the
+    same <code>data-vtb-panel</code> value (valueless attributes pair by
+    document order) and the tablist becomes the nearest ancestor containing
+    all the tabs. In builder mode, labels and string content render with
+    <code>textContent</code>; <code>innerHTML</code> is used only behind the
+    explicit <code>html: true</code> opt-in, and an <code>Element</code>
+    passed as <code>content</code> is moved in as-is.</p>
+
+    <h3 id="api-options">Options</h3>
+    <div class="api-table" tabindex="0" role="region" aria-label="Constructor options" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>tabs</code></td>
+            <td>array</td>
+            <td><code>null</code></td>
+            <td>Builder mode: <code>[{label, content, html?, disabled?, active?}]</code>.
+            Tabs renders the strip and panels from this data instead of parsing
+            existing markup. <code>label</code> and string <code>content</code>
+            are rendered as text; <code>html: true</code> opts a panel into
+            <code>innerHTML</code>; an <code>Element</code> as
+            <code>content</code> is moved in as-is; <code>disabled</code>
+            disables the tab; <code>active</code> marks it initially active.
+            A missing label falls back to <code>Tab N</code>.</td>
+          </tr>
+          <tr>
+            <td><code>active</code></td>
+            <td>number</td>
+            <td><code>null</code></td>
+            <td>Initial tab index. When <code>null</code>, the tab carrying
+            <code>data-vtb-active</code> wins; otherwise index 0. Out-of-range
+            or invalid values fall back to 0, and if the resulting tab is
+            disabled the next enabled tab is chosen.</td>
+          </tr>
+          <tr>
+            <td><code>vertical</code></td>
+            <td>boolean</td>
+            <td><code>false</code></td>
+            <td>Vertical rail on the left; arrow-key navigation becomes
+            ArrowUp/ArrowDown and the tablist gets
+            <code>aria-orientation="vertical"</code>.</td>
+          </tr>
+          <tr>
+            <td><code>activation</code></td>
+            <td>string</td>
+            <td><code>'auto'</code></td>
+            <td><code>'auto'</code>: moving focus with the arrow keys also
+            selects the tab. <code>'manual'</code>: arrows only move focus and
+            Enter/Space selects.</td>
+          </tr>
+          <tr>
+            <td><code>theme</code></td>
+            <td>string</td>
+            <td><code>'auto'</code></td>
+            <td><code>'auto'</code> | <code>'light'</code> |
+            <code>'dark'</code>. Auto follows the page theme (see
+            <a href="#api-theming">Theming</a>) and re-resolves live;
+            <code>'light'</code>/<code>'dark'</code> pin the instance.</td>
+          </tr>
+          <tr>
+            <td><code>styles</code></td>
+            <td>boolean</td>
+            <td><code>true</code></td>
+            <td><code>false</code> = headless: no CSS is injected; you style
+            the <code>.vtb-*</code> markup contract yourself (see
+            <a href="#api-theming">Theming</a>).</td>
+          </tr>
+          <tr>
+            <td><code>onChange</code></td>
+            <td>function</td>
+            <td><code>null</code></td>
+            <td><code>fn(index, tabs)</code> — called after a tab is activated
+            and the active index actually changed (see
+            <a href="#api-events">Events</a>).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Change a default once for the whole page:
+    <code>Tabs.defaults.activation = 'manual'</code>.</p>
+
+    <h3 id="api-methods">Methods</h3>
+    <div class="api-table" tabindex="0" role="region" aria-label="Instance methods" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>select(index)</code></td>
+            <td><code>Tabs</code></td>
+            <td>Activates the tab at <code>index</code>: updates
+            <code>aria-selected</code>, the roving tabindex, panel visibility
+            and the sliding indicator, then fires the change callback/event if
+            the index changed. No-op for disabled or out-of-range indexes.
+            Returns the instance for chaining.</td>
+          </tr>
+          <tr>
+            <td><code>getActive()</code></td>
+            <td><code>number</code></td>
+            <td>The current active tab index (same value as the
+            <code>active</code> property).</td>
+          </tr>
+          <tr>
+            <td><code>destroy()</code></td>
+            <td><code>Tabs</code></td>
+            <td>Unbinds all listeners, removes the indicator element, removes
+            builder-mode DOM it created, restores every attribute it changed to
+            its original value, and removes its classes. Returns the
+            instance.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Readable instance properties: <code>el</code> (the container),
+    <code>list</code> (the tablist element), <code>tabs</code> and
+    <code>panels</code> (arrays of elements, index-aligned), and
+    <code>active</code> (current index).</p>
+
+    <h3 id="api-statics">Statics &amp; helpers</h3>
+    <div class="api-table" tabindex="0" role="region" aria-label="Static methods and properties" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Member</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Tabs.create(target, options)</code></td>
+            <td>Factory — identical to <code>new Tabs(target, options)</code>.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.get(target)</code></td>
+            <td>The instance attached to an element (selector or
+            <code>Element</code>), or <code>null</code>.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.autoInit(root?)</code></td>
+            <td>Initializes every <code>[data-vtb]</code> container under
+            <code>root</code> (default: <code>document</code>) that doesn't
+            already have an instance; returns the array of created instances.
+            One failing container logs an error and doesn't abort the rest.
+            Runs automatically once on <code>DOMContentLoaded</code> (or
+            immediately if the document has already loaded).</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.defaults</code></td>
+            <td>The live defaults object — mutate it to change a default for
+            all subsequent instances (e.g.
+            <code>Tabs.defaults.styles = false</code>).</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.version</code></td>
+            <td>Version string, <code>'1.0.0'</code>.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.salt</code></td>
+            <td>CSS salt token used to namespace structural rules
+            (default <code>'vc1'</code>). Set your own token or
+            <code>false</code> (no salting) <em>before</em> the first instance
+            is created.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.css</code></td>
+            <td>The full embedded stylesheet as a string, always rendered with
+            the current salt — a starting point for headless styling (also
+            shipped as <code>dist/tabs.css</code>).</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.displayName</code></td>
+            <td><code>'Tabs'</code> — family convergence contract.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.rootClass</code></td>
+            <td><code>'vtb'</code> — the class applied to every container.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.themeVars</code></td>
+            <td>Map of shared theme tokens to CSS custom property names:
+            <code>{ accent: '--vtb-accent', radius: '--vtb-radius', font: '--vtb-font' }</code>.
+            Used by <code>VC.config()</code> when the VC core is loaded.</td>
+          </tr>
+          <tr>
+            <td><code>Tabs.varScopes</code></td>
+            <td><code>['.vtb', '.vtb[data-theme=dark]']</code> — the selectors
+            where the theme variables are defined (deliberately unsalted so
+            page overrides keep working).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="api-events">Events &amp; callbacks</h3>
+    <div class="api-table" tabindex="0" role="region" aria-label="Events and callbacks" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Hook</th><th>Payload</th><th>When</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>onChange</code> (option)</td>
+            <td><code>(index, tabs)</code> — the new active index and the
+            <code>Tabs</code> instance</td>
+            <td>After a tab is activated and the active index actually changed
+            — by click, keyboard, or <code>select()</code>. Not called for the
+            initial selection.</td>
+          </tr>
+          <tr>
+            <td><code>tabs:change</code> (DOM event)</td>
+            <td><code>CustomEvent</code> with
+            <code>detail: { index, tabs }</code></td>
+            <td>Dispatched from the container, bubbling, on every change —
+            same conditions as <code>onChange</code> (which runs first).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>document.addEventListener('tabs:change', function (e) {
+  console.log(e.detail.index, e.detail.tabs)
+})</code></pre>
+
+    <h3 id="api-data">Declarative init (data-* attributes)</h3>
+    <p>Add <code>data-vtb</code> to a container and it initializes itself with
+    no JavaScript, on <code>DOMContentLoaded</code>. Options ride along as
+    data attributes on the same container:</p>
+    <div class="api-table" tabindex="0" role="region" aria-label="Declarative data attributes" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Attribute</th><th>On</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>data-vtb</code></td>
+            <td>container</td>
+            <td>Auto-initialize this container (via <code>Tabs.autoInit</code>).</td>
+          </tr>
+          <tr>
+            <td><code>data-active</code></td>
+            <td>container</td>
+            <td>Initial tab index (number); ignored when empty.</td>
+          </tr>
+          <tr>
+            <td><code>data-vertical</code></td>
+            <td>container</td>
+            <td>Boolean — <code>"false"</code> and <code>"0"</code> are false,
+            anything else (including a valueless attribute) is true.</td>
+          </tr>
+          <tr>
+            <td><code>data-activation</code></td>
+            <td>container</td>
+            <td><code>auto</code> or <code>manual</code>.</td>
+          </tr>
+          <tr>
+            <td><code>data-theme</code></td>
+            <td>container</td>
+            <td><code>auto</code>, <code>light</code> or <code>dark</code>.</td>
+          </tr>
+          <tr>
+            <td><code>data-styles</code></td>
+            <td>container</td>
+            <td>Boolean (same parsing as <code>data-vertical</code>) —
+            <code>data-styles="false"</code> goes headless.</td>
+          </tr>
+          <tr>
+            <td><code>data-vtb-tab</code></td>
+            <td>tab element</td>
+            <td>Explicit pairing: marks this element as a tab. With a value, it
+            pairs with the panel whose <code>data-vtb-panel</code> matches;
+            valueless attributes pair by document order. A tab with no matching
+            panel is skipped.</td>
+          </tr>
+          <tr>
+            <td><code>data-vtb-panel</code></td>
+            <td>panel element</td>
+            <td>Explicit pairing: marks this element as a panel (any order in
+            the container).</td>
+          </tr>
+          <tr>
+            <td><code>data-vtb-active</code></td>
+            <td>tab element</td>
+            <td>Marks the initially active tab; an explicit <code>active</code>
+            option takes precedence.</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td>tab element</td>
+            <td>Plain HTML attribute — the tab can't be selected and is skipped
+            by arrow-key navigation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 id="api-theming">Theming</h3>
+    <p>Automatic light/dark with the family's resolution order:
+    <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> →
+    <code>.dark</code>/<code>.light</code> class →
+    <code>prefers-color-scheme</code>, re-resolved live as any of them change.
+    Pin one instance with <code>{ theme: 'dark' }</code>. All colors are CSS
+    custom properties, defined on <code>.vtb</code> (light) and
+    <code>.vtb[data-theme=dark]</code> (dark):</p>
+    <div class="api-table" tabindex="0" role="region" aria-label="CSS custom properties" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>--vtb-accent</code></td>
+            <td><code>#5b5bd6</code></td>
+            <td><code>#7b7bea</code></td>
+            <td>Active tab color, sliding indicator, focus rings.</td>
+          </tr>
+          <tr>
+            <td><code>--vtb-text</code></td>
+            <td><code>#1c1d21</code></td>
+            <td><code>#e9eaf0</code></td>
+            <td>Base text color; tab hover color.</td>
+          </tr>
+          <tr>
+            <td><code>--vtb-muted</code></td>
+            <td><code>#72747e</code></td>
+            <td><code>#989aa6</code></td>
+            <td>Inactive and disabled tab labels.</td>
+          </tr>
+          <tr>
+            <td><code>--vtb-faint</code></td>
+            <td><code>#e7e7ec</code></td>
+            <td><code>#31343f</code></td>
+            <td>Rail border under (or beside) the tab strip.</td>
+          </tr>
+          <tr>
+            <td><code>--vtb-radius</code></td>
+            <td><code>8px</code></td>
+            <td>same</td>
+            <td>Tab corner radius.</td>
+          </tr>
+          <tr>
+            <td><code>--vtb-font</code></td>
+            <td><code>system-ui</code> stack</td>
+            <td>same</td>
+            <td>Font family for the widget.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>.vtb {
+  --vtb-accent: #b45309;   /* active tab + sliding indicator */
+}</code></pre>
+    <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code>
+    themes tabs and every other family component in one call.</p>
+    <p><strong>CSS isolation.</strong> Containers render as
+    <code>class="vtb vc1"</code> and all structural rules ship salted
+    (<code>.vtb.vc1 .vtb-tab { … }</code>), so host-page design systems can't
+    override the widget — while <code>--vtb-*</code> variable overrides keep
+    working (variable definitions are deliberately unsalted). Custom token:
+    <code>Tabs.salt = 'acme'</code> before the first instance; disable with
+    <code>Tabs.salt = false</code>.</p>
+    <p><strong>Headless.</strong> <code>Tabs.defaults.styles = false</code>
+    (or <code>{ styles: false }</code> per instance) never injects CSS. You
+    keep the full behavior — ARIA wiring, roving tabindex, keyboard
+    navigation, hidden panels — and the markup contract below, styled entirely
+    from your own CSS. The stock stylesheet is available as a starting point
+    via <code>Tabs.css</code> (string) or <code>dist/tabs.css</code> (file).</p>
+    <pre><code>.vtb.vtb-vertical[data-theme="dark"]     ← your container
+  .vtb-list[role="tablist"]
+    .vtb-tab[role="tab"][aria-selected]  ← your buttons/links
+    .vtb-ink                             ← the sliding indicator (JS sets
+                                            transform + width/height inline)
+  .vtb-panel[role="tabpanel"][hidden]    ← your panels</code></pre>
+
+    <h3 id="api-a11y">Accessibility</h3>
+    <p>Implements the full WAI-ARIA tabs pattern:
+    <code>role="tablist"</code> (plus <code>aria-orientation="vertical"</code>
+    when vertical), <code>role="tab"</code> with <code>aria-selected</code>
+    and <code>aria-controls</code>, and <code>role="tabpanel"</code> with
+    <code>aria-labelledby</code> and <code>tabindex="0"</code> so panel
+    content is reachable. Inactive panels get the <code>hidden</code>
+    attribute; enhanced <code>&lt;button&gt;</code>s get
+    <code>type="button"</code> so they never submit a surrounding form; ids
+    are generated only where missing.</p>
+    <div class="api-table" tabindex="0" role="region" aria-label="Keyboard map" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Key</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tab</td>
+            <td>Into the strip — only the active tab is tabbable (roving
+            tabindex) — then onward into the active panel.</td>
+          </tr>
+          <tr>
+            <td>ArrowRight / ArrowLeft</td>
+            <td>Move through tabs, wrapping, skipping disabled ones. With
+            <code>activation: 'auto'</code> focus also selects; with
+            <code>'manual'</code> it only moves focus. (ArrowDown / ArrowUp
+            when <code>vertical</code>.)</td>
+          </tr>
+          <tr>
+            <td>Enter / Space</td>
+            <td>Select the focused tab (<code>'manual'</code> mode).</td>
+          </tr>
+          <tr>
+            <td>Home</td>
+            <td>First enabled tab.</td>
+          </tr>
+          <tr>
+            <td>End</td>
+            <td>Last enabled tab.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Key presses with Alt, Ctrl or Meta held are left alone. Focus rings use
+    <code>:focus-visible</code>; the indicator animation is disabled under
+    <code>prefers-reduced-motion: reduce</code>.</p>
+  </section>
 </div>
 
 <script src="./tabs.js"></script>
