@@ -28,9 +28,12 @@ you bring your own design.
 | Select / combobox (search, multiple, groups) | `Select` | [`select/select.js`](./select/select.js) | [README](./select/README.md) |
 | Command palette (Ctrl/⌘+K) | `CommandPalette` | [`command/command.js`](./command/command.js) | [README](./command/README.md) |
 | Forms (reactive, validation, honeypot) | `Form` | [`form/form.js`](./form/form.js) | [README](./form/README.md) |
+| Phone input (flags, formatting, validation) | `PhoneInput` | [`phone/phone.js`](./phone/phone.js) | [README](./phone/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: phone input — same contract, same DNA.
+Roadmap: drawer, autocomplete, slider, popconfirm, segmented control, upload,
+number input, progress/skeletons, pagination, empty state, rating — same
+contract, same DNA.
 
 ## Get it any way you like
 

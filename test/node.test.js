@@ -32,6 +32,7 @@ const FAMILY = [
   ['Select', 'select/select.js', 'vsel', ['create', 'get', 'autoInit']],
   ['CommandPalette', 'command/command.js', 'vcmd', ['register', 'unregister', 'open', 'close', 'toggle', 'autoInit']],
   ['Form', 'form/form.js', 'vfm', ['create', 'get', 'autoInit']],
+  ['PhoneInput', 'phone/phone.js', 'vph', ['create', 'get', 'autoInit', 'parse', 'format', 'isValid', 'flag']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -177,6 +178,21 @@ test('Form specifics: pure validators and SSR handle', async () => {
   assert.doesNotThrow(() => f.getValue('x'));
   assert.doesNotThrow(() => f.watch('x', () => {}));
   await f.submit();
+});
+
+test('PhoneInput specifics: pure parse/format/validate/flag helpers', () => {
+  const PhoneInput = components[9].mod;
+  assert.ok(PhoneInput.countries.length >= 240, 'full country table');
+  assert.equal(PhoneInput.isValid('+14155552671', 'us'), true);
+  assert.equal(PhoneInput.isValid('+1415', 'us'), false);
+  const parsed = PhoneInput.parse('+971501234567');
+  assert.equal(parsed.country, 'ae');
+  assert.equal(parsed.valid, true);
+  assert.equal(parsed.e164, '+971501234567');
+  assert.equal(PhoneInput.format('4155552671', 'us'), '(415) 555-2671');
+  for (const iso of ['us', 'gb', 'ae', 'jp', 'br', 'in']) {
+    assert.ok(PhoneInput.flag(iso).startsWith('<svg'), `flag(${iso}) is SVG`);
+  }
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {
