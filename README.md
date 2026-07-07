@@ -34,10 +34,11 @@ you bring your own design.
 | Progress bars / spinners / skeletons | `Progress` | [`progress/progress.js`](./progress/progress.js) | [README](./progress/README.md) |
 | Popconfirm (inline are-you-sure) | `Popconfirm` | [`popconfirm/popconfirm.js`](./popconfirm/popconfirm.js) | [README](./popconfirm/README.md) |
 | Rating (stars, hearts, half-steps) | `Rating` | [`rating/rating.js`](./rating/rating.js) | [README](./rating/README.md) |
+| Autocomplete / typeahead | `Autocomplete` | [`autocomplete/autocomplete.js`](./autocomplete/autocomplete.js) | [README](./autocomplete/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: autocomplete, slider, upload, number input, pagination,
-empty state — same contract, same DNA.
+Roadmap: slider, upload, number input, pagination, empty state — same
+contract, same DNA.
 
 ## Get it any way you like
 

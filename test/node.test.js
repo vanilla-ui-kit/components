@@ -38,6 +38,7 @@ const FAMILY = [
   ['Progress', 'progress/progress.js', 'vpg', ['bar', 'spinner', 'skeleton', 'autoInit']],
   ['Popconfirm', 'popconfirm/popconfirm.js', 'vpc', ['ask', 'create', 'get', 'autoInit']],
   ['Rating', 'rating/rating.js', 'vrt', ['create', 'get', 'autoInit']],
+  ['Autocomplete', 'autocomplete/autocomplete.js', 'vac', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -249,6 +250,15 @@ test('Rating specifics: SSR no-op instance', () => {
     assert.doesNotThrow(() => r[fn](), `rating.${fn} in Node`);
   }
   assert.doesNotThrow(() => r.setValue(3.5));
+});
+
+test('Autocomplete specifics: SSR no-op instance', () => {
+  const Autocomplete = components[15].mod;
+  const a = Autocomplete.create(null, { source: ['x', 'y'] });
+  for (const fn of ['open', 'close', 'getInput', 'destroy']) {
+    assert.doesNotThrow(() => a[fn](), `autocomplete.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => a.setSource([]));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Autocomplete — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='2' width='14' height='4' rx='2' fill='%235b5bd6'/%3E%3Crect x='1' y='8' width='14' height='2.6' rx='1.3' fill='%239b9bf0'/%3E%3Crect x='1' y='12' width='10' height='2.6' rx='1.3' fill='%239b9bf0'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-direction: column; gap: 8px; }
+  .card input {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--faint); border-radius: 10px; padding: 9px 12px; width: 100%;
+  }
+  .card input:focus { outline: none; border-color: var(--accent); }
+  .card input::placeholder { color: var(--muted); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .picked { font-size: 13px; color: var(--muted); min-height: 20px; }
+  .picked strong { color: var(--accent); font-weight: 600; }
+  /* mention-picker flavor: the input is the page's — style it however you like */
+  input.mention { font-family: var(--mono); font-size: 13.5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; }
+  .chips span {
+    font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-radius: 999px; padding: 3px 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Autocomplete <small>v1.0.0 · <a href="../select/examples.html">select →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Typeahead, <em>one file</em>.</h1>
+  <p class="lede">Free-text autocomplete with async race guards, keyboard
+  browsing, and automatic theming. The input stays yours — suggestions
+  assist, they never constrain. Every card below is live.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Static array</h3>
+      <p>Local filtering, diacritic-insensitive, match highlighted.
+      Try “sao” or “zur”.</p>
+      <div class="demo">
+        <input id="city" placeholder="Search a city…" aria-label="City">
+        <div class="picked" id="city-out"></div>
+      </div>
+      <pre>new Autocomplete('#city', {
+  source: ['Amsterdam', 'São Paulo', 'Zürich', …],
+  onSelect: item => use(item.value)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Async + loading row</h3>
+      <p>A fake API with 300–1200&nbsp;ms latency. Type fast: the loading
+      row shows while pending, and answers for superseded queries are
+      <em>discarded</em> — a slow “ap” can never overwrite “apple”.</p>
+      <div class="demo">
+        <input id="fruit" placeholder="Search fruit (async)…" aria-label="Fruit">
+        <div class="picked" id="fruit-log"></div>
+      </div>
+      <pre>new Autocomplete('#fruit', {
+  source: q => slowApi(q),   // Promise — or fn(q, done)
+  onError: e => console.warn(e)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Groups</h3>
+      <p>Items with a <code>group</code> render under uppercase headers,
+      exactly like Select.</p>
+      <div class="demo">
+        <input id="lang" placeholder="Search a language…" aria-label="Language">
+      </div>
+      <pre>source: [
+  { value: 'js',  label: 'JavaScript', group: 'Dynamic' },
+  { value: 'rs',  label: 'Rust',       group: 'Compiled' },
+  …
+]</pre>
+    </div>
+
+    <div class="card">
+      <h3>Mention picker (allowNew)</h3>
+      <p>Type <code>@al</code>… free text stays valid — pick a teammate or
+      invent a brand-new handle, both land as chips on Enter.</p>
+      <div class="demo">
+        <input id="mention" class="mention" placeholder="@mention someone…" aria-label="Mention">
+        <div class="chips" id="mention-chips"></div>
+      </div>
+      <pre>new Autocomplete('#mention', {
+  source: q => users(q.replace(/^@/, '')),
+  allowNew: true,   // the default — new handles are fine
+  onSelect: item => addChip(item.value)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Recent searches (openOnFocus)</h3>
+      <p>Focus the empty field: recents appear before you type a single
+      character. Selecting or submitting adds to the list.</p>
+      <div class="demo">
+        <input id="recent" placeholder="Search the docs…" aria-label="Search">
+        <div class="picked" id="recent-out"></div>
+      </div>
+      <pre>new Autocomplete('#recent', {
+  source: () => recents,   // empty query → the whole list
+  openOnFocus: true
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Family theming</h3>
+      <p>With the VC core loaded, one call themes every component.</p>
+      <div class="demo">
+        <input id="themed" placeholder="Type “a”, then re-accent…" aria-label="Themed demo">
+        <div class="picked"><a href="#" id="amber">Amber accent</a> · <a href="#" id="reset">Reset</a></div>
+      </div>
+      <pre>VC.config({ accent: '#b45309' })
+// or per page, no core needed:
+.vac { --vac-accent: #b45309; }</pre>
+    </div>
+  </div>
+</div>
+
+<script src="autocomplete.js"></script>
+<script>
+  // Theme switch — the panels follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  /* 1. Static array */
+  new Autocomplete('#city', {
+    source: ['Amsterdam', 'Barcelona', 'Bogotá', 'Copenhagen', 'Kyōto',
+      'Lisbon', 'Melbourne', 'Montréal', 'Nairobi', 'New York', 'Oslo',
+      'Reykjavík', 'São Paulo', 'Seoul', 'Tokyo', 'Vancouver', 'Zürich'],
+    onSelect: function (item) {
+      document.getElementById('city-out').innerHTML =
+        'Picked <strong></strong>';
+      document.getElementById('city-out').querySelector('strong').textContent = item.value;
+    }
+  });
+
+  /* 2. Async with visible latency — stale answers are discarded */
+  var FRUIT = ['Apple', 'Apricot', 'Avocado', 'Banana', 'Blackberry',
+    'Blueberry', 'Cherry', 'Cranberry', 'Fig', 'Grape', 'Grapefruit',
+    'Kiwi', 'Lemon', 'Lime', 'Mango', 'Melon', 'Nectarine', 'Orange',
+    'Papaya', 'Peach', 'Pear', 'Pineapple', 'Plum', 'Raspberry', 'Strawberry'];
+  function slowApi(q) {
+    var ms = 300 + Math.floor(Math.random() * 900); // deliberately jittery
+    var log = document.getElementById('fruit-log');
+    log.textContent = '→ "' + q + '" (' + ms + ' ms)…';
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var out = [], fq = q.toLowerCase();
+        for (var i = 0; i < FRUIT.length; i++) {
+          if (FRUIT[i].toLowerCase().indexOf(fq) !== -1) out.push(FRUIT[i]);
+        }
+        resolve(out);
+      }, ms);
+    });
+  }
+  new Autocomplete('#fruit', { source: slowApi });
+
+  /* 3. Groups */
+  new Autocomplete('#lang', {
+    source: [
+      { value: 'js', label: 'JavaScript', group: 'Dynamic' },
+      { value: 'py', label: 'Python', group: 'Dynamic' },
+      { value: 'rb', label: 'Ruby', group: 'Dynamic' },
+      { value: 'lua', label: 'Lua', group: 'Dynamic' },
+      { value: 'c', label: 'C', group: 'Compiled' },
+      { value: 'rs', label: 'Rust', group: 'Compiled' },
+      { value: 'go', label: 'Go', group: 'Compiled' },
+      { value: 'zig', label: 'Zig', group: 'Compiled' },
+      { value: 'hs', label: 'Haskell', group: 'Functional' },
+      { value: 'elm', label: 'Elm', group: 'Functional' },
+      { value: 'ml', label: 'OCaml', group: 'Functional' }
+    ]
+  });
+
+  /* 4. Mention picker — free text remains valid (allowNew, the default) */
+  var USERS = ['alice', 'albert', 'alan', 'bob', 'carol', 'dave', 'erin',
+    'frank', 'grace', 'heidi', 'ivan', 'judy', 'mallory', 'olivia', 'peggy'];
+  var mentionInput = document.getElementById('mention');
+  function addChip(handle) {
+    handle = handle.replace(/^@+/, '').replace(/^\s+|\s+$/g, '');
+    if (!handle) return;
+    var chip = document.createElement('span');
+    chip.textContent = '@' + handle;
+    document.getElementById('mention-chips').appendChild(chip);
+    mentionInput.value = '';
+  }
+  var mentionAc = new Autocomplete('#mention', {
+    minChars: 2, // "@" + one letter
+    source: function (q, done) {
+      q = q.replace(/^@+/, '').toLowerCase();
+      var out = [];
+      for (var i = 0; i < USERS.length; i++) {
+        if (USERS[i].indexOf(q) === 0) out.push({ value: '@' + USERS[i], label: '@' + USERS[i] });
+      }
+      done(out);
+    },
+    onSelect: function (item) { addChip(item.value); }
+  });
+  mentionInput.addEventListener('keydown', function (e) {
+    // Enter on free text (nothing browsed): the panel already closed / never
+    // opened, so this fires for new handles — that's allowNew in action.
+    if (e.key === 'Enter' && !mentionAc.isOpen) addChip(mentionInput.value);
+  });
+
+  /* 5. Recent searches — openOnFocus + a source that serves '' */
+  var recents = ['salt namespaces', 'dark theme tokens', 'VC.position'];
+  var recentInput = document.getElementById('recent');
+  function commitSearch(q) {
+    q = q.replace(/^\s+|\s+$/g, '');
+    if (!q) return;
+    var i = recents.indexOf(q);
+    if (i !== -1) recents.splice(i, 1);
+    recents.unshift(q);
+    if (recents.length > 6) recents.pop();
+    var out = document.getElementById('recent-out');
+    out.innerHTML = 'Searched <strong></strong>';
+    out.querySelector('strong').textContent = q;
+    recentInput.value = '';
+  }
+  var recentAc = new Autocomplete('#recent', {
+    openOnFocus: true,
+    source: function (q, done) {
+      q = q.toLowerCase();
+      var out = [];
+      for (var i = 0; i < recents.length; i++) {
+        if (!q || recents[i].toLowerCase().indexOf(q) !== -1) out.push(recents[i]);
+      }
+      done(out); // '' → the whole recents list, thanks to openOnFocus
+    },
+    onSelect: function (item) { commitSearch(item.value); }
+  });
+  recentInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !recentAc.isOpen) commitSearch(recentInput.value);
+  });
+
+  /* 6. Family theming */
+  new Autocomplete('#themed', { source: ['Amber', 'Amethyst', 'Aqua', 'Azure'] });
+  document.getElementById('amber').addEventListener('click', function (e) {
+    e.preventDefault();
+    if (window.VC) VC.config({ accent: '#b45309' });
+    else document.documentElement.insertAdjacentHTML('beforeend',
+      '<style>.vac{--vac-accent:#b45309}</style>');
+  });
+  document.getElementById('reset').addEventListener('click', function (e) {
+    e.preventDefault();
+    if (window.VC) VC.config({ accent: null });
+    else location.reload();
+  });
+</script>
+</body>
+</html>
