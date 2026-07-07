@@ -263,6 +263,190 @@ VC.config({ accent: '#b45309' })</pre>
     manual.toggle();
   });
 </script>
+<!-- ======================= API reference ======================= -->
+<style>
+  .api-section { border-top: 1px solid var(--faint); margin-top: 88px; padding-top: 40px; }
+  .api-section > h2 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.005em; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .api-toc a { color: var(--accent); text-decoration: none; }
+  .api-toc a:hover { text-decoration: underline; }
+  .api-block { background: var(--surface); border: 1px solid var(--faint); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+  .api-block h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .api-block p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .api-block ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .api-block li { margin: 2px 0; }
+  .api-block code { font-family: var(--mono); font-size: 12.5px; }
+  .api-block pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  .api-scroll { overflow-x: auto; margin-top: 12px; }
+  .api-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+  .api-table th { text-align: left; font-weight: 650; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+  .api-table td { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--faint); vertical-align: top; }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table td:first-child code { white-space: nowrap; }
+  .api-table td:last-child { color: var(--muted); }
+</style>
+<section class="wrap api-section" aria-labelledby="api">
+  <h2 id="api">API reference</h2>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-methods">Methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-declarative">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <section class="api-block" id="api-usage">
+    <h3>Constructor &amp; usage</h3>
+    <pre>new Tooltip(target, options?)   // target: element or CSS selector</pre>
+    <p>One class, four trigger modes:</p>
+    <ul>
+      <li><strong>hover</strong> (default) — shows on pointer hover with a small delay, and immediately on keyboard focus.</li>
+      <li><strong>click</strong> — popover: toggles on click, closes on outside click or <kbd>Escape</kbd>.</li>
+      <li><strong>focus</strong> — visible only while the trigger is focused.</li>
+      <li><strong>manual</strong> — binds nothing; drive it with <code>show()</code> / <code>hide()</code> / <code>toggle()</code>.</li>
+    </ul>
+    <p>Add <code>interactive: true</code> for a panel that stays open while the pointer or focus is inside it and may hold focusable content. Also works with CommonJS/AMD and is SSR-safe (no-op without a DOM); <code>Tooltip.create(target, options)</code> is a constructor alias.</p>
+  </section>
+
+  <section class="api-block" id="api-options">
+    <h3>Options</h3>
+    <p>Second constructor argument; all keys of <code>Tooltip.defaults</code>. Change a default for every tooltip with, e.g., <code>Tooltip.defaults.placement = 'bottom'</code>.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip options">
+      <table class="api-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>content</code></td><td><code>string | fn | Element</code></td><td><code>''</code></td><td>String, <code>fn(triggerEl)</code> (re-resolved on every show), or a DOM element.</td></tr>
+          <tr><td><code>placement</code></td><td><code>string</code></td><td><code>'top'</code></td><td><code>'top' | 'bottom' | 'left' | 'right'</code>; flips to the opposite side when there is no room, clamps to the viewport.</td></tr>
+          <tr><td><code>trigger</code></td><td><code>string</code></td><td><code>'hover'</code></td><td><code>'hover' | 'click' | 'focus' | 'manual'</code>. Hover also shows on keyboard focus; <code>'manual'</code> binds nothing.</td></tr>
+          <tr><td><code>delay</code></td><td><code>number | object</code></td><td><code>null</code></td><td>Number (both ways) or <code>{ show, hide }</code> in ms. Hover defaults to <code>{ show: 80, hide: 120 }</code>; other triggers to <code>0</code>. Focus always shows immediately.</td></tr>
+          <tr><td><code>offset</code></td><td><code>number</code></td><td><code>8</code></td><td>Gap in px between the trigger and the panel.</td></tr>
+          <tr><td><code>arrow</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Render the pointer arrow (it tracks the trigger even when the panel is clamped).</td></tr>
+          <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Popover mode: the panel stays open while the pointer or focus is inside it, and may contain focusable content.</td></tr>
+          <tr><td><code>html</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Content is <strong>text</strong> by default (rendered with <code>textContent</code>); opt in for trusted markup.</td></tr>
+          <tr><td><code>theme</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'light' | 'dark'</code> (see Theming).</td></tr>
+          <tr><td><code>styles</code></td><td><code>boolean</code></td><td><code>true</code></td><td><code>false</code> = headless, no CSS ever injected (see Theming).</td></tr>
+          <tr><td><code>labels</code></td><td><code>object</code></td><td><code>{ popover: 'Popover' }</code></td><td>Accessible names; <code>popover</code> labels click-trigger panels.</td></tr>
+          <tr><td><code>onShow</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(tooltip)</code> — see Events &amp; callbacks.</td></tr>
+          <tr><td><code>onHide</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(tooltip)</code> — see Events &amp; callbacks.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-methods">
+    <h3>Methods</h3>
+    <p>All methods return the instance (chainable).</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip instance methods">
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>show()</code></td><td><code>this</code></td><td>Show the panel (re-resolves function content, repositions, joins an open <code>&lt;dialog&gt;</code>’s top layer if the trigger lives in one).</td></tr>
+          <tr><td><code>hide()</code></td><td><code>this</code></td><td>Hide the panel.</td></tr>
+          <tr><td><code>toggle()</code></td><td><code>this</code></td><td>Show if hidden, hide if visible.</td></tr>
+          <tr><td><code>update(content?)</code></td><td><code>this</code></td><td>Replace the content; re-renders and repositions if currently visible. Call with no argument to re-render existing (function) content.</td></tr>
+          <tr><td><code>destroy()</code></td><td><code>this</code></td><td>Hide, remove the panel and all listeners, restore trigger ARIA attributes, and unregister the instance.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-statics">
+    <h3>Statics &amp; helpers</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip static members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Tooltip.create(target, options?)</code></td><td><code>Tooltip</code></td><td>Constructor alias — same as <code>new Tooltip(…)</code>.</td></tr>
+          <tr><td><code>Tooltip.get(target)</code></td><td><code>Tooltip | null</code></td><td>The instance bound to an element (or selector), or <code>null</code>.</td></tr>
+          <tr><td><code>Tooltip.autoInit(root?)</code></td><td><code>Tooltip[]</code></td><td>Activate every <code>[data-vtt]</code> under <code>root</code> (default: <code>document</code>) that has no instance yet. Runs automatically on load; call it for content added later.</td></tr>
+          <tr><td><code>Tooltip.defaults</code></td><td><code>object</code></td><td>Global defaults — change any once, e.g. <code>Tooltip.defaults.theme = 'dark'</code>.</td></tr>
+          <tr><td><code>Tooltip.salt</code></td><td><code>string | false</code></td><td>CSS isolation namespace (default <code>'vc1'</code>). Set your own token before the first tooltip, or <code>false</code> to disable.</td></tr>
+          <tr><td><code>Tooltip.css</code></td><td><code>string</code></td><td>The full stylesheet, always rendered with the current salt — a starting point for headless styling.</td></tr>
+          <tr><td><code>Tooltip.version</code></td><td><code>string</code></td><td>Library version.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-events">
+    <h3>Events &amp; callbacks</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip callbacks">
+      <table class="api-table">
+        <thead><tr><th>Callback</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+          <tr><td><code>onShow</code></td><td><code>fn(tooltip)</code></td><td>After the panel becomes visible.</td></tr>
+          <tr><td><code>onHide</code></td><td><code>fn(tooltip)</code></td><td>After the panel is hidden.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Tooltip dispatches no <code>CustomEvent</code>s — the two callbacks above are the whole event surface.</p>
+  </section>
+
+  <section class="api-block" id="api-declarative">
+    <h3>Declarative init</h3>
+    <p>Every <code>[data-vtt]</code> element is activated on load (and via <code>Tooltip.autoInit(root)</code> for content added later):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip data attributes">
+      <table class="api-table">
+        <thead><tr><th>Attribute</th><th>Option</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>data-vtt</code></td><td><code>content</code></td><td>The tooltip text; also marks the element for auto-init.</td></tr>
+          <tr><td><code>data-vtt-placement</code></td><td><code>placement</code></td><td><code>top</code> / <code>bottom</code> / <code>left</code> / <code>right</code>.</td></tr>
+          <tr><td><code>data-vtt-trigger</code></td><td><code>trigger</code></td><td><code>hover</code> / <code>click</code> / <code>focus</code> / <code>manual</code>.</td></tr>
+          <tr><td><code>data-vtt-interactive</code></td><td><code>interactive</code></td><td>Boolean flag; bare attribute = true, <code>"false"</code>/<code>"0"</code> = false.</td></tr>
+          <tr><td><code>data-vtt-theme</code></td><td><code>theme</code></td><td><code>auto</code> / <code>light</code> / <code>dark</code>.</td></tr>
+          <tr><td><code>data-vtt-delay</code></td><td><code>delay</code></td><td>Number in ms (applies to both show and hide).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre>&lt;button data-vtt="Tooltip text"
+        data-vtt-placement="right"
+        data-vtt-trigger="click"
+        data-vtt-interactive&gt;…&lt;/button&gt;</pre>
+  </section>
+
+  <section class="api-block" id="api-theming">
+    <h3>Theming</h3>
+    <p>Auto light/dark with the family’s resolution order: <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live. Pin one instance with <code>{ theme: 'dark' }</code> or all of them with <code>Tooltip.defaults.theme = 'dark'</code>. All colors are CSS custom properties on <code>.vtt</code> (dark values on <code>.vtt[data-theme=dark]</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip CSS custom properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--vtt-accent</code></td><td>Links and focus outlines inside the panel.</td></tr>
+          <tr><td><code>--vtt-bg</code></td><td>Panel background.</td></tr>
+          <tr><td><code>--vtt-text</code></td><td>Text color.</td></tr>
+          <tr><td><code>--vtt-muted</code></td><td>Secondary text.</td></tr>
+          <tr><td><code>--vtt-faint</code></td><td>Border.</td></tr>
+          <tr><td><code>--vtt-shadow</code></td><td>Panel shadow.</td></tr>
+          <tr><td><code>--vtt-radius</code></td><td>Corner radius.</td></tr>
+          <tr><td><code>--vtt-max-width</code></td><td>Maximum panel width.</td></tr>
+          <tr><td><code>--vtt-font</code></td><td>Font stack.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>CSS isolation</strong> — panels render as <code>class="vtt vc1"</code> and structural rules ship salted, so host-page design systems can’t override them; the <code>--vtt-*</code> variable overrides above keep working (var definitions are deliberately unsalted). Custom token: <code>Tooltip.salt = 'acme'</code> before the first tooltip; disable with <code>Tooltip.salt = false</code>.</p>
+    <p><strong>Headless</strong> — <code>Tooltip.defaults.styles = false</code> (or per instance <code>styles: false</code>) injects no CSS, ever. You keep the full behavior (triggers, delays, flipping, ARIA) and the markup contract: <code>.vtt.vtt-open[data-placement="top"][data-theme="dark"]</code> containing <code>.vtt-arrow</code> (only when <code>arrow</code>; position set inline) and <code>.vtt-content</code>; <code>.vtt-interactive</code> is added in popover mode (it re-enables pointer events). Start from <code>Tooltip.css</code> (string) or <code>dist/tooltip.css</code>. With the VC core loaded, <code>VC.config({ accent: … })</code> themes tooltips and every other family component, and popups position through the shared <code>VC.position</code> engine.</p>
+  </section>
+
+  <section class="api-block" id="api-a11y">
+    <h3>Accessibility</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Tooltip keyboard map">
+      <table class="api-table">
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>Tab</code> (focus the trigger)</td><td>Shows hover/focus tooltips immediately (no delay).</td></tr>
+          <tr><td><code>Enter</code> / <code>Space</code> (click trigger)</td><td>Toggles a click popover (native button activation).</td></tr>
+          <tr><td><code>Tab</code> (into an interactive panel)</td><td>Keeps the panel open while focus is inside it.</td></tr>
+          <tr><td><code>Escape</code></td><td>Dismisses any visible tooltip; click popovers return focus to their trigger.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Hover/focus tooltips follow the WAI-ARIA tooltip pattern: the panel gets <code>role="tooltip"</code> and the trigger gets <code>aria-describedby</code> while it is visible (an existing <code>aria-describedby</code> is preserved and restored). Click popovers set <code>aria-expanded</code> + <code>aria-controls</code> on the trigger; the panel is a labelled <code>role="group"</code> (name via <code>labels.popover</code>). Focusable content inside interactive panels gets <code>:focus-visible</code> outlines; <code>prefers-reduced-motion</code> disables all animation.</p>
+  </section>
+</section>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
