@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Menu — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='14' rx='3' fill='%235b5bd6'/%3E%3Crect x='4' y='4.5' width='8' height='1.6' rx='.8' fill='white'/%3E%3Crect x='4' y='7.2' width='8' height='1.6' rx='.8' fill='white' opacity='.75'/%3E%3Crect x='4' y='9.9' width='5' height='1.6' rx='.8' fill='white' opacity='.5'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 18px; max-width: 56ch; }
+  pre.cdn {
+    margin: 0 0 40px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .card .out { font-size: 13px; color: var(--muted); min-height: 1.4em; }
+  .ctx-area {
+    display: grid; place-items: center; min-height: 110px; text-align: center;
+    color: var(--muted); font-size: 14px; background: var(--surface-2);
+    border: 1.5px dashed var(--faint); border-radius: 12px; padding: 16px;
+    -webkit-user-select: none; user-select: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Menu <small>v1.0.0 · <a href="../toast/examples.html">toast →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Menus, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency dropdown action menus with the full
+  menu-button keyboard pattern — arrows, typeahead, submenus, context menus.
+  Try the keyboard: focus a trigger and press ArrowDown.</p>
+  <pre class="cdn">&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/menu/menu.js"&gt;&lt;/script&gt;</pre>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic actions</h3>
+      <p>A trigger button and a list of actions. Esc closes, outside click closes.</p>
+      <div class="demo">
+        <button class="demo-btn" id="m-basic">Actions ▾</button>
+        <span class="out" id="out-basic"></span>
+      </div>
+      <pre>new Menu('#m-basic', {
+  items: [
+    { label: 'Rename',    onSelect: fn },
+    { label: 'Duplicate', onSelect: fn },
+    { label: 'Move to…',  onSelect: fn }
+  ]
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Icons, hints, danger, disabled</h3>
+      <p>Trusted SVG icons, right-aligned hints, red destructive actions;
+      disabled items are skipped by the arrow keys.</p>
+      <div class="demo">
+        <button class="demo-btn" id="m-rich">Edit ▾</button>
+        <span class="out" id="out-rich"></span>
+      </div>
+      <pre>{ label: 'Copy', icon: svg, hint: '⌘C' }
+{ label: 'Paste', disabled: true }
+{ label: 'Delete', danger: true,
+  hint: '⌫', onSelect: fn }</pre>
+    </div>
+
+    <div class="card">
+      <h3>Separators</h3>
+      <p><code>{ type: 'separator' }</code> groups related actions.</p>
+      <div class="demo">
+        <button class="demo-btn" id="m-sep">File ▾</button>
+        <span class="out" id="out-sep"></span>
+      </div>
+      <pre>items: [
+  { label: 'New file' },
+  { label: 'New window' },
+  { type: 'separator' },
+  { label: 'Close' }
+]</pre>
+    </div>
+
+    <div class="card">
+      <h3>Submenu</h3>
+      <p>One level of flyout — hover or ArrowRight to open, ArrowLeft to
+      come back.</p>
+      <div class="demo">
+        <button class="demo-btn" id="m-sub">Share ▾</button>
+        <span class="out" id="out-sub"></span>
+      </div>
+      <pre>{ label: 'Share',
+  items: [
+    { label: 'Copy link' },
+    { label: 'Email' },
+    { label: 'Embed' }
+  ] }</pre>
+    </div>
+
+    <div class="card">
+      <h3>Context menu</h3>
+      <p>Right-click (or long-press) the area — <code>Menu.open(x, y, items)</code>
+      flips inward at viewport edges.</p>
+      <div class="ctx-area" id="ctx-area">Right-click here</div>
+      <pre>el.addEventListener('contextmenu', e => {
+  e.preventDefault()
+  Menu.open(e.clientX, e.clientY, items)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p><code>data-vmn</code> points at a template; no JS needed.
+      Selections fire a <code>menu:select</code> event.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vmn="#tpl-view">View ▾</button>
+        <span class="out" id="out-decl"></span>
+      </div>
+      <template id="tpl-view">
+        <button>Zoom in</button>
+        <button>Zoom out</button>
+        <hr>
+        <button data-hint="⌘0">Reset zoom</button>
+        <button data-disabled>Full screen</button>
+      </template>
+      <pre>&lt;button data-vmn="#tpl-view"&gt;View&lt;/button&gt;
+&lt;template id="tpl-view"&gt;
+  &lt;button&gt;Zoom in&lt;/button&gt;
+  &lt;hr&gt;
+  &lt;button data-hint="⌘0"&gt;Reset zoom&lt;/button&gt;
+&lt;/template&gt;</pre>
+    </div>
+  </div>
+</div>
+
+<script src="./menu.js"></script>
+<script>
+  // Theme switch — the menus follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  function say(id) {
+    return function (item) {
+      document.getElementById(id).textContent = '→ ' + item.label;
+    };
+  }
+
+  // Basic actions.
+  new Menu('#m-basic', {
+    items: [
+      { label: 'Rename', onSelect: say('out-basic') },
+      { label: 'Duplicate', onSelect: say('out-basic') },
+      { label: 'Move to…', onSelect: say('out-basic') }
+    ]
+  });
+
+  // Icons + hints + danger + disabled.
+  var icoCopy = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+    '<rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/>' +
+    '<path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1" stroke="currentColor" stroke-width="1.5"/></svg>';
+  var icoTrash = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+    '<path d="M2.5 4h11M6.5 2h3M4 4l.7 9.3a1 1 0 0 0 1 .7h4.6a1 1 0 0 0 1-.7L12 4" ' +
+    'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  new Menu('#m-rich', {
+    items: [
+      { label: 'Copy', icon: icoCopy, hint: '⌘C', onSelect: say('out-rich') },
+      { label: 'Paste', hint: '⌘V', disabled: true },
+      { type: 'separator' },
+      { label: 'Delete', icon: icoTrash, hint: '⌫', danger: true, onSelect: say('out-rich') }
+    ]
+  });
+
+  // Separators.
+  new Menu('#m-sep', {
+    items: [
+      { label: 'New file', onSelect: say('out-sep') },
+      { label: 'New window', onSelect: say('out-sep') },
+      { type: 'separator' },
+      { label: 'Open…', onSelect: say('out-sep') },
+      { label: 'Open recent', onSelect: say('out-sep') },
+      { type: 'separator' },
+      { label: 'Close', onSelect: say('out-sep') }
+    ]
+  });
+
+  // Submenu.
+  new Menu('#m-sub', {
+    items: [
+      { label: 'Copy link', onSelect: say('out-sub') },
+      { type: 'separator' },
+      { label: 'Share', items: [
+        { label: 'Email', onSelect: say('out-sub') },
+        { label: 'Messages', onSelect: say('out-sub') },
+        { label: 'Embed', onSelect: say('out-sub') }
+      ] },
+      { label: 'Export', items: [
+        { label: 'PNG', onSelect: say('out-sub') },
+        { label: 'SVG', onSelect: say('out-sub') },
+        { label: 'PDF', disabled: true }
+      ] }
+    ]
+  });
+
+  // Context menu at pointer coordinates.
+  var area = document.getElementById('ctx-area');
+  area.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    Menu.open(e.clientX, e.clientY, [
+      { label: 'Cut', hint: '⌘X', onSelect: function () { area.textContent = '→ Cut'; } },
+      { label: 'Copy', hint: '⌘C', onSelect: function () { area.textContent = '→ Copy'; } },
+      { label: 'Paste', hint: '⌘V', disabled: true },
+      { type: 'separator' },
+      { label: 'Inspect', onSelect: function () { area.textContent = '→ Inspect'; } }
+    ]);
+  });
+
+  // Declarative selections bubble as 'menu:select' from the trigger.
+  document.addEventListener('menu:select', function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute('data-vmn')) {
+      document.getElementById('out-decl').textContent = '→ ' + e.detail.item.label;
+    }
+  });
+</script>
+</body>
+</html>

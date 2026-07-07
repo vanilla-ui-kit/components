@@ -26,6 +26,7 @@ const FAMILY = [
   ['DatePicker', 'datepicker/datepicker.js', 'vdp', ['create', 'formatDate', 'parseDate', 'autoInit']],
   ['Toast', 'toast/toast.js', 'vt', ['show', 'info', 'success', 'error', 'warning', 'loading', 'promise', 'dismissAll']],
   ['Tooltip', 'tooltip/tooltip.js', 'vtt', ['create', 'get', 'autoInit']],
+  ['Menu', 'menu/menu.js', 'vmn', ['create', 'get', 'open', 'closeAll', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -106,6 +107,17 @@ test('Tooltip specifics: SSR no-op instance', () => {
   }
   assert.doesNotThrow(() => t.update('new content'));
   assert.equal(Tooltip.get(null), null);
+});
+
+test('Menu specifics: SSR no-op instance and one-shot open', () => {
+  const Menu = components[3].mod;
+  const m = Menu.create(null, { items: [{ label: 'x' }] });
+  for (const fn of ['open', 'close', 'toggle', 'destroy']) {
+    assert.doesNotThrow(() => m[fn](), `menu.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => m.update([{ label: 'y' }]));
+  assert.doesNotThrow(() => Menu.open(10, 10, [{ label: 'z' }]));
+  assert.doesNotThrow(() => Menu.closeAll());
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

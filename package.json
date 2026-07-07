@@ -9,9 +9,11 @@
     "./datepicker": "./datepicker/datepicker.js",
     "./toast": "./toast/toast.js",
     "./tooltip": "./tooltip/tooltip.js",
+    "./menu": "./menu/menu.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
+    "./menu.css": "./dist/menu.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -20,6 +22,7 @@
     "datepicker",
     "toast",
     "tooltip",
+    "menu",
     "dist"
   ],
   "scripts": {
