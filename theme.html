@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme builder — Vanilla UI Kit</title>
+<meta name="description" content="Tune accent, radius, font and color scheme live across every Vanilla UI Kit component, then export the one-line VC.config() call or the equivalent CSS.">
+<style>
+  :root{
+    --accent:#5b5bd6; --bg:#fbfbfd; --surface:#ffffff; --text:#1c1d21;
+    --muted:#72747e; --faint:#e7e7ec; --code:#f4f4f8;
+    --shadow:0 10px 28px rgba(24,25,32,.10),0 2px 8px rgba(24,25,32,.06);
+  }
+  [data-theme=dark]{
+    --accent:#7b7bea; --bg:#131419; --surface:#1b1d24; --text:#e9eaf0;
+    --muted:#989aa6; --faint:#31343f; --code:#22242d;
+    --shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    transition:background .2s ease,color .2s ease;
+  }
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  header{padding:56px 0 28px}
+  .back{display:inline-block;margin-bottom:18px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14.5px}
+  .back:hover{text-decoration:underline}
+  h1{font-size:38px;line-height:1.15;margin:0 0 12px;letter-spacing:-.02em}
+  h1 .accent{color:var(--accent)}
+  .lede{max-width:640px;color:var(--muted);font-size:18px;margin:0}
+  h2{font-size:22px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:10px;border:1px solid var(--faint);
+    background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;
+    cursor:pointer;font-size:15px;transition:border-color .15s ease,transform .1s ease;
+    font-family:inherit;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:active{transform:translateY(1px)}
+  .btn.small{padding:6px 14px;font-size:14px;border-radius:8px}
+  .theme-toggle{position:fixed;top:18px;right:18px;z-index:10}
+  pre{
+    background:var(--code);border:1px solid var(--faint);border-radius:12px;
+    padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.55;margin:0;
+  }
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .card{
+    background:var(--surface);border:1px solid var(--faint);border-radius:14px;
+    padding:20px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);
+  }
+  .card h3{margin:0;font-size:16px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .pill{
+    display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--accent);background:transparent;
+    border:1px solid var(--accent);border-radius:99px;padding:1px 9px;align-self:flex-start;
+  }
+  footer{padding:48px 0 64px;color:var(--muted);font-size:14.5px;text-align:center;border-top:1px solid var(--faint);margin-top:48px}
+  footer a{color:var(--accent);text-decoration:none}
+
+  /* ---- builder layout ---- */
+  .builder{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start;padding:12px 0 8px}
+  .builder > *{min-width:0}
+  .controls{position:sticky;top:20px;gap:20px}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:16px}
+  @media (max-width:860px){
+    .builder{grid-template-columns:1fr}
+    .controls{position:static}
+  }
+  .group{display:flex;flex-direction:column;gap:8px}
+  .group + .group{border-top:1px solid var(--faint);padding-top:16px}
+  .group-label{font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .group-label .val{font-weight:600;text-transform:none;letter-spacing:0;color:var(--accent);font-variant-numeric:tabular-nums}
+
+  .accent-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  input[type=color]{
+    -webkit-appearance:none;appearance:none;width:46px;height:34px;padding:3px;
+    border:1px solid var(--faint);border-radius:9px;background:var(--surface);cursor:pointer;
+  }
+  input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  input[type=color]::-webkit-color-swatch{border:none;border-radius:6px}
+  input[type=color]::-moz-color-swatch{border:none;border-radius:6px}
+  input[type=color]:hover{border-color:var(--accent)}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{
+    width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.12);
+    cursor:pointer;padding:0;transition:transform .1s ease,box-shadow .1s ease;
+  }
+  .swatch:hover{transform:scale(1.12)}
+  .swatch[aria-pressed=true]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+
+  .field-input{
+    font:inherit;padding:8px 12px;border:1px solid var(--faint);border-radius:8px;
+    background:var(--surface);color:var(--text);width:100%;
+  }
+  .field-input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+
+  .toast-row{display:flex;gap:8px;flex-wrap:wrap}
+  .demo-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spin-line{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+
+  .export-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .export-head h2{margin:0}
+  .export-card{margin-top:28px}
+  .export-card pre{margin-top:10px}
+
+  @media (max-width:420px){
+    header{padding:44px 0 20px}
+    h1{font-size:30px}
+    .theme-toggle{top:10px;right:10px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<button class="btn theme-toggle" id="themeToggle" aria-label="Toggle color theme">🌗 Theme</button>
+
+<header class="wrap">
+  <a class="back" href="./index.html">← Vanilla UI Kit</a>
+  <h1>Theme <span class="accent">builder</span></h1>
+  <p class="lede">Tune accent, corner radius, font stack and color scheme —
+  every component on this page updates live through a single
+  <code>VC.config()</code> call. When it looks right, copy the snippet.</p>
+</header>
+
+<main class="wrap">
+  <div class="builder">
+
+    <!-- ============ controls ============ -->
+    <div class="card controls" id="controls">
+      <div class="group">
+        <span class="group-label" id="accentLabel">Accent color</span>
+        <div class="accent-row">
+          <input type="color" id="accentColor" value="#5b5bd6" aria-labelledby="accentLabel">
+          <div class="swatches" id="swatches" role="group" aria-label="Accent presets"></div>
+        </div>
+      </div>
+      <div class="group">
+        <span class="group-label" id="radiusLabel">Corner radius <span class="val" id="radiusVal">kit default</span></span>
+        <div id="radiusSlider"></div>
+      </div>
+      <div class="group">
+        <span class="group-label" id="fontLabel">Font</span>
+        <select id="fontSelect" aria-labelledby="fontLabel">
+          <option value="system">System UI (default)</option>
+          <option value="humanist">Humanist sans</option>
+          <option value="serif">Georgia serif</option>
+          <option value="mono">Monospace</option>
+          <option value="rounded">Rounded</option>
+          <option value="condensed">Condensed</option>
+        </select>
+      </div>
+      <div class="group">
+        <span class="group-label">Scheme</span>
+        <div id="schemeSeg"></div>
+      </div>
+      <div class="group">
+        <button class="btn" id="resetBtn">Reset to defaults</button>
+      </div>
+    </div>
+
+    <!-- ============ live preview ============ -->
+    <div>
+      <div class="preview-grid">
+        <div class="card">
+          <span class="pill">Form</span>
+          <p>Submit empty to see the validation error state.</p>
+          <div id="pvForm"></div>
+        </div>
+        <div class="card">
+          <span class="pill">DatePicker</span>
+          <p>Calendar popup follows the theme.</p>
+          <input id="pvDate" class="field-input" placeholder="Pick a date…">
+        </div>
+        <div class="card">
+          <span class="pill">Select</span>
+          <p>Searchable combobox over a native select.</p>
+          <select id="pvSelect">
+            <option value="">Choose a fruit…</option>
+            <option>Apple</option><option>Mango</option>
+            <option>Pomegranate</option><option>Yuzu</option>
+          </select>
+        </div>
+        <div class="card">
+          <span class="pill">Toast</span>
+          <p>Four flavors, stacked with hover-pause.</p>
+          <div class="toast-row">
+            <button class="btn small" data-toast="success">Success</button>
+            <button class="btn small" data-toast="info">Info</button>
+            <button class="btn small" data-toast="warning">Warning</button>
+            <button class="btn small" data-toast="error">Error</button>
+          </div>
+        </div>
+        <div class="card">
+          <span class="pill">Tabs</span>
+          <div id="pvTabs"></div>
+        </div>
+        <div class="card">
+          <span class="pill">Segmented</span>
+          <p>Animated sliding thumb.</p>
+          <div id="pvSegmented"></div>
+        </div>
+        <div class="card">
+          <span class="pill">Slider</span>
+          <p>Dual-thumb range with drag tooltips.</p>
+          <div id="pvSlider"></div>
+        </div>
+        <div class="card">
+          <span class="pill">Rating</span>
+          <p>Half-steps, keyboard accessible.</p>
+          <div id="pvRating"></div>
+        </div>
+        <div class="card">
+          <span class="pill">Progress</span>
+          <div id="pvBar"></div>
+          <div class="spin-line"><span id="pvSpin"></span> Syncing workspace…</div>
+        </div>
+        <div class="card">
+          <span class="pill">Pagination</span>
+          <p>Constant-width ellipsis logic.</p>
+          <div id="pvPages"></div>
+        </div>
+        <div class="card">
+          <span class="pill">Menu</span>
+          <p>Icons, hints, and a danger item.</p>
+          <div class="demo-row"><button class="btn small" id="pvMenu">Open menu</button></div>
+        </div>
+        <div class="card">
+          <span class="pill">Modal</span>
+          <p>Promise-based confirm in the top layer.</p>
+          <div class="demo-row"><button class="btn small" id="pvModal">Delete project…</button></div>
+        </div>
+        <div class="card">
+          <span class="pill">PhoneInput</span>
+          <p>Flags and as-you-type formatting.</p>
+          <input id="pvPhone" class="field-input" placeholder="Phone number…">
+        </div>
+        <div class="card">
+          <span class="pill">NumberInput</span>
+          <p>Thousands grouping, stepper acceleration.</p>
+          <div id="pvNumber"></div>
+        </div>
+      </div>
+
+      <!-- ============ export ============ -->
+      <div class="card export-card">
+        <div class="export-head">
+          <div>
+            <h2>Export</h2>
+            <p class="sub" style="margin:0">One <code>VC.config()</code> call, or per-component CSS custom properties.</p>
+          </div>
+          <button class="btn small" id="copyBtn">Copy</button>
+        </div>
+        <div id="exportTabs"></div>
+      </div>
+      <div hidden>
+        <div id="paneJS"><pre><code id="codeJS"></code></pre></div>
+        <div id="paneCSS"><pre><code id="codeCSS"></code></pre></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    MIT licensed · <a href="https://github.com/vanilla-ui-kit/components">github.com/vanilla-ui-kit/components</a>
+    · <a href="https://www.jsdelivr.com/package/gh/vanilla-ui-kit/components">jsDelivr</a>
+  </div>
+</footer>
+
+<script src="./dist/vanilla-ui-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- theme toggle, same guarded pattern as index.html ---- */
+  var toggle = document.getElementById('themeToggle');
+  // Guard: the watcher observes <html data-theme>, so writing it
+  // unconditionally would re-trigger the observer forever.
+  function applyTheme() {
+    var t = VC.theme.resolve();
+    if (document.documentElement.getAttribute('data-theme') !== t) {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  }
+  VC.theme.watch(applyTheme);
+  applyTheme();
+
+  /* ---- builder state ---- */
+  var DEFAULT_ACCENT = '#5b5bd6';
+  var DEFAULT_RADIUS = 10;
+  var PRESETS = [
+    { name: 'Indigo (default)', hex: '#5b5bd6' },
+    { name: 'Crimson', hex: '#dc2626' },
+    { name: 'Orange', hex: '#ea580c' },
+    { name: 'Emerald', hex: '#059669' },
+    { name: 'Teal', hex: '#0d9488' },
+    { name: 'Blue', hex: '#2563eb' },
+    { name: 'Violet', hex: '#7c3aed' },
+    { name: 'Pink', hex: '#db2777' }
+  ];
+  var FONTS = {
+    system: null, // kit default — nothing to override
+    humanist: "Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', sans-serif",
+    serif: "Georgia, Cambria, 'Times New Roman', serif",
+    mono: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    rounded: "ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, 'Arial Rounded MT Bold', Calibri, sans-serif",
+    condensed: "'Avenir Next Condensed', 'Arial Narrow', 'Roboto Condensed', 'Liberation Sans Narrow', sans-serif"
+  };
+  // null = untouched (kit default stays in charge, key omitted from export)
+  var state = { accent: null, radius: null, font: null, scheme: 'Auto' };
+
+  /* ---- the single apply path: every control funnels through here ---- */
+  function applyAll() {
+    VC.config({
+      accent: state.accent,
+      radius: state.radius == null ? null : state.radius + 'px',
+      font: state.font ? FONTS[state.font] : null,
+      theme: state.scheme === 'Light' ? 'light' : state.scheme === 'Dark' ? 'dark' : 'auto'
+    });
+    // Tint the page chrome too, so the whole site follows the accent.
+    if (state.accent) document.documentElement.style.setProperty('--accent', state.accent);
+    else document.documentElement.style.removeProperty('--accent');
+    updateExport();
+  }
+
+  /* ---- accent controls ---- */
+  var colorInput = document.getElementById('accentColor');
+  var swatchWrap = document.getElementById('swatches');
+  function markSwatch(hex) {
+    var kids = swatchWrap.children;
+    for (var i = 0; i < kids.length; i++) {
+      kids[i].setAttribute('aria-pressed',
+        String(kids[i].getAttribute('data-hex') === (hex || '').toLowerCase()));
+    }
+  }
+  function setAccent(hex) {
+    state.accent = hex;
+    colorInput.value = hex;
+    markSwatch(hex);
+    applyAll();
+  }
+  PRESETS.forEach(function (p) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'swatch';
+    b.style.background = p.hex;
+    b.setAttribute('data-hex', p.hex.toLowerCase());
+    b.setAttribute('aria-label', 'Accent ' + p.name);
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () { setAccent(p.hex); });
+    swatchWrap.appendChild(b);
+  });
+  var colorTimer = null;
+  colorInput.addEventListener('input', function () {
+    var hex = colorInput.value;
+    if (colorTimer) clearTimeout(colorTimer);
+    colorTimer = setTimeout(function () { setAccent(hex); }, 50); // debounce drags
+  });
+
+  /* ---- radius slider (kit Slider) ---- */
+  var radiusVal = document.getElementById('radiusVal');
+  var radiusSlider = new Slider('#radiusSlider', {
+    min: 0, max: 24, step: 1, value: DEFAULT_RADIUS, tooltip: 'drag',
+    labels: { value: 'Corner radius in pixels' },
+    onInput: function (v) {
+      state.radius = v;
+      radiusVal.textContent = v + 'px';
+      applyAll();
+    }
+  });
+
+  /* ---- font select (kit Select) ---- */
+  var fontSelect = new Select('#fontSelect', {
+    onChange: function (v) {
+      state.font = (v && v !== 'system') ? v : null;
+      applyAll();
+    }
+  });
+
+  /* ---- scheme segmented (kit Segmented) ---- */
+  var schemeSeg = new Segmented('#schemeSeg', {
+    options: ['Auto', 'Light', 'Dark'],
+    value: 'Auto',
+    onChange: function (v) {
+      state.scheme = v;
+      applyAll();
+    }
+  });
+
+  // Header toggle drives the same state so the segmented control stays honest.
+  toggle.addEventListener('click', function () {
+    state.scheme = VC.theme.resolve() === 'dark' ? 'Light' : 'Dark';
+    schemeSeg.setValue(state.scheme, { silent: true });
+    applyAll();
+  });
+
+  /* ---- reset ---- */
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    state = { accent: null, radius: null, font: null, scheme: 'Auto' };
+    colorInput.value = DEFAULT_ACCENT;
+    markSwatch(null);
+    radiusSlider.setValue(DEFAULT_RADIUS, { silent: true });
+    radiusVal.textContent = 'kit default';
+    fontSelect.setValue('system', { silent: true });
+    schemeSeg.setValue('Auto', { silent: true });
+    applyAll();
+    Toast.info('Back to kit defaults.');
+  });
+
+  /* ================= live preview ================= */
+
+  new Form('#pvForm', {
+    fields: [
+      { name: 'name', label: 'Full name', placeholder: 'Ada Lovelace', required: true },
+      { name: 'email', type: 'email', label: 'Email', placeholder: 'ada@example.com', required: true }
+    ],
+    labels: { submit: 'Create account' },
+    onSubmit: function () { Toast.success('Account created. (Demo — nothing was sent.)'); }
+  });
+
+  new DatePicker('#pvDate');
+  new Select('#pvSelect', { searchable: true });
+
+  var TOASTS = {
+    success: 'Theme saved to the clipboard of your heart.',
+    info: 'Every component here reads the same config.',
+    warning: 'Radius above 20px may cause extreme friendliness.',
+    error: 'Contrast check failed. (Not really — showing the style.)'
+  };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-toast]'), function (b) {
+    b.addEventListener('click', function () {
+      var kind = b.getAttribute('data-toast');
+      Toast[kind](TOASTS[kind]);
+    });
+  });
+
+  new Tabs('#pvTabs', {
+    tabs: [
+      { label: 'Overview', content: 'Roving tabindex, arrow keys, animated indicator.' },
+      { label: 'Usage', content: 'Enhance existing markup or build from data, like this one.' },
+      { label: 'A11y', content: 'Full WAI-ARIA tabs pattern, reduced-motion aware.' }
+    ]
+  });
+
+  new Segmented('#pvSegmented', { options: ['List', 'Board', 'Timeline'], value: 'Board' });
+  new Slider('#pvSlider', { value: [20, 80], prefix: '$', tooltip: 'drag' });
+  new Rating('#pvRating', { value: 3.5, half: true });
+
+  Progress.bar('#pvBar', { value: 64, label: 'Storage used', showValue: true });
+  Progress.spinner('#pvSpin', { size: 18, label: 'Syncing workspace' });
+
+  new Pagination('#pvPages', { pages: 12, page: 4, compact: true });
+
+  new Menu('#pvMenu', { items: [
+    { label: 'Duplicate', hint: '⌘D', onSelect: function () { Toast.info('Duplicated'); } },
+    { label: 'Rename', onSelect: function () { Toast.info('Renamed'); } },
+    { type: 'separator' },
+    { label: 'Delete', danger: true, onSelect: function () { Toast.error('Deleted'); } }
+  ]});
+
+  document.getElementById('pvModal').addEventListener('click', function () {
+    Modal.confirm({
+      title: 'Delete this project?',
+      content: 'This would remove 3 boards and 47 tasks. There is no undo. (Demo — nothing is real.)',
+      labels: { ok: 'Delete project', cancel: 'Keep it' }
+    }).then(function (yes) {
+      if (yes) Toast.error('Project deleted. (Not really.)');
+    });
+  });
+
+  new PhoneInput('#pvPhone');
+  new NumberInput('#pvNumber', { prefix: '$', precision: 2, value: 1234.5, step: 10 });
+
+  /* ================= export ================= */
+
+  var codeJS = document.getElementById('codeJS');
+  var codeCSS = document.getElementById('codeCSS');
+  var activeExport = 0; // 0 = JS, 1 = CSS
+
+  function currentValues() {
+    return {
+      accent: state.accent,
+      radius: state.radius == null ? null : state.radius + 'px',
+      font: state.font ? FONTS[state.font] : null
+    };
+  }
+
+  function jsSnippet() {
+    var lines = [];
+    if (state.accent) lines.push("  accent: '" + state.accent + "'");
+    if (state.radius != null) lines.push("  radius: '" + state.radius + "px'");
+    if (state.font) lines.push('  font: ' + JSON.stringify(FONTS[state.font]));
+    if (state.scheme !== 'Auto') lines.push("  theme: '" + state.scheme.toLowerCase() + "'");
+    if (!lines.length) {
+      return '// Everything is at its default — no config needed.\n' +
+             '// Change a control on the left and the call appears here.\n' +
+             'VC.config({})';
+    }
+    return 'VC.config({\n' + lines.join(',\n') + '\n})';
+  }
+
+  // Generated from the live registry: each component publishes its themeVars
+  // (shared key → its own CSS variable) and varScopes (where those variables
+  // are defined, light and dark), so this stays complete as the family grows.
+  function cssSnippet() {
+    var vals = currentValues();
+    var any = vals.accent || vals.radius || vals.font;
+    var blocks = [];
+    if (state.scheme !== 'Auto') {
+      blocks.push('/* Scheme — pin it on the root element:\n   <html data-theme="' +
+        state.scheme.toLowerCase() + '"> */');
+    }
+    if (!any) {
+      blocks.push('/* Everything is at its default — nothing to override.\n' +
+                  '   Change a control on the left and the CSS appears here. */');
+      return blocks.join('\n\n');
+    }
+    for (var name in VC.components) {
+      var c = VC.components[name];
+      if (!c.rootClass || !c.themeVars) continue;
+      var decls = [];
+      for (var key in c.themeVars) {
+        if (vals[key] != null) decls.push('  ' + c.themeVars[key] + ': ' + vals[key] + ';');
+      }
+      if (!decls.length) continue;
+      var scopes = (c.varScopes && c.varScopes.length) ? c.varScopes : ['.' + c.rootClass];
+      var label = c.displayName || (name.charAt(0).toUpperCase() + name.slice(1));
+      blocks.push('/* ' + label + ' */\n' +
+        scopes.join(',\n') + ' {\n' + decls.join('\n') + '\n}');
+    }
+    return blocks.join('\n\n');
+  }
+
+  function updateExport() {
+    codeJS.textContent = jsSnippet();
+    codeCSS.textContent = cssSnippet();
+  }
+
+  new Tabs('#exportTabs', {
+    tabs: [
+      { label: 'JS', content: document.getElementById('paneJS') },
+      { label: 'CSS', content: document.getElementById('paneCSS') }
+    ],
+    onChange: function (i) { activeExport = i; }
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var el = activeExport === 0 ? codeJS : codeCSS;
+    var text = el.textContent;
+    function fallback() {
+      var range = document.createRange();
+      range.selectNodeContents(el);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      if (ok) {
+        sel.removeAllRanges();
+        Toast.success('Copied to clipboard.');
+      } else {
+        Toast.info('Snippet selected — press Ctrl+C (⌘C) to copy.');
+      }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        Toast.success('Copied to clipboard.');
+      }, fallback);
+    } else {
+      fallback();
+    }
+  });
+
+  updateExport();
+})();
+</script>
+</body>
+</html>

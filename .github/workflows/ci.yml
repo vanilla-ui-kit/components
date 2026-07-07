@@ -20,12 +20,49 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      # Zero dependencies — no npm install anywhere.
+      # Zero runtime dependencies — no npm install. build:min fetches a
+      # pinned terser via npx so minified output is byte-stable.
       - name: Build dist/
-        run: npm run build
+        run: npm run build && npm run build:min
 
       - name: dist/ committed in sync with sources
         run: git diff --exit-code -- dist
 
+      - name: Size budgets
+        run: npm run size
+
       - name: Run tests
         run: npm test
+
+      - name: Type definitions check
+        if: matrix.node == 22
+        run: |
+          npm install --no-save typescript@5.6.3
+          ./node_modules/.bin/tsc --noEmit --strict --target es2017 --lib es2017,dom \
+            --module commonjs --moduleResolution node --esModuleInterop types/typecheck.ts
+          ./node_modules/.bin/tsc --noEmit --strict --target es2017 --lib es2017,dom \
+            --module commonjs --moduleResolution node types/index.d.ts types/globals.d.ts
+
+  browser:
+    name: Browser smoke + a11y audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+
+      - name: Install puppeteer-core (pinned, not saved)
+        run: npm install --no-save puppeteer-core@23.11.1
+
+      # Loads index.html, theme.html, demo/admin.html, and every component's
+      # examples.html in real Chromium: fails on page errors, console errors,
+      # frozen main threads, and critical axe-core violations.
+      - name: Run browser tests
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run test:browser

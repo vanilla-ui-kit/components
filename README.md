@@ -10,6 +10,8 @@ line of unified theming.
 global, the single file, the way the web has always worked.*
 
 **Live demos: [vanilla-ui-kit.github.io/components](https://vanilla-ui-kit.github.io/components/)**
+· **[Theme builder](https://vanilla-ui-kit.github.io/components/theme.html)**
+· **[Demo app](https://vanilla-ui-kit.github.io/components/demo/admin.html)**
 
 Beautiful by default, automatic light/dark, fully keyboard-accessible — and
 **headless when you want**: every component can run with zero injected CSS so
@@ -64,17 +66,36 @@ this is still just one file with zero dependencies:
 <script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/toast/toast.js"></script>
 ```
 
+**Minified, with integrity** — `.min` flavors ship in `dist/`, and
+[`dist/sri.json`](./dist/sri.json) carries a sha384 hash for every file:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1/dist/vanilla-ui-kit.min.js"
+        integrity="sha384-…see dist/sri.json…" crossorigin="anonymous"></script>
+```
+
+**ES modules** — the same code with real `import` ergonomics, from
+`dist/esm/`:
+
+```js
+import { Toast, DatePicker, VC } from 'https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/esm/vanilla-ui-kit.js'
+import Toast from 'https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/esm/toast.js'  // one atom
+```
+
 **npm:**
 
 ```js
 // npm i vanilla-ui-kit  (or: npm i github:vanilla-ui-kit/components)
-const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle
-const DatePicker = require('vanilla-ui-kit/datepicker')      // one atom
-const Toast = require('vanilla-ui-kit/toast')
+const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle (CJS)
+import { DatePicker, Toast, VC } from 'vanilla-ui-kit'       // bundle (ESM)
+import Toast from 'vanilla-ui-kit/toast'                     // one atom
 ```
 
-All files are UMD (browser global, CommonJS, AMD) and SSR-safe — importing in
-Node is a no-op until used in a browser.
+All files are UMD (browser global, CommonJS, AMD) with ESM builds derived
+from them, and SSR-safe — importing in Node is a no-op until used in a
+browser. **TypeScript definitions included** for every component; script-tag
+users get the globals with
+`/// <reference types="vanilla-ui-kit/types/globals" />`.
 
 ## Convergence: what the core gives you
 
