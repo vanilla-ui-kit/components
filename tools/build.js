@@ -25,7 +25,8 @@ var COMPONENTS = [
   ['datepicker/datepicker.js', 'DatePicker', 'datepicker.css', 'vanilla-datepicker'],
   ['toast/toast.js', 'Toast', 'toast.css', 'vanilla-toast'],
   ['tooltip/tooltip.js', 'Tooltip', 'tooltip.css', 'vanilla-tooltip'],
-  ['menu/menu.js', 'Menu', 'menu.css', 'vanilla-menu']
+  ['menu/menu.js', 'Menu', 'menu.css', 'vanilla-menu'],
+  ['modal/modal.js', 'Modal', 'modal.css', 'vanilla-modal']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

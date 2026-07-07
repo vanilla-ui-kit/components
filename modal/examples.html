@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Modal — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='14' height='14' rx='3' fill='%239b9bf0'/%3E%3Crect x='3.5' y='4' width='9' height='8' rx='2' fill='%235b5bd6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 18px; max-width: 56ch; }
+  pre.cdn {
+    margin: 0 0 40px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto; max-width: 720px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card .demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .card button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  .card button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .result { font-size: 13px; color: var(--muted); font-family: var(--mono); }
+  .result:not(:empty)::before { content: "→ "; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Modal <small>v1.0.0 · <a href="../toast/examples.html">toast →</a> · <a href="../datepicker/examples.html">datepicker →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Dialogs, <em>one file</em>.</h1>
+  <p class="lede">Zero-dependency modals built on the native
+  <code>&lt;dialog&gt;</code> element — top layer, focus handled, promises
+  included. Click anything below — every card is live.</p>
+  <pre class="cdn">&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/modal/modal.js"&gt;&lt;/script&gt;</pre>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic</h3>
+      <p>Title, text content, a footer — Esc, backdrop, and ✕ all close it.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Modal.open({
+            title: 'Welcome aboard',
+            content: 'Everything here is a plain string, rendered as text.',
+            buttons: [{ label: 'Got it', variant: 'primary' }]
+          })">Open modal</button>
+        <button class="demo-btn" onclick="Modal.alert({ title: 'Heads up', message: 'Modal.alert is one line.' })">Alert</button>
+      </div>
+      <pre>Modal.open({
+  title: 'Welcome aboard',
+  content: 'Plain string, rendered as text.',
+  buttons: [{ label: 'Got it', variant: 'primary' }]
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Sizes</h3>
+      <p>Four widths; <code>full</code> takes over the viewport.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="demoSize('sm')">sm</button>
+        <button class="demo-btn" onclick="demoSize('md')">md</button>
+        <button class="demo-btn" onclick="demoSize('lg')">lg</button>
+        <button class="demo-btn" onclick="demoSize('full')">full</button>
+      </div>
+      <pre>Modal.open({ title: 'Large', size: 'lg', … })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Confirm &amp; prompt</h3>
+      <p>Promises resolve to <code>boolean</code> / <code>string|null</code> —
+      the result lands below.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Modal.confirm({ title: 'Delete file', message: 'This cannot be undone.', danger: true })
+            .then(function (ok) { setResult('confirm-result', ok); })">Confirm</button>
+        <button class="demo-btn" onclick="
+          Modal.prompt({ title: 'Rename', message: 'New name:', value: 'untitled.txt', required: true })
+            .then(function (name) { setResult('confirm-result', JSON.stringify(name)); })">Prompt</button>
+        <span class="result" id="confirm-result" aria-live="polite"></span>
+      </div>
+      <pre>Modal.confirm('Delete this file?')
+  .then(ok => ok &amp;&amp; remove())
+
+Modal.prompt({ message: 'New name:',
+               value: 'untitled.txt' })
+  .then(name => name !== null &amp;&amp; rename(name))</pre>
+    </div>
+
+    <div class="card">
+      <h3>Custom footer buttons</h3>
+      <p>Variants, close values, and <code>onClick</code> returning
+      <code>false</code> to keep it open.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="demoButtons()">Three buttons</button>
+        <span class="result" id="buttons-result" aria-live="polite"></span>
+      </div>
+      <pre>buttons: [
+  { label: 'Discard', variant: 'danger', close: 'discarded' },
+  { label: 'Keep editing', onClick: () => false },
+  { label: 'Save', variant: 'primary', close: 'saved' }
+]</pre>
+    </div>
+
+    <div class="card">
+      <h3>Declarative</h3>
+      <p>No JS: <code>data-vmd-open</code> on the trigger,
+      <code>data-vmd-close</code> inside. The hidden element is adopted and
+      put back on close.</p>
+      <div class="demo">
+        <button class="demo-btn" data-vmd-open="#newsletter-modal">Open #newsletter-modal</button>
+      </div>
+      <pre>&lt;button data-vmd-open="#newsletter-modal"&gt;…&lt;/button&gt;
+
+&lt;div id="newsletter-modal" hidden
+     data-vmd-title="Stay in the loop"&gt;
+  …
+  &lt;button data-vmd-close&gt;Maybe later&lt;/button&gt;
+&lt;/div&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h3>Non-dismissible</h3>
+      <p>No Esc, no backdrop click, no ✕ — only an explicit choice closes it.</p>
+      <div class="demo">
+        <button class="demo-btn" onclick="
+          Modal.open({
+            title: 'Session expired',
+            content: 'Sign in again to continue where you left off.',
+            dismissible: false,
+            buttons: [{ label: 'Sign in', variant: 'primary' }]
+          })">Force a choice</button>
+      </div>
+      <pre>Modal.open({
+  title: 'Session expired',
+  dismissible: false,
+  buttons: [{ label: 'Sign in', variant: 'primary' }]
+})</pre>
+    </div>
+  </div>
+</div>
+
+<!-- Adopted by the "Declarative" demo; returned here (re-hidden) on close. -->
+<div id="newsletter-modal" hidden data-vmd-title="Stay in the loop" data-vmd-size="sm">
+  <p style="margin:0 0 4px;">One email a month, no tracking, unsubscribe anytime.
+  This whole block lives in the page and is adopted into the dialog.</p>
+  <button data-vmd-close style="font:inherit;font-size:14px;font-weight:600;color:var(--vmd-accent);
+    background:none;border:1px solid var(--vmd-faint);border-radius:10px;padding:8px 14px;
+    cursor:pointer;margin-top:10px;">Maybe later</button>
+</div>
+
+<script src="./modal.js"></script>
+<script>
+  // Theme switch — the modals follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  function setResult(id, value) {
+    document.getElementById(id).textContent = String(value);
+  }
+
+  function demoSize(size) {
+    Modal.open({
+      title: 'Size: ' + size,
+      size: size,
+      content: 'This panel uses size "' + size + '". Resize the window — ' +
+        'every size stays within the viewport and scrolls its own body.',
+      buttons: [{ label: 'Close', variant: 'primary' }]
+    });
+  }
+
+  function demoButtons() {
+    Modal.open({
+      title: 'Unsaved changes',
+      content: 'You have edits that are not saved yet.',
+      buttons: [
+        { label: 'Discard', variant: 'danger', close: 'discarded' },
+        { label: 'Keep editing', onClick: function () {
+            setResult('buttons-result', 'kept open');
+            return false; // stay open
+          } },
+        { label: 'Save', variant: 'primary', close: 'saved' }
+      ],
+      onClose: function (result) {
+        setResult('buttons-result', JSON.stringify(result));
+      }
+    });
+  }
+</script>
+</body>
+</html>

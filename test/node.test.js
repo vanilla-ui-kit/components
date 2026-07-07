@@ -27,6 +27,7 @@ const FAMILY = [
   ['Toast', 'toast/toast.js', 'vt', ['show', 'info', 'success', 'error', 'warning', 'loading', 'promise', 'dismissAll']],
   ['Tooltip', 'tooltip/tooltip.js', 'vtt', ['create', 'get', 'autoInit']],
   ['Menu', 'menu/menu.js', 'vmn', ['create', 'get', 'open', 'closeAll', 'autoInit']],
+  ['Modal', 'modal/modal.js', 'vmd', ['open', 'alert', 'confirm', 'prompt', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -118,6 +119,16 @@ test('Menu specifics: SSR no-op instance and one-shot open', () => {
   assert.doesNotThrow(() => m.update([{ label: 'y' }]));
   assert.doesNotThrow(() => Menu.open(10, 10, [{ label: 'z' }]));
   assert.doesNotThrow(() => Menu.closeAll());
+});
+
+test('Modal specifics: SSR promises resolve to their cancel values', async () => {
+  const Modal = components[4].mod;
+  const h = Modal.open({ title: 'x' });
+  assert.equal(h.el, null);
+  assert.doesNotThrow(() => h.close());
+  assert.equal(await Modal.alert('x'), undefined);
+  assert.equal(await Modal.confirm('x'), false);
+  assert.equal(await Modal.prompt('x'), null);
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

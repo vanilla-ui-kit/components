@@ -21,9 +21,10 @@ you bring your own design.
 | Toasts / notifications | `Toast` | [`toast/toast.js`](./toast/toast.js) | [README](./toast/README.md) |
 | Tooltips / popovers | `Tooltip` | [`tooltip/tooltip.js`](./tooltip/tooltip.js) | [README](./tooltip/README.md) |
 | Dropdown / context menus | `Menu` | [`menu/menu.js`](./menu/menu.js) | [README](./menu/README.md) |
+| Modals / dialogs (alert, confirm, prompt) | `Modal` | [`modal/modal.js`](./modal/modal.js) | [README](./modal/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: select/combobox, modal, tabs, command palette, phone input — same contract, same DNA.
+Roadmap: select/combobox, tabs, command palette, phone input — same contract, same DNA.
 
 ## Get it any way you like
 
