@@ -733,6 +733,123 @@ new Tabs('#host', { tabs: [ /* … */ ] })   // builder mode: renders strip + pa
   new Tabs('#disabled');
   // The data-vtb card initialized itself on DOMContentLoaded.
 </script>
+<section class="headless-doc" aria-labelledby="headless">
+  <style>
+    .headless-doc { margin-top: 72px; }
+    .headless-doc > hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+    .headless-doc > h2 {
+      font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+      font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+    }
+    .headless-doc > p.headless-lede { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 28px; }
+    .headless-doc > p.headless-lede code {
+      font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+      border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+    }
+    .headless-doc iframe { display: block; width: 100%; border: 1px solid var(--faint); border-radius: 12px; background: #fff; }
+    .headless-doc .tw-load {
+      align-self: flex-start; font: inherit; font-size: 13.5px; font-weight: 600;
+      color: var(--accent); background: var(--surface-2); border: 1px solid var(--faint);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+    }
+    .headless-doc .tw-load:disabled { opacity: .55; cursor: default; }
+  </style>
+  <hr>
+  <h2 id="headless">Headless mode</h2>
+  <p class="headless-lede"><code>styles: false</code> injects nothing — behavior, ARIA,
+  keyboard navigation and the stable <code>.vtb-*</code> class hooks all remain; you bring
+  your own CSS. The demos above have already injected the kit stylesheet into this page, so
+  a headless instance here would still match those rules — each demo below therefore runs
+  inside its own <code>&lt;iframe&gt;</code>, a genuinely clean document.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (styles: false)</h3>
+      <p class="hint">Raw browser rendering, zero CSS — yet arrow keys, roving tabindex,
+      Home/End and hidden panels all work.</p>
+      <iframe id="hl-raw" title="Tabs with styles: false — completely unstyled" height="210"></iframe>
+      <pre>new Tabs('#tabs', { styles: false })
+// no CSS injected — semantic markup,
+// ARIA + keyboard + .vtb-* hooks intact</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p class="hint">The same hooks mapped to a pill design with Tailwind
+      <code>@apply</code>. Loads <code>cdn.tailwindcss.com</code> only when you ask.</p>
+      <button type="button" class="tw-load" id="hl-tw-load">Load Tailwind demo</button>
+      <iframe id="hl-tw" title="Tabs styled from scratch with Tailwind" height="250" hidden></iframe>
+      <pre>.vtb-list { @apply inline-flex gap-1 rounded-full
+  border border-emerald-900/10 bg-emerald-900/5 p-1; }
+.vtb-tab { @apply cursor-pointer rounded-full border-0
+  bg-transparent px-4 py-1.5 text-sm font-medium
+  text-emerald-950/60 transition hover:text-emerald-950; }
+.vtb-tab[aria-selected="true"] { @apply bg-white
+  text-emerald-800 shadow; }
+.vtb-tab:disabled { @apply cursor-not-allowed opacity-40; }
+.vtb-tab:focus-visible { @apply outline outline-2
+  outline-offset-2 outline-emerald-600; }
+.vtb-ink { @apply hidden; }  /* pills, no sliding ink bar */
+.vtb-panel { @apply mt-4 rounded-2xl border
+  border-emerald-900/10 bg-white p-5 text-sm
+  leading-6 shadow-sm; }</pre>
+    </div>
+  </div>
+  <script>
+  (function () {
+    // srcdoc documents inherit this page's URL as base, so the sibling
+    // "tabs.js" resolves to /tabs/tabs.js from inside the iframes.
+    var markup = [
+      '<div id="tabs">',
+      '  <nav>',
+      '    <button>Overview</button>',
+      '    <button>Features</button>',
+      '    <button disabled>Admin</button>',
+      '    <button>Pricing</button>',
+      '  </nav>',
+      '  <section><p><b>Overview.</b> Same widget, same keyboard model — only the CSS is yours.</p></section>',
+      '  <section><p><b>Features.</b> ArrowRight/ArrowLeft move and select; Admin is skipped.</p></section>',
+      '  <section><p>Never shown — the Admin tab is disabled.</p></section>',
+      '  <section><p><b>Pricing.</b> Free, MIT licensed.</p></section>',
+      '</div>'
+    ].join('\n');
+
+    var raw = [
+      '<meta charset="utf-8">',
+      markup,
+      '<script src="tabs.js"><\/script>',
+      '<script>new Tabs("#tabs", { styles: false })<\/script>'
+    ].join('\n');
+    document.getElementById('hl-raw').srcdoc = raw;
+
+    var tw = [
+      '<meta charset="utf-8">',
+      '<script src="https://cdn.tailwindcss.com"><\/script>',
+      '<script src="tabs.js"><\/script>',
+      '<style type="text/tailwindcss">',
+      '  body { @apply bg-emerald-50 p-6 font-sans text-slate-800; }',
+      '  .vtb-list { @apply inline-flex gap-1 rounded-full border border-emerald-900/10 bg-emerald-900/5 p-1; }',
+      '  .vtb-tab { @apply cursor-pointer rounded-full border-0 bg-transparent px-4 py-1.5 text-sm font-medium text-emerald-950/60 transition hover:text-emerald-950; }',
+      '  .vtb-tab[aria-selected="true"] { @apply bg-white text-emerald-800 shadow; }',
+      '  .vtb-tab:disabled { @apply cursor-not-allowed opacity-40 hover:text-emerald-950/60; }',
+      '  .vtb-tab:focus-visible { @apply outline outline-2 outline-offset-2 outline-emerald-600; }',
+      '  .vtb-ink { @apply hidden; }',
+      '  .vtb-panel { @apply mt-4 max-w-md rounded-2xl border border-emerald-900/10 bg-white p-5 text-sm leading-6 shadow-sm; }',
+      '</style>',
+      markup,
+      '<script>new Tabs("#tabs", { styles: false })<\/script>'
+    ].join('\n');
+
+    var btn = document.getElementById('hl-tw-load');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('hl-tw');
+      f.hidden = false;
+      f.srcdoc = tw; // cdn.tailwindcss.com is fetched only now
+      btn.disabled = true;
+      btn.textContent = 'Tailwind demo loaded';
+    });
+  })();
+  </script>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

@@ -920,6 +920,143 @@ in one call.</p>
 </ul>
 </section>
 
+<section class="headless-doc" aria-labelledby="headless">
+  <style>
+    .headless-doc { margin-top: 72px; }
+    .headless-doc > hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+    .headless-doc > h2 {
+      font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+      font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+    }
+    .headless-doc > p.headless-lede { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 28px; }
+    .headless-doc > p.headless-lede code {
+      font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+      border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+    }
+    .headless-doc iframe { display: block; width: 100%; border: 1px solid var(--faint); border-radius: 12px; background: #fff; }
+    .headless-doc .tw-load {
+      align-self: flex-start; font: inherit; font-size: 13.5px; font-weight: 600;
+      color: var(--accent); background: var(--surface-2); border: 1px solid var(--faint);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+    }
+    .headless-doc .tw-load:disabled { opacity: .55; cursor: default; }
+  </style>
+  <hr>
+  <h2 id="headless">Headless mode</h2>
+  <p class="headless-lede"><code>styles: false</code> injects nothing — selection, search,
+  keyboard, ARIA, form sync and the stable <code>.vsel-*</code> class hooks all remain; you
+  bring your own CSS. The demos above have already injected the kit stylesheet into this
+  page, so a headless instance here would still match those rules — each demo below
+  therefore runs inside its own <code>&lt;iframe&gt;</code>, a genuinely clean document.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (styles: false)</h3>
+      <p>Raw browser rendering, zero CSS — open it: search, arrow keys, typeahead and the
+      native-select sync all still work.</p>
+      <iframe id="hl-raw" title="Select with styles: false — completely unstyled" height="300"></iframe>
+      <pre>new Select('#city', {
+  searchable: true, clearable: true,
+  styles: false   // no CSS injected
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same hooks mapped to a rose checkout look with Tailwind <code>@apply</code>.
+      Loads <code>cdn.tailwindcss.com</code> only when you ask.</p>
+      <button type="button" class="tw-load" id="hl-tw-load">Load Tailwind demo</button>
+      <iframe id="hl-tw" title="Select styled from scratch with Tailwind" height="360" hidden></iframe>
+      <pre>.vsel-control { @apply flex w-full items-center gap-2
+  rounded-xl border-2 border-rose-200 bg-white px-3.5
+  py-2.5 text-sm shadow-sm cursor-pointer; }
+.vsel.is-open .vsel-control { @apply border-rose-500
+  ring-4 ring-rose-100; }
+.vsel-value.is-placeholder { @apply text-slate-400; }
+.vsel.is-open .vsel-arrow { @apply rotate-180 text-rose-500; }
+.vsel.vsel-panel { @apply z-50 mt-1.5 rounded-2xl border
+  border-rose-100 bg-white p-1.5 shadow-2xl; }
+.vsel-search input { @apply w-full rounded-lg border
+  border-slate-200 bg-slate-50 px-3 py-1.5 text-sm; }
+.vsel-option { @apply flex items-center gap-2 rounded-lg
+  px-3 py-2 text-sm cursor-pointer; }
+.vsel-option.is-active { @apply bg-rose-50 text-rose-700; }
+.vsel-option.is-selected { @apply font-semibold text-rose-600; }
+.vsel-option.is-disabled { @apply opacity-40 cursor-not-allowed; }
+.vsel-check { @apply w-4 text-rose-500 opacity-0; }
+.vsel-option.is-selected .vsel-check { @apply opacity-100; }
+.vsel-empty { @apply px-3 py-6 text-center text-slate-400; }</pre>
+    </div>
+  </div>
+  <script>
+  (function () {
+    // srcdoc documents inherit this page's URL as base, so the sibling
+    // "select.js" resolves to /select/select.js from inside the iframes.
+    var markup = [
+      '<label for="city">City</label>',
+      '<select id="city">',
+      '  <option value="">Choose a city…</option>',
+      '  <option value="ams">Amsterdam</option>',
+      '  <option value="ber">Berlin</option>',
+      '  <option value="lis">Lisbon</option>',
+      '  <option value="osl" disabled>Oslo (sold out)</option>',
+      '  <option value="zrh">Zürich</option>',
+      '</select>'
+    ].join('\n');
+    var init = '<script>new Select("#city", { searchable: true, clearable: true, styles: false })<\/script>';
+
+    var raw = [
+      '<meta charset="utf-8">',
+      markup,
+      '<script src="select.js"><\/script>',
+      init
+    ].join('\n');
+    document.getElementById('hl-raw').srcdoc = raw;
+
+    var tw = [
+      '<meta charset="utf-8">',
+      '<script src="https://cdn.tailwindcss.com"><\/script>',
+      '<script src="select.js"><\/script>',
+      '<style type="text/tailwindcss">',
+      '  body { @apply bg-rose-50/60 p-6 font-sans; }',
+      '  label { @apply mb-1.5 block text-[13px] font-semibold text-slate-600; }',
+      '  .vsel:not(.vsel-panel) { @apply relative inline-block w-72; }',
+      '  .vsel-control { @apply flex w-full items-center gap-2 rounded-xl border-2 border-rose-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition cursor-pointer; }',
+      '  .vsel.is-open .vsel-control, .vsel-control:focus-visible { @apply border-rose-500 outline-none ring-4 ring-rose-100; }',
+      '  .vsel.is-disabled .vsel-control { @apply cursor-not-allowed opacity-50; }',
+      '  .vsel-value { @apply flex-1 truncate text-left; }',
+      '  .vsel-value.is-placeholder { @apply text-slate-400; }',
+      '  .vsel-clear { @apply grid h-5 w-5 flex-none cursor-pointer place-items-center rounded-full border-0 bg-slate-100 p-0 text-slate-500 hover:bg-rose-100 hover:text-rose-600; }',
+      '  .vsel-clear svg, .vsel-arrow svg, .vsel-check svg { @apply block; }',
+      '  .vsel-arrow { @apply flex-none text-slate-400 transition-transform; }',
+      '  .vsel.is-open .vsel-arrow { @apply rotate-180 text-rose-500; }',
+      '  .vsel.vsel-panel { @apply z-50 mt-1.5 w-72 rounded-2xl border border-rose-100 bg-white p-1.5 font-sans shadow-2xl; }',
+      '  .vsel-search { @apply p-1 pb-2; }',
+      '  .vsel-search input { @apply w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm outline-none focus:border-rose-400; }',
+      '  .vsel-list { @apply max-h-52 overflow-y-auto; }',
+      '  .vsel-group-label { @apply px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400; }',
+      '  .vsel-option { @apply flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700; }',
+      '  .vsel-option.is-active { @apply bg-rose-50 text-rose-700; }',
+      '  .vsel-option.is-selected { @apply font-semibold text-rose-600; }',
+      '  .vsel-option.is-disabled { @apply cursor-not-allowed opacity-40; }',
+      '  .vsel-check { @apply w-4 flex-none text-rose-500 opacity-0; }',
+      '  .vsel-option.is-selected .vsel-check { @apply opacity-100; }',
+      '  .vsel-empty { @apply px-3 py-6 text-center text-sm text-slate-400; }',
+      '</style>',
+      markup,
+      init
+    ].join('\n');
+
+    var btn = document.getElementById('hl-tw-load');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('hl-tw');
+      f.hidden = false;
+      f.srcdoc = tw; // cdn.tailwindcss.com is fetched only now
+      btn.disabled = true;
+      btn.textContent = 'Tailwind demo loaded';
+    });
+  })();
+  </script>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

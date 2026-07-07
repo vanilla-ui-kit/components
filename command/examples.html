@@ -697,6 +697,157 @@ Set <code>hotkey: false</code> to disable the global binding.</p>
 </ul>
 </div>
 
+<section class="headless-doc" aria-labelledby="headless">
+  <style>
+    .headless-doc { margin-top: 72px; }
+    .headless-doc > hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+    .headless-doc > h2 {
+      font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+      font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+    }
+    .headless-doc > p.headless-lede { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 28px; }
+    .headless-doc > p.headless-lede code {
+      font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+      border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+    }
+    .headless-doc iframe { display: block; width: 100%; border: 1px solid var(--faint); border-radius: 12px; background: #fff; }
+    .headless-doc .tw-load {
+      align-self: flex-start; font: inherit; font-size: 13.5px; font-weight: 600;
+      color: var(--accent); background: var(--surface-2); border: 1px solid var(--faint);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+    }
+    .headless-doc .tw-load:disabled { opacity: .55; cursor: default; }
+  </style>
+  <hr>
+  <h2 id="headless">Headless mode</h2>
+  <p class="headless-lede"><code>styles: false</code> injects nothing — fuzzy matching, the
+  keyboard model, ARIA and the stable <code>.vcmd-*</code> class hooks all remain; you bring
+  your own CSS. The demos above have already injected the kit stylesheet into this page, so
+  a headless instance here would still match those rules — each demo below therefore runs
+  inside its own <code>&lt;iframe&gt;</code>, a genuinely clean document.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (styles: false)</h3>
+      <p>Raw browser rendering, zero CSS — open it: fuzzy search, ↑↓, Enter, Esc and the
+      match highlighting all still work.</p>
+      <iframe id="hl-raw" title="Command palette with styles: false — completely unstyled" height="320"></iframe>
+      <pre>var pal = new CommandPalette({
+  styles: false,   // no CSS injected
+  commands: [ /* … */ ]
+})
+openBtn.onclick = function () { pal.open() }</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same hooks mapped to a dark launcher look with Tailwind <code>@apply</code>.
+      Loads <code>cdn.tailwindcss.com</code> only when you ask.</p>
+      <button type="button" class="tw-load" id="hl-tw-load">Load Tailwind demo</button>
+      <iframe id="hl-tw" title="Command palette styled from scratch with Tailwind" height="460" hidden></iframe>
+      <pre>.vcmd { @apply fixed inset-0 z-50 flex items-start
+  justify-center p-4 pt-[10vh] font-sans; }
+.vcmd-backdrop { @apply absolute inset-0
+  bg-slate-950/70 backdrop-blur-sm; }
+.vcmd-panel { @apply relative z-10 w-full max-w-lg
+  overflow-hidden rounded-2xl border border-white/10
+  bg-slate-900 text-slate-200 shadow-2xl; }
+.vcmd-search { @apply flex items-center gap-3
+  border-b border-white/10 px-4 py-3; }
+.vcmd-input { @apply w-full border-0 bg-transparent
+  text-base text-slate-100 outline-none; }
+.vcmd-list { @apply max-h-72 overflow-y-auto p-2; }
+.vcmd-group { @apply px-3 pt-3 pb-1 text-[11px]
+  font-semibold uppercase tracking-widest text-slate-500; }
+.vcmd-option { @apply flex cursor-pointer items-center
+  gap-3 rounded-lg px-3 py-2.5 text-sm; }
+.vcmd-option.is-active { @apply bg-amber-400/10 text-amber-300; }
+.vcmd-option.is-disabled { @apply opacity-40 cursor-not-allowed; }
+.vcmd-mark { @apply rounded-sm bg-amber-400/20 text-amber-200; }
+.vcmd-hint { @apply text-xs text-slate-500; }
+.vcmd-empty { @apply px-3 py-10 text-center text-slate-500; }
+.vcmd-footer { @apply flex gap-4 border-t border-white/10
+  px-4 py-2 text-[11px] text-slate-500; }
+.vcmd-key { @apply rounded border border-white/15 bg-white/5
+  px-1.5 py-0.5 font-mono text-[10px] text-slate-400; }</pre>
+    </div>
+  </div>
+  <script>
+  (function () {
+    // srcdoc documents inherit this page's URL as base, so the sibling
+    // "command.js" resolves to /command/command.js from inside the iframes.
+    var markup = [
+      '<button id="open" type="button">Open palette</button>',
+      '<p id="ran" aria-live="polite"></p>'
+    ].join('\n');
+    var init = [
+      '<script>',
+      'var ran = document.getElementById("ran");',
+      'function log(cmd) { ran.textContent = "Ran: " + cmd.label; }',
+      'var pal = new CommandPalette({',
+      '  styles: false,',
+      '  commands: [',
+      '    { id: "new",  label: "New document",  hint: "Ctrl+N", group: "Actions", action: log },',
+      '    { id: "save", label: "Save file",     hint: "Ctrl+S", group: "Actions", action: log },',
+      '    { id: "del",  label: "Delete file",   group: "Actions", disabled: true },',
+      '    { id: "docs", label: "Open documentation", group: "Navigation", keywords: "help manual", action: log },',
+      '    { id: "set",  label: "Go to settings",     group: "Navigation", action: log }',
+      '  ]',
+      '});',
+      'document.getElementById("open").addEventListener("click", function () { pal.open(); });',
+      '<\/script>'
+    ].join('\n');
+
+    var raw = [
+      '<meta charset="utf-8">',
+      markup,
+      '<script src="command.js"><\/script>',
+      init
+    ].join('\n');
+    document.getElementById('hl-raw').srcdoc = raw;
+
+    var tw = [
+      '<meta charset="utf-8">',
+      '<script src="https://cdn.tailwindcss.com"><\/script>',
+      '<script src="command.js"><\/script>',
+      '<style type="text/tailwindcss">',
+      '  body { @apply min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6 font-sans; }',
+      '  #open { @apply cursor-pointer rounded-lg border border-white/10 bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg transition hover:bg-amber-300; }',
+      '  #ran { @apply mt-3 text-sm text-slate-400; }',
+      '  .vcmd { @apply fixed inset-0 z-50 flex items-start justify-center p-4 pt-[10vh] font-sans; }',
+      '  .vcmd-backdrop { @apply absolute inset-0 bg-slate-950/70 backdrop-blur-sm; }',
+      '  .vcmd-panel { @apply relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-slate-900 text-slate-200 shadow-2xl; }',
+      '  .vcmd-search { @apply flex items-center gap-3 border-b border-white/10 px-4 py-3; }',
+      '  .vcmd-glass { @apply text-slate-500; }',
+      '  .vcmd-glass svg { @apply block; }',
+      '  .vcmd-input { @apply w-full border-0 bg-transparent text-base text-slate-100 placeholder-slate-500 outline-none; }',
+      '  .vcmd-list { @apply max-h-72 overflow-y-auto p-2; }',
+      '  .vcmd-group { @apply px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-500; }',
+      '  .vcmd-option { @apply flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm; }',
+      '  .vcmd-option.is-active { @apply bg-amber-400/10 text-amber-300; }',
+      '  .vcmd-option.is-disabled { @apply cursor-not-allowed opacity-40; }',
+      '  .vcmd-label { @apply flex-1 truncate; }',
+      '  .vcmd-mark { @apply rounded-sm bg-amber-400/20 text-amber-200; }',
+      '  .vcmd-hint { @apply text-xs text-slate-500; }',
+      '  .vcmd-empty { @apply px-3 py-10 text-center text-sm text-slate-500; }',
+      '  .vcmd-footer { @apply flex gap-4 border-t border-white/10 px-4 py-2 text-[11px] text-slate-500; }',
+      '  .vcmd-footer > span { @apply flex items-center gap-1.5; }',
+      '  .vcmd-key { @apply rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-400; }',
+      '</style>',
+      markup,
+      init
+    ].join('\n');
+
+    var btn = document.getElementById('hl-tw-load');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('hl-tw');
+      f.hidden = false;
+      f.srcdoc = tw; // cdn.tailwindcss.com is fetched only now
+      btn.disabled = true;
+      btn.textContent = 'Tailwind demo loaded';
+    });
+  })();
+  </script>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

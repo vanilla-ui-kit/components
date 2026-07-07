@@ -854,6 +854,180 @@ Form.validators.number('5', 1, 10)  // null</code></pre>
   </ul>
 </section>
 
+<section class="headless-doc" aria-labelledby="headless">
+  <style>
+    .headless-doc { margin-top: 72px; }
+    .headless-doc > hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+    .headless-doc > h2 {
+      font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+      font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+    }
+    .headless-doc > p.headless-lede { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 28px; }
+    .headless-doc > p.headless-lede code {
+      font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+      border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+    }
+    .headless-doc iframe { display: block; width: 100%; border: 1px solid var(--faint); border-radius: 12px; background: #fff; }
+    .headless-doc .tw-load {
+      align-self: flex-start; font: inherit; font-size: 13.5px; font-weight: 600;
+      color: var(--accent); background: var(--surface-2); border: 1px solid var(--faint);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+    }
+    .headless-doc .tw-load:disabled { opacity: .55; cursor: default; }
+  </style>
+  <hr>
+  <h2 id="headless">Headless mode</h2>
+  <p class="headless-lede"><code>styles: false</code> injects nothing — reactive state,
+  validation, submission, honeypot, ARIA and the stable <code>.vfm-*</code> class hooks all
+  remain; you bring your own CSS. The demos above have already injected the kit stylesheet
+  into this page, so a headless instance here would still match those rules — each demo
+  below therefore runs inside its own <code>&lt;iframe&gt;</code>, a genuinely clean
+  document.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (styles: false)</h3>
+      <p>Raw browser rendering, zero CSS — submit empty to see validation, focus management
+      and the <code>aria-live</code> error regions all still working.</p>
+      <iframe id="hl-raw" title="Form with styles: false — completely unstyled" height="300"></iframe>
+      <pre>new Form('#signup', {
+  styles: false,   // no CSS injected
+  fields: [
+    { name: 'email', type: 'email',
+      label: 'Email', required: true },
+    { name: 'password', type: 'password',
+      required: true, minlength: 8 }
+  ]
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same hooks — inputs, errors, radio group, switch, loading submit — mapped to a
+      SaaS onboarding look with Tailwind <code>@apply</code>. Loads
+      <code>cdn.tailwindcss.com</code> only when you ask.</p>
+      <button type="button" class="tw-load" id="hl-tw-load">Load Tailwind demo</button>
+      <iframe id="hl-tw" title="Form styled from scratch with Tailwind" height="640" hidden></iframe>
+      <pre>.vfm-label { @apply mb-1.5 block text-[13px]
+  font-semibold text-slate-700; }
+.vfm-req { @apply text-rose-500; }
+.vfm-hint { @apply -mt-1 mb-1.5 text-xs text-slate-400; }
+.vfm-input { @apply w-full rounded-lg border
+  border-slate-300 bg-white px-3.5 py-2.5 text-sm
+  shadow-sm outline-none transition; }
+.vfm-input:focus { @apply border-slate-900 ring-4
+  ring-slate-900/10; }
+.vfm-input.is-invalid { @apply border-rose-500 ring-4
+  ring-rose-500/10; }
+.vfm-error { @apply mt-1.5 text-[13px] font-medium
+  text-rose-600; }
+.vfm-eye { @apply absolute right-2 top-1/2 h-7 w-7
+  -translate-y-1/2 rounded-md text-slate-400; }
+.vfm-check input { @apply h-4 w-4 accent-slate-900; }
+.vfm-switch input { appearance: none; @apply relative h-5
+  w-9 rounded-full bg-slate-300 checked:bg-slate-900; }
+.vfm-option { @apply mb-1.5 flex items-center gap-2; }
+.vfm-banner { @apply mb-4 rounded-lg border border-rose-200
+  bg-rose-50 px-3.5 py-2.5 text-[13px] text-rose-700; }
+.vfm-status { @apply mt-3 text-sm font-semibold
+  text-emerald-600; }
+.vfm-submit { @apply w-full rounded-lg bg-slate-900 px-4
+  py-2.5 text-sm font-semibold text-white; }
+.vfm-submit.is-loading { @apply text-transparent; }
+.vfm-submit.is-loading::after { content: ''; @apply
+  absolute left-1/2 top-1/2 -ml-2 -mt-2 h-4 w-4
+  animate-spin rounded-full border-2 border-white/30
+  border-t-white; }</pre>
+    </div>
+  </div>
+  <script>
+  (function () {
+    // srcdoc documents inherit this page's URL as base, so the sibling
+    // "form.js" resolves to /form/form.js from inside the iframes.
+    var raw = [
+      '<meta charset="utf-8">',
+      '<div id="signup"></div>',
+      '<script src="form.js"><\/script>',
+      '<script>',
+      'new Form("#signup", {',
+      '  styles: false,',
+      '  fields: [',
+      '    { name: "email", type: "email", label: "Email", required: true },',
+      '    { name: "password", type: "password", label: "Password", required: true, minlength: 8, hint: "At least 8 characters." },',
+      '    { name: "terms", type: "checkbox", label: "I agree to the terms", required: true }',
+      '  ],',
+      '  successMessage: "Account created (demo — nothing was sent).",',
+      '  onSubmit: function () { return new Promise(function (r) { setTimeout(r, 900); }); }',
+      '});',
+      '<\/script>'
+    ].join('\n');
+    document.getElementById('hl-raw').srcdoc = raw;
+
+    var tw = [
+      '<meta charset="utf-8">',
+      '<script src="https://cdn.tailwindcss.com"><\/script>',
+      '<script src="form.js"><\/script>',
+      '<style type="text/tailwindcss">',
+      '  body { @apply bg-slate-50 p-6 font-sans text-slate-900; }',
+      '  .vfm { @apply mx-auto max-w-sm; }',
+      '  .vfm-field { @apply mb-5; }',
+      '  .vfm-label { @apply mb-1.5 block text-[13px] font-semibold text-slate-700; }',
+      '  .vfm-req { @apply text-rose-500; }',
+      '  .vfm-hint { @apply -mt-1 mb-1.5 text-xs text-slate-400; }',
+      '  .vfm-input { @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm shadow-sm outline-none transition placeholder:text-slate-400; }',
+      '  .vfm-input:focus { @apply border-slate-900 ring-4 ring-slate-900/10; }',
+      '  .vfm-input.is-invalid { @apply border-rose-500 ring-4 ring-rose-500/10; }',
+      '  .vfm-input:disabled, .vfm-submit:disabled { @apply opacity-60; }',
+      '  .vfm-error { @apply mt-1.5 text-[13px] font-medium text-rose-600; }',
+      '  .vfm-inputwrap { @apply relative; }',
+      '  .vfm-inputwrap .vfm-input { @apply pr-11; }',
+      '  .vfm-eye { @apply absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-md border-0 bg-transparent p-0 text-slate-400 hover:bg-slate-100 hover:text-slate-600; }',
+      '  .vfm-eye svg { @apply block; }',
+      '  .vfm-check { @apply flex items-start gap-2.5; }',
+      '  .vfm-check .vfm-label { @apply m-0 font-medium; }',
+      '  .vfm-check input { @apply mt-0.5 h-4 w-4 accent-slate-900; }',
+      '  .vfm-switch input { appearance: none; -webkit-appearance: none; @apply relative m-0 h-5 w-9 cursor-pointer rounded-full bg-slate-300 transition-colors checked:bg-slate-900; }',
+      '  .vfm-switch input::after { content: ""; @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform; }',
+      '  .vfm-switch input:checked::after { @apply translate-x-4; }',
+      '  .vfm-fieldset { @apply m-0 border-0 p-0; }',
+      '  .vfm-fieldset legend.vfm-label { @apply p-0; }',
+      '  .vfm-option { @apply mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700; }',
+      '  .vfm-option input { @apply h-4 w-4 accent-slate-900; }',
+      '  .vfm-banner { @apply mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[13px] font-medium text-rose-700; }',
+      '  .vfm-status { @apply mt-3 text-sm font-semibold text-emerald-600; }',
+      '  .vfm-actions { @apply mt-6; }',
+      '  .vfm-submit { @apply relative w-full cursor-pointer rounded-lg border-0 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700; }',
+      '  .vfm-submit.is-loading { @apply text-transparent; }',
+      '  .vfm-submit.is-loading::after { content: ""; @apply absolute left-1/2 top-1/2 -ml-2 -mt-2 h-4 w-4 animate-spin rounded-full border-2 border-solid border-white/30 border-t-white; }',
+      '</style>',
+      '<div id="workspace"></div>',
+      '<script>',
+      'new Form("#workspace", {',
+      '  styles: false,',
+      '  fields: [',
+      '    { name: "name", label: "Full name", required: true, placeholder: "Ada Lovelace" },',
+      '    { name: "email", type: "email", label: "Work email", required: true, placeholder: "ada@company.com" },',
+      '    { name: "password", type: "password", label: "Password", required: true, minlength: 8, hint: "At least 8 characters." },',
+      '    { name: "team", type: "radio", label: "Team size", options: ["Just me", "2–10", "11+"], value: "Just me" },',
+      '    { name: "updates", type: "switch", label: "Send me product updates" }',
+      '  ],',
+      '  submitLabel: "Create workspace",',
+      '  successMessage: "Workspace created (demo — nothing was sent).",',
+      '  onSubmit: function () { return new Promise(function (r) { setTimeout(r, 1200); }); }',
+      '});',
+      '<\/script>'
+    ].join('\n');
+
+    var btn = document.getElementById('hl-tw-load');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('hl-tw');
+      f.hidden = false;
+      f.srcdoc = tw; // cdn.tailwindcss.com is fetched only now
+      btn.disabled = true;
+      btn.textContent = 'Tailwind demo loaded';
+    });
+  })();
+  </script>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
