@@ -279,10 +279,16 @@ VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
     var next = VC.theme.resolve() === 'dark' ? 'light' : 'dark';
     VC.theme.set(next);
   });
-  VC.theme.watch(function () {
-    document.documentElement.setAttribute('data-theme', VC.theme.resolve());
-  });
-  document.documentElement.setAttribute('data-theme', VC.theme.resolve());
+  // Guard: the watcher observes <html data-theme>, so writing it
+  // unconditionally would re-trigger the observer forever.
+  function applyTheme() {
+    var t = VC.theme.resolve();
+    if (document.documentElement.getAttribute('data-theme') !== t) {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  }
+  VC.theme.watch(applyTheme);
+  applyTheme();
 
   // Live demos, powered by the same bundle the CDN serves.
   var toastMsgs = [
