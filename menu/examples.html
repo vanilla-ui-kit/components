@@ -315,6 +315,231 @@
     }
   });
 </script>
+<!-- ======================= API reference ======================= -->
+<style>
+  .api-section { border-top: 1px solid var(--faint); margin-top: 88px; padding-top: 40px; }
+  .api-section > h2 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.005em; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .api-toc a { color: var(--accent); text-decoration: none; }
+  .api-toc a:hover { text-decoration: underline; }
+  .api-block { background: var(--surface); border: 1px solid var(--faint); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+  .api-block h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .api-block p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .api-block ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .api-block li { margin: 2px 0; }
+  .api-block code { font-family: var(--mono); font-size: 12.5px; }
+  .api-block pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  .api-scroll { overflow-x: auto; margin-top: 12px; }
+  .api-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+  .api-table th { text-align: left; font-weight: 650; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+  .api-table td { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--faint); vertical-align: top; }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table td:first-child code { white-space: nowrap; }
+  .api-table td:last-child { color: var(--muted); }
+</style>
+<section class="wrap api-section" aria-labelledby="api">
+  <h2 id="api">API reference</h2>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-items">Items</a></li>
+    <li><a href="#api-methods">Methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-declarative">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <section class="api-block" id="api-usage">
+    <h3>Constructor &amp; usage</h3>
+    <pre>new Menu(trigger, options?)      // trigger: element or CSS selector of a &lt;button&gt;
+Menu.open(x, y, items | opts)    // one-shot menu at viewport coordinates
+&lt;button data-vmn="#tpl"&gt;…       // declarative, items from a &lt;template&gt;</pre>
+    <ul>
+      <li><strong>Dropdown</strong> — bind to a trigger button; opens on click, <kbd>ArrowDown</kbd>, <kbd>ArrowUp</kbd>, <kbd>Enter</kbd>, or <kbd>Space</kbd>.</li>
+      <li><strong>Context menu</strong> — <code>Menu.open(e.clientX, e.clientY, items)</code> from a <code>contextmenu</code> handler; flips inward at viewport edges and destroys itself on close.</li>
+      <li><strong>Declarative</strong> — <code>data-vmn</code> points at a template holding the items (see <a href="#api-declarative">Declarative init</a>).</li>
+    </ul>
+    <p>Menus are for <strong>actions</strong> — if you’re picking a value, you want Select. Only one root menu is open at a time. Also works with CommonJS/AMD and is SSR-safe (no-op without a DOM).</p>
+  </section>
+
+  <section class="api-block" id="api-options">
+    <h3>Options</h3>
+    <p>Second constructor argument; all keys of <code>Menu.defaults</code>. Change a default for every menu with, e.g., <code>Menu.defaults.placement = 'bottom-end'</code>.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu options">
+      <table class="api-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>items</code></td><td><code>array</code></td><td><code>[]</code></td><td>The item list — see Items below.</td></tr>
+          <tr><td><code>placement</code></td><td><code>string</code></td><td><code>'bottom-start'</code></td><td><code>bottom</code>/<code>top</code> + <code>-start</code>/<code>-end</code>; flips when out of room, clamps to the viewport.</td></tr>
+          <tr><td><code>closeOnSelect</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Close after an item is activated.</td></tr>
+          <tr><td><code>theme</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'light' | 'dark'</code> (see Theming).</td></tr>
+          <tr><td><code>styles</code></td><td><code>boolean</code></td><td><code>true</code></td><td><code>false</code> = headless, no CSS ever injected (see Theming).</td></tr>
+          <tr><td><code>onOpen</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(menu)</code> — see Events &amp; callbacks.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(menu)</code> — see Events &amp; callbacks.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-items">
+    <h3>Items</h3>
+    <p>Each entry of <code>items</code> is an action object, a separator <code>{ type: 'separator' }</code>, or a submenu parent (an item with its own <code>items</code> — one level only, opened by hover or <kbd>ArrowRight</kbd>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu item properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>label</code></td><td><code>string</code></td><td>Item text — always rendered with <code>textContent</code>.</td></tr>
+          <tr><td><code>icon</code></td><td><code>string</code></td><td>Optional; <strong>trusted</strong> inline SVG markup, like Toast’s icons.</td></tr>
+          <tr><td><code>hint</code></td><td><code>string</code></td><td>Optional right-aligned kbd/hint text, e.g. <code>'⌘D'</code>.</td></tr>
+          <tr><td><code>danger</code></td><td><code>boolean</code></td><td>Red, for destructive actions.</td></tr>
+          <tr><td><code>disabled</code></td><td><code>boolean</code></td><td><code>aria-disabled</code>, skipped by the arrow keys.</td></tr>
+          <tr><td><code>onSelect</code></td><td><code>function</code></td><td><code>fn(item, menu)</code> when the item is activated.</td></tr>
+          <tr><td><code>items</code></td><td><code>array</code></td><td>Child items — makes this entry a submenu parent (one level).</td></tr>
+          <tr><td><code>type</code></td><td><code>'separator'</code></td><td><code>{ type: 'separator' }</code> renders a rule between groups.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-methods">
+    <h3>Methods</h3>
+    <p>All methods return the instance (chainable).</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu instance methods">
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>open()</code></td><td><code>this</code></td><td>Open the menu (closes any other open root menu first). Equivalent to trigger click / <kbd>ArrowDown</kbd> / <kbd>Enter</kbd> / <kbd>Space</kbd>.</td></tr>
+          <tr><td><code>close()</code></td><td><code>this</code></td><td>Close the menu; refocuses the trigger when focus was inside the panel.</td></tr>
+          <tr><td><code>toggle()</code></td><td><code>this</code></td><td>Open if closed, close if open.</td></tr>
+          <tr><td><code>update(items)</code></td><td><code>this</code></td><td>Swap the item list; re-renders (and restores focus) if the menu is open.</td></tr>
+          <tr><td><code>destroy()</code></td><td><code>this</code></td><td>Close, remove the panel and listeners, restore trigger ARIA attributes, and unregister the instance.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-statics">
+    <h3>Statics &amp; helpers</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu static members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Menu.create(trigger, options?)</code></td><td><code>Menu</code></td><td>Constructor alias — same as <code>new Menu(…)</code>.</td></tr>
+          <tr><td><code>Menu.get(target)</code></td><td><code>Menu | null</code></td><td>The instance bound to a trigger (element or selector), or <code>null</code>.</td></tr>
+          <tr><td><code>Menu.open(x, y, itemsOrOpts)</code></td><td><code>Menu</code></td><td>One-shot menu at viewport coordinates (pair with <code>contextmenu</code>: <code>e.clientX</code> / <code>e.clientY</code>). Accepts an items array or a full options object; focuses the first item so Esc/arrows/typeahead work immediately; destroys itself on close.</td></tr>
+          <tr><td><code>Menu.closeAll()</code></td><td><code>Menu</code></td><td>Close the open root menu, if any.</td></tr>
+          <tr><td><code>Menu.autoInit(root?)</code></td><td><code>Menu[]</code></td><td>Activate every <code>[data-vmn]</code> trigger under <code>root</code> (default: <code>document</code>) that has no instance yet. Runs automatically on load; call it for content added later.</td></tr>
+          <tr><td><code>Menu.defaults</code></td><td><code>object</code></td><td>Global defaults — change any once.</td></tr>
+          <tr><td><code>Menu.salt</code></td><td><code>string | false</code></td><td>CSS isolation namespace (default <code>'vc1'</code>). Set your own token before the first menu opens, or <code>false</code> to disable.</td></tr>
+          <tr><td><code>Menu.css</code></td><td><code>string</code></td><td>The full stylesheet, always rendered with the current salt — a starting point for headless styling.</td></tr>
+          <tr><td><code>Menu.version</code></td><td><code>string</code></td><td>Library version.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-events">
+    <h3>Events &amp; callbacks</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu callbacks">
+      <table class="api-table">
+        <thead><tr><th>Callback</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+          <tr><td><code>onOpen</code></td><td><code>fn(menu)</code></td><td>After the menu opens.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>fn(menu)</code></td><td>After the menu closes.</td></tr>
+          <tr><td>item <code>onSelect</code></td><td><code>fn(item, menu)</code></td><td>When that item is activated (click, <kbd>Enter</kbd>, or <kbd>Space</kbd>).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Selecting an item also dispatches a bubbling <code>menu:select</code> <code>CustomEvent</code> on the trigger with <code>{ item, menu }</code> in <code>detail</code> — the way to react to declarative menus:</p>
+    <pre>trigger.addEventListener('menu:select', e =&gt; console.log(e.detail.item.label))</pre>
+  </section>
+
+  <section class="api-block" id="api-declarative">
+    <h3>Declarative init</h3>
+    <p><code>Menu.autoInit()</code> runs on load and activates every <code>[data-vmn]</code> trigger. The attribute value is a selector to a <code>&lt;template&gt;</code> (or any element) holding the items; <code>data-placement</code> on the trigger overrides the default placement.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu data attributes">
+      <table class="api-table">
+        <thead><tr><th>Attribute / markup</th><th>Where</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>data-vmn="#file-menu"</code></td><td>trigger</td><td>Selector of the template/element holding the items; marks the trigger for auto-init.</td></tr>
+          <tr><td><code>data-placement</code></td><td>trigger</td><td>Panel placement, e.g. <code>bottom-end</code>.</td></tr>
+          <tr><td><code>&lt;hr&gt;</code></td><td>template child</td><td>Separator; every other child is an item.</td></tr>
+          <tr><td><code>data-label</code></td><td>item child</td><td>Item label; falls back to the child’s own text (minus nested list markup).</td></tr>
+          <tr><td><code>data-hint</code></td><td>item child</td><td>Right-aligned hint text.</td></tr>
+          <tr><td><code>data-value</code></td><td>item child</td><td>Carried through to <code>item.value</code> in <code>menu:select</code>.</td></tr>
+          <tr><td><code>data-danger</code></td><td>item child</td><td>Flag — destructive styling.</td></tr>
+          <tr><td><code>data-disabled</code></td><td>item child</td><td>Flag — disabled item (a child’s own <code>disabled</code> property counts too).</td></tr>
+          <tr><td>nested <code>&lt;ul&gt;</code> / <code>&lt;menu&gt;</code></td><td>item child</td><td>Makes the entry a submenu of the list’s children (one level).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre>&lt;button data-vmn="#file-menu"&gt;File&lt;/button&gt;
+
+&lt;template id="file-menu"&gt;
+  &lt;button&gt;New file&lt;/button&gt;
+  &lt;button data-hint="⌘S"&gt;Save&lt;/button&gt;
+  &lt;hr&gt;
+  &lt;li data-label="Share"&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Copy link&lt;/li&gt;
+      &lt;li data-value="email"&gt;Email&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;button data-danger&gt;Delete&lt;/button&gt;
+&lt;/template&gt;</pre>
+    <p>Listen for <code>menu:select</code> on the trigger to react to selections.</p>
+  </section>
+
+  <section class="api-block" id="api-theming">
+    <h3>Theming</h3>
+    <p>Auto light/dark with the family’s resolution order: <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live. Pin it per menu with <code>theme: 'dark'</code> or family-wide via <code>Menu.defaults.theme</code>. All colors are CSS custom properties on <code>.vmn</code> (dark values on <code>.vmn[data-theme=dark]</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu CSS custom properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--vmn-accent</code></td><td>Focus outline.</td></tr>
+          <tr><td><code>--vmn-danger</code></td><td>Danger items.</td></tr>
+          <tr><td><code>--vmn-bg</code></td><td>Panel background.</td></tr>
+          <tr><td><code>--vmn-surface</code></td><td>Item hover/active fill.</td></tr>
+          <tr><td><code>--vmn-text</code></td><td>Item text.</td></tr>
+          <tr><td><code>--vmn-muted</code></td><td>Hints, icons, disabled items.</td></tr>
+          <tr><td><code>--vmn-faint</code></td><td>Border and separators.</td></tr>
+          <tr><td><code>--vmn-shadow</code></td><td>Panel shadow.</td></tr>
+          <tr><td><code>--vmn-radius</code></td><td>Corner radius.</td></tr>
+          <tr><td><code>--vmn-font</code></td><td>Font stack.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>CSS isolation</strong> — panels render as <code>class="vmn vc1"</code> and structural rules ship salted, so host-page design systems can’t override the menu; the <code>--vmn-*</code> variable overrides above keep working (var definitions are deliberately unsalted). Custom token: <code>Menu.salt = 'acme'</code> before the first menu opens; disable with <code>Menu.salt = false</code>.</p>
+    <p><strong>Headless</strong> — <code>Menu.defaults.styles = false</code> (or per instance <code>styles: false</code>) injects no CSS, ever. You keep the full behavior (positioning, keyboard, typeahead, ARIA) and the markup contract: <code>.vmn[data-theme="dark"].vmn-open</code> root panel (<code>.vmn-sub</code> on flyouts) containing <code>.vmn-item</code> buttons (<code>.vmn-icon</code>, <code>.vmn-label</code>, <code>.vmn-hint</code>, <code>.vmn-caret</code> on submenu parents), <code>.vmn-item.vmn-danger</code>, <code>.vmn-item[aria-disabled="true"]</code>, and <code>.vmn-sep</code> separators. Start from <code>Menu.css</code> (string) or <code>dist/menu.css</code>. With the VC core loaded, <code>VC.config({ accent: … })</code> themes menus and every other family component in one call.</p>
+  </section>
+
+  <section class="api-block" id="api-a11y">
+    <h3>Accessibility</h3>
+    <p>Full WAI-ARIA menu-button pattern: the trigger gets <code>aria-haspopup="menu"</code> + <code>aria-expanded</code>; the panel is <code>role="menu"</code> with <code>role="menuitem"</code> items, <code>role="separator"</code> rules, and <code>aria-disabled</code> on disabled items. Only one root menu is open at a time; outside clicks close it.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Menu keyboard map">
+      <table class="api-table">
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>ArrowDown</code> / <code>Enter</code> / <code>Space</code></td><td>On the trigger: open, focus the first item.</td></tr>
+          <tr><td><code>ArrowUp</code></td><td>On the trigger: open, focus the last item.</td></tr>
+          <tr><td><code>ArrowDown</code> / <code>ArrowUp</code></td><td>Move focus; skips disabled items, wraps.</td></tr>
+          <tr><td><code>Home</code> / <code>End</code></td><td>First / last enabled item.</td></tr>
+          <tr><td><code>Enter</code> / <code>Space</code></td><td>Activate the focused item.</td></tr>
+          <tr><td><code>ArrowRight</code></td><td>Open the focused item’s submenu, focus its first item.</td></tr>
+          <tr><td><code>ArrowLeft</code></td><td>Close the submenu, refocus its parent item.</td></tr>
+          <tr><td><code>Esc</code></td><td>Close and refocus the trigger.</td></tr>
+          <tr><td><code>Tab</code></td><td>Close and move on.</td></tr>
+          <tr><td>Printable characters</td><td>Typeahead — jump to items by their first letters.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><code>:focus-visible</code> outlines and <code>prefers-reduced-motion</code> are respected.</p>
+  </section>
+</section>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
