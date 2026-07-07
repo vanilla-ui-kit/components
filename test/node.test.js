@@ -40,6 +40,7 @@ const FAMILY = [
   ['Rating', 'rating/rating.js', 'vrt', ['create', 'get', 'autoInit']],
   ['Autocomplete', 'autocomplete/autocomplete.js', 'vac', ['create', 'get', 'autoInit']],
   ['Upload', 'upload/upload.js', 'vup', ['create', 'get', 'autoInit', 'formatBytes']],
+  ['Slider', 'slider/slider.js', 'vsld', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -271,6 +272,15 @@ test('Upload specifics: SSR no-op instance and formatBytes', async () => {
     assert.doesNotThrow(() => u[fn](), `upload.${fn} in Node`);
   }
   await u.uploadAll();
+});
+
+test('Slider specifics: SSR no-op instance', () => {
+  const Slider = components[17].mod;
+  const s = Slider.create(null, { value: [20, 80] });
+  for (const fn of ['getValue', 'enable', 'disable', 'destroy']) {
+    assert.doesNotThrow(() => s[fn](), `slider.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => s.setValue([10, 90]));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

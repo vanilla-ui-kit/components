@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanilla UI Kit Slider — Examples</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='7' width='14' height='2' rx='1' fill='%239b9bf0'/%3E%3Crect x='1' y='7' width='8' height='2' rx='1' fill='%235b5bd6'/%3E%3Ccircle cx='9' cy='8' r='3.4' fill='%23ffffff' stroke='%235b5bd6' stroke-width='1.6'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6;
+    --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+      --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #fbfbfa; --surface: #ffffff; --surface-2: #f2f2f5; --text: #1c1d21;
+    --muted: #72747e; --faint: #e7e7ec; --accent: #5b5bd6; --code-bg: #f6f6f8;
+    --shadow: 0 1px 2px rgba(24,25,32,.05), 0 8px 24px rgba(24,25,32,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16171c; --surface: #1b1d24; --surface-2: #272a33; --text: #e9eaf0;
+    --muted: #989aa6; --faint: #31343f; --accent: #7b7bea; --code-bg: #14151a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.6;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 28px 0 0; flex-wrap: wrap;
+  }
+  .brand { font-family: var(--display); font-size: 18px; font-weight: 600; }
+  .brand small { font-family: var(--sans); color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .brand a { color: var(--muted); text-decoration: none; }
+  .theme-switch { display: flex; gap: 2px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .theme-switch button {
+    font: inherit; font-size: 13px; color: var(--muted); background: none;
+    border: 0; border-radius: 8px; padding: 5px 14px; cursor: pointer;
+  }
+  .theme-switch button[aria-pressed="true"] {
+    background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-family: var(--display); font-size: clamp(34px, 5vw, 48px);
+    font-weight: 600; line-height: 1.08; letter-spacing: -.01em; margin: 64px 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  p.lede { font-size: 17px; color: var(--muted); margin: 0 0 40px; max-width: 56ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 16px;
+    padding: 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .card p { margin: -6px 0 0; color: var(--muted); font-size: 14px; }
+  .card pre {
+    margin: 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .card .demo { flex: 1; }
+  .readout { font-family: var(--mono); font-size: 13px; color: var(--muted); min-height: 20px; }
+  .vrow { display: flex; gap: 28px; align-items: flex-start; }
+  button.demo-btn {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  }
+  button.demo-btn:hover { border-color: var(--accent); color: var(--accent); }
+  form.demo-form { display: flex; flex-direction: column; gap: 10px; }
+  form.demo-form label { font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Vanilla UI Kit Slider <small>v1.0.0 · <a href="../tabs/examples.html">tabs →</a></small></div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="" aria-pressed="true">Auto</button>
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <h1>Sliders, <em>one file</em>.</h1>
+  <p class="lede">Single or dual thumb, marks, tooltips, vertical, and real
+  form participation — zero dependencies, full keyboard and screen-reader
+  support. Drag anything below.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Basic</h3>
+      <p>Drag the thumb, or press the track to jump. Arrow keys work too.</p>
+      <div class="demo" id="basic"></div>
+      <div class="readout" id="basic-out">40%</div>
+      <pre>new Slider('#basic', {
+  value: 40, suffix: '%',
+  onInput: v =&gt; show(v)
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Price range</h3>
+      <p>Dual thumb with <code>$</code> formatting and always-on bubbles.
+      Thumbs clamp at each other.</p>
+      <div class="demo" id="price"></div>
+      <div class="readout" id="price-out">$200 – $650</div>
+      <pre>new Slider('#price', {
+  min: 0, max: 1000, step: 10,
+  value: [200, 650],
+  prefix: '$', tooltip: 'always'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Steps + marks</h3>
+      <p>Snaps to the step grid; labeled marks under the rail.</p>
+      <div class="demo" id="ram"></div>
+      <div class="readout" id="ram-out">16 GB</div>
+      <pre>new Slider('#ram', {
+  min: 0, max: 64, step: 16, value: 16,
+  marks: { 0:'0', 16:'16', 32:'32', 48:'48', 64:'64 GB' },
+  format: v =&gt; v + ' GB'
+})</pre>
+    </div>
+
+    <div class="card">
+      <h3>Vertical</h3>
+      <p><code>vertical: true</code> — bottom to top; ArrowUp still increases.</p>
+      <div class="demo vrow">
+        <div id="vol"></div>
+        <div id="temp"></div>
+        <div class="readout" id="vert-out" style="align-self:center">vol 65 · 20°C</div>
+      </div>
+      <pre>new Slider('#vol',  { value: 65, vertical: true })
+new Slider('#temp', { min: -10, max: 40, value: 20,
+  vertical: true, suffix: '°C', tooltip: 'always' })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Replace a native range</h3>
+      <p>The <code>&lt;input&gt;</code> is hidden and kept synced — submit
+      posts real values (dual adds <code>budget[]</code> hidden inputs).</p>
+      <div class="demo">
+        <form class="demo-form" id="form">
+          <label for="native-volume">Volume</label>
+          <input type="range" id="native-volume" name="volume" min="0" max="100" step="5" value="30">
+          <label>Budget</label>
+          <div id="budget"></div>
+          <div><button type="submit" class="demo-btn">Submit form</button></div>
+        </form>
+      </div>
+      <div class="readout" id="form-out">— submit to see the payload —</div>
+      <pre>new Slider(document.getElementById('native-volume'))
+new Slider('#budget', { name: 'budget', prefix: '$',
+  max: 500, value: [100, 350] })</pre>
+    </div>
+
+    <div class="card">
+      <h3>Disabled</h3>
+      <p><code>disabled: true</code>, toggled live via
+      <code>enable()</code>/<code>disable()</code>.</p>
+      <div class="demo" id="locked"></div>
+      <div><button type="button" class="demo-btn" id="toggle-locked">Enable</button></div>
+      <pre>var s = new Slider('#locked',
+  { value: 70, disabled: true })
+s.enable(); s.disable()</pre>
+    </div>
+  </div>
+</div>
+
+<script src="slider.js"></script>
+<script>
+  // Theme switch — the sliders follow <html data-theme> on their own.
+  var btns = document.querySelectorAll('[data-set-theme]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].addEventListener('click', function () {
+      var t = this.getAttribute('data-set-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else document.documentElement.removeAttribute('data-theme');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].setAttribute('aria-pressed', String(btns[j] === this));
+      }
+    });
+  }
+
+  function out(id) { return document.getElementById(id); }
+
+  // Basic
+  new Slider('#basic', {
+    value: 40, suffix: '%',
+    onInput: function (v) { out('basic-out').textContent = v + '%'; }
+  });
+
+  // Dual-thumb price range
+  new Slider('#price', {
+    min: 0, max: 1000, step: 10, value: [200, 650],
+    prefix: '$', tooltip: 'always',
+    onInput: function (v) { out('price-out').textContent = '$' + v[0] + ' – $' + v[1]; }
+  });
+
+  // Steps + marks
+  new Slider('#ram', {
+    min: 0, max: 64, step: 16, value: 16,
+    marks: { 0: '0', 16: '16', 32: '32', 48: '48', 64: '64 GB' },
+    format: function (v) { return v + ' GB'; },
+    onInput: function (v) { out('ram-out').textContent = v + ' GB'; }
+  });
+
+  // Vertical
+  var vertState = { vol: 65, temp: 20 };
+  function vertOut() {
+    out('vert-out').textContent = 'vol ' + vertState.vol + ' · ' + vertState.temp + '°C';
+  }
+  new Slider('#vol', {
+    value: 65, vertical: true,
+    onInput: function (v) { vertState.vol = v; vertOut(); }
+  });
+  new Slider('#temp', {
+    min: -10, max: 40, value: 20, vertical: true,
+    suffix: '°C', tooltip: 'always',
+    onInput: function (v) { vertState.temp = v; vertOut(); }
+  });
+
+  // Replace a native range inside a real form
+  new Slider(document.getElementById('native-volume'));
+  new Slider('#budget', {
+    min: 0, max: 500, step: 10, value: [100, 350],
+    name: 'budget', prefix: '$'
+  });
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault(); // demo page — show what WOULD be posted
+    var els = this.elements, pairs = [];
+    for (var i = 0; i < els.length; i++) {
+      if (els[i].name && !els[i].disabled && els[i].type !== 'submit') {
+        pairs.push(els[i].name + '=' + encodeURIComponent(els[i].value));
+      }
+    }
+    out('form-out').textContent = '?' + pairs.join('&');
+  });
+
+  // Disabled + live toggle
+  var locked = new Slider('#locked', { value: 70, disabled: true });
+  var lockedBtn = document.getElementById('toggle-locked');
+  lockedBtn.addEventListener('click', function () {
+    if (locked._disabled) { locked.enable(); lockedBtn.textContent = 'Disable'; }
+    else { locked.disable(); lockedBtn.textContent = 'Enable'; }
+  });
+</script>
+</body>
+</html>

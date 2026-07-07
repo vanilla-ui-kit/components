@@ -38,7 +38,8 @@ var COMPONENTS = [
   ['popconfirm/popconfirm.js', 'Popconfirm', 'popconfirm.css', 'vanilla-popconfirm'],
   ['rating/rating.js', 'Rating', 'rating.css', 'vanilla-rating'],
   ['autocomplete/autocomplete.js', 'Autocomplete', 'autocomplete.css', 'vanilla-autocomplete'],
-  ['upload/upload.js', 'Upload', 'upload.css', 'vanilla-upload']
+  ['upload/upload.js', 'Upload', 'upload.css', 'vanilla-upload'],
+  ['slider/slider.js', 'Slider', 'slider.css', 'vanilla-slider']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

@@ -36,10 +36,10 @@ you bring your own design.
 | Rating (stars, hearts, half-steps) | `Rating` | [`rating/rating.js`](./rating/rating.js) | [README](./rating/README.md) |
 | Autocomplete / typeahead | `Autocomplete` | [`autocomplete/autocomplete.js`](./autocomplete/autocomplete.js) | [README](./autocomplete/README.md) |
 | File upload / dropzone | `Upload` | [`upload/upload.js`](./upload/upload.js) | [README](./upload/README.md) |
+| Slider (single and dual-thumb) | `Slider` | [`slider/slider.js`](./slider/slider.js) | [README](./slider/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: slider, number input, pagination, empty state — same contract,
-same DNA.
+Roadmap: number input, pagination, empty state — same contract, same DNA.
 
 ## Get it any way you like
 
