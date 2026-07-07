@@ -87,6 +87,10 @@ function serve() {
 }
 
 function fetchAxe() {
+  // Prefer a local install (npm i --no-save axe-core) — some dev sandboxes
+  // can't reach the CDN, and a silently skipped audit hides real failures.
+  const local = path.join(ROOT, 'node_modules', 'axe-core', 'axe.min.js');
+  if (fs.existsSync(local)) return Promise.resolve(fs.readFileSync(local, 'utf8'));
   return new Promise((resolve) => {
     https.get(AXE_URL, (res) => {
       if (res.statusCode !== 200) { res.resume(); return resolve(null); }
@@ -151,7 +155,8 @@ async function main() {
           window.axe.run(document, { resultTypes: ['violations'] })
         );
         for (const v of results.violations) {
-          const line = `axe ${v.impact}: ${v.id} (${v.nodes.length} nodes) — ${v.help}`;
+          const targets = v.nodes.slice(0, 4).map((n) => n.target.join(' ')).join(' | ');
+          const line = `axe ${v.impact}: ${v.id} (${v.nodes.length} nodes) — ${v.help} [${targets}]`;
           if (v.impact === 'critical') problems.push(line);
           else if (v.impact === 'serious') { seriousWarnings++; console.warn(`  warn ${rel}: ${line}`); }
         }

@@ -37,6 +37,8 @@ declare namespace NumberInput {
     steppers?: boolean;
     /** Input placeholder. */
     placeholder?: string;
+    /** Accessible name for the editable input — required in container mode, where no `<label>` can point at it. */
+    ariaLabel?: string;
     /** Hidden input name carrying the RAW value for forms (never `'1,234.50'`). */
     name?: string;
     /** Start disabled. Default `false`. */

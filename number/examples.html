@@ -107,7 +107,7 @@
       is a plain number, never '$1,234.50'.</p>
       <div class="demo"><input id="price" value="1234.5" aria-label="Price"></div>
       <div class="out" id="price-out">value: <b>—</b></div>
-      <pre>new NumberInput('#price', {
+      <pre>new NumberInput('#price', { ariaLabel: 'Price in dollars',
   prefix: '$', precision: 2, min: 0
 })</pre>
     </div>
@@ -118,7 +118,7 @@
       delay, 60&thinsp;ms repeat, ×10 after 2&thinsp;s.</p>
       <div class="demo"><div id="qty"></div></div>
       <div class="out" id="qty-out">value: <b>—</b></div>
-      <pre>new NumberInput('#qty', {
+      <pre>new NumberInput('#qty', { ariaLabel: 'Quantity',
   value: 1, min: 0, max: 500, step: 1
 })</pre>
     </div>
@@ -129,7 +129,7 @@
       (one decimal).</p>
       <div class="demo"><div id="weight"></div></div>
       <div class="out" id="weight-out">value: <b>—</b></div>
-      <pre>new NumberInput('#weight', {
+      <pre>new NumberInput('#weight', { ariaLabel: 'Weight in kilograms',
   suffix: ' kg', step: 0.5, min: 0,
   placeholder: '0.0'
 })</pre>
@@ -141,7 +141,7 @@
       '1.234,56'.</p>
       <div class="demo"><div id="euro"></div></div>
       <div class="out" id="euro-out">value: <b>—</b></div>
-      <pre>new NumberInput('#euro', {
+      <pre>new NumberInput('#euro', { ariaLabel: 'Amount in euros',
   decimal: ',', thousands: '.',
   precision: 2, suffix: ' €'
 })</pre>
@@ -156,7 +156,7 @@
         <button class="demo-btn" type="button" id="clamp-set">setValue(9999)</button>
       </div>
       <div class="out" id="clamp-out">value: <b>—</b></div>
-      <pre>new NumberInput('#clamp', {
+      <pre>new NumberInput('#clamp', { ariaLabel: 'Percentage',
   min: 10, max: 100, value: 50
 })</pre>
     </div>
@@ -170,7 +170,7 @@
         <button class="demo-btn" type="submit">Submit</button>
       </form>
       <div class="out" id="form-out">submits: <b>—</b></div>
-      <pre>new NumberInput('#amount', {
+      <pre>new NumberInput('#amount', { ariaLabel: 'Payment amount',
   name: 'amount', prefix: '$',
   precision: 2, value: 1234.5
 })
@@ -186,27 +186,27 @@
     return function (v) { out.innerHTML = 'value: <b>' + JSON.stringify(v) + '</b>'; };
   }
 
-  new NumberInput('#price', {
+  new NumberInput('#price', { ariaLabel: 'Price in dollars',
     prefix: '$', precision: 2, min: 0,
     onChange: wire('price', 'price-out')
   });
 
-  new NumberInput('#qty', {
+  new NumberInput('#qty', { ariaLabel: 'Quantity',
     value: 1, min: 0, max: 500, step: 1,
     onChange: wire('qty', 'qty-out')
   });
 
-  new NumberInput('#weight', {
+  new NumberInput('#weight', { ariaLabel: 'Weight in kilograms',
     suffix: ' kg', step: 0.5, min: 0, placeholder: '0.0',
     onChange: wire('weight', 'weight-out')
   });
 
-  new NumberInput('#euro', {
+  new NumberInput('#euro', { ariaLabel: 'Amount in euros',
     decimal: ',', thousands: '.', precision: 2, suffix: ' €',
     onChange: wire('euro', 'euro-out')
   });
 
-  var clamp = new NumberInput('#clamp', {
+  var clamp = new NumberInput('#clamp', { ariaLabel: 'Percentage',
     min: 10, max: 100, value: 50,
     onChange: wire('clamp', 'clamp-out')
   });
@@ -214,7 +214,7 @@
     clamp.setValue(9999); // → clamped to 100
   });
 
-  new NumberInput('#amount', {
+  new NumberInput('#amount', { ariaLabel: 'Payment amount',
     name: 'amount', prefix: '$', precision: 2, value: 1234.5
   });
   document.getElementById('pay-form').addEventListener('submit', function (e) {
