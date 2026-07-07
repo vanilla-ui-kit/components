@@ -10,6 +10,7 @@ line of unified theming.
 global, the single file, the way the web has always worked.*
 
 **Live demos: [vanilla-ui-kit.github.io](https://vanilla-ui-kit.github.io/)**
+· **[Installation](https://vanilla-ui-kit.github.io/install.html)**
 · **[Theme builder](https://vanilla-ui-kit.github.io/theme.html)**
 · **[Demo app](https://vanilla-ui-kit.github.io/demo/admin.html)**
 
@@ -82,10 +83,15 @@ import { Toast, DatePicker, VC } from 'https://cdn.jsdelivr.net/gh/vanilla-ui-ki
 import Toast from 'https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/esm/toast.js'  // one atom
 ```
 
-**npm:**
+**npm — installed from GitHub** (the package is not published to the npm
+registry; GitHub is the source of truth):
+
+```sh
+npm i github:vanilla-ui-kit/components          # tracks main
+npm i github:vanilla-ui-kit/components#v1.0.0   # pin a release tag
+```
 
 ```js
-// npm i vanilla-ui-kit  (or: npm i github:vanilla-ui-kit/components)
 const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle (CJS)
 import { DatePicker, Toast, VC } from 'vanilla-ui-kit'       // bundle (ESM)
 import Toast from 'vanilla-ui-kit/toast'                     // one atom
