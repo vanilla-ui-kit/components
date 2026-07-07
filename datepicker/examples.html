@@ -349,6 +349,248 @@ new DatePicker('#ex-inline', {
     });
   });
 </script>
+<!-- ======================= API reference ======================= -->
+<style>
+  .api-section { border-top: 1px solid var(--faint); margin-top: 88px; padding-top: 40px; }
+  .api-section > h2 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.005em; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .api-toc a { color: var(--accent); text-decoration: none; }
+  .api-toc a:hover { text-decoration: underline; }
+  .api-block { background: var(--surface); border: 1px solid var(--faint); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+  .api-block h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .api-block p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .api-block ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .api-block li { margin: 2px 0; }
+  .api-block code { font-family: var(--mono); font-size: 12.5px; }
+  .api-block pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+  .api-block pre code { font-size: 12.5px; line-height: 1.55; }
+  .api-scroll { overflow-x: auto; margin-top: 12px; }
+  .api-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+  .api-table th { text-align: left; font-weight: 650; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+  .api-table td { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--faint); vertical-align: top; }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table td:first-child code { white-space: nowrap; }
+  .api-table td:last-child { color: var(--muted); }
+</style>
+<section class="wrap api-section" aria-labelledby="api">
+  <h2 id="api">API reference</h2>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-methods">Methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-declarative">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <section class="api-block" id="api-usage">
+    <h3>Constructor &amp; usage</h3>
+    <pre><code>new DatePicker(target, options?)   // target: element or CSS selector</code></pre>
+    <ul>
+      <li><strong>Popup picker</strong> — point it at a text <code>&lt;input&gt;</code>: the calendar opens on focus/click and writes the formatted value back.</li>
+      <li><strong>Inline calendar</strong> — point it at any non-input container (or pass <code>inline: true</code>): the calendar is always visible.</li>
+      <li><strong>Range picker</strong> — <code>range: true</code> selects a start and end date in one input, joined by <code>rangeSeparator</code>.</li>
+      <li><strong>Zero-JS</strong> — add <code>data-datepicker</code> to an input; it is auto-initialized on load (see <a href="#api-declarative">Declarative init</a>).</li>
+    </ul>
+    <p>Constructing a second picker on the same element destroys the first. Also works with CommonJS/AMD (<code>require('./datepicker.js')</code>) and is SSR-safe (throws only when actually constructed without a DOM). Use <code>type="text"</code> inputs — on <code>type="date"</code> the browser enforces ISO values and may show its own picker.</p>
+  </section>
+
+  <section class="api-block" id="api-options">
+    <h3>Options</h3>
+    <p>Second constructor argument; all keys of <code>DatePicker.defaults</code>. Change a default for every picker with, e.g., <code>DatePicker.defaults.format = 'DD/MM/YYYY'</code>, or per instance later via <code>setOptions()</code>.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker options">
+      <table class="api-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>value</code></td><td><code>Date | 'today' | string</code></td><td><code>null</code></td><td>Initial value; strings are parsed in <code>format</code> or ISO. In range mode also <code>[start, end]</code> or <code>{start, end}</code>.</td></tr>
+          <tr><td><code>format</code></td><td><code>string</code></td><td><code>'YYYY-MM-DD'</code></td><td>Display/parse format. Tokens: <code>YYYY</code> <code>YY</code> <code>MMMM</code> <code>MMM</code> <code>MM</code> <code>M</code> <code>DD</code> <code>D</code>.</td></tr>
+          <tr><td><code>min</code></td><td><code>Date | 'today' | string</code></td><td><code>null</code></td><td>Earliest selectable date.</td></tr>
+          <tr><td><code>max</code></td><td><code>Date | 'today' | string</code></td><td><code>null</code></td><td>Latest selectable date.</td></tr>
+          <tr><td><code>disabledDates</code></td><td><code>(Date|string)[] | fn</code></td><td><code>[]</code></td><td>Array of dates, or <code>fn(date) =&gt; boolean</code> returning <code>true</code> to disable.</td></tr>
+          <tr><td><code>disabledDays</code></td><td><code>number[]</code></td><td><code>[]</code></td><td>Disabled weekdays, <code>0</code> = Sunday … <code>6</code> = Saturday.</td></tr>
+          <tr><td><code>range</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Range selection — “start – end” in one input, with hover preview.</td></tr>
+          <tr><td><code>rangeSeparator</code></td><td><code>string</code></td><td><code>' – '</code></td><td>Text joining start and end in the input value.</td></tr>
+          <tr><td><code>panes</code></td><td><code>number</code></td><td><code>1</code></td><td>Months shown side by side (1–3). With <code>panes &gt; 1</code> the masthead month/year quick views are disabled and the footer Today button is omitted (the presets rail owns quick jumps there).</td></tr>
+          <tr><td><code>presets</code></td><td><code>boolean | string | array</code></td><td><code>null</code></td><td>Quick-select rail. <code>true</code> = built-ins; a comma string picks a subset by key (<code>'last7,thisMonth'</code>); or bring your own <code>[{ label, range }]</code> / <code>[{ label, date }]</code> (see Statics &amp; helpers).</td></tr>
+          <tr><td><code>inline</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Always-visible calendar. Automatic when the target is not an input.</td></tr>
+          <tr><td><code>locale</code></td><td><code>string</code></td><td><code>null</code></td><td>BCP-47 tag (e.g. <code>'fr'</code>); defaults to the browser locale. All names come from <code>Intl</code> — no locale bundles.</td></tr>
+          <tr><td><code>firstDay</code></td><td><code>number</code></td><td><code>null</code></td><td><code>0</code>–<code>6</code>; defaults to the locale’s first weekday.</td></tr>
+          <tr><td><code>weekNumbers</code></td><td><code>boolean</code></td><td><code>false</code></td><td>ISO-8601 week number column.</td></tr>
+          <tr><td><code>theme</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'light' | 'dark'</code> (see Theming).</td></tr>
+          <tr><td><code>styles</code></td><td><code>boolean</code></td><td><code>true</code></td><td><code>false</code> = headless: no CSS is ever injected (see Theming).</td></tr>
+          <tr><td><code>accent</code></td><td><code>string</code></td><td><code>null</code></td><td>Any CSS color for the accent (selection, today, buttons).</td></tr>
+          <tr><td><code>todayButton</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Show the footer Today button.</td></tr>
+          <tr><td><code>clearButton</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Show the footer Clear button.</td></tr>
+          <tr><td><code>autoClose</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Close the popup after picking a date (or a full range).</td></tr>
+          <tr><td><code>position</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'below' | 'above'</code> — popup placement relative to the input.</td></tr>
+          <tr><td><code>labels</code></td><td><code>object</code></td><td>see description</td><td>UI strings for i18n. Defaults: <code>{ previous: 'Previous', next: 'Next', today: 'Today', clear: 'Clear', dialog: 'Choose date', switchView: 'Switch calendar view', presets: 'Quick select', weekAbbr: 'Wk' }</code>. Partial overrides merge.</td></tr>
+          <tr><td><code>onSelect</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(value, formatted, picker)</code> — see Events &amp; callbacks.</td></tr>
+          <tr><td><code>onOpen</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(picker)</code>.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(picker)</code>.</td></tr>
+          <tr><td><code>onClear</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(picker)</code>.</td></tr>
+          <tr><td><code>onMonthChange</code></td><td><code>function</code></td><td><code>null</code></td><td><code>fn(viewDate, picker)</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Built-in preset keys: <code>today</code>, <code>yesterday</code>, <code>tomorrow</code>, <code>last7</code>, <code>last30</code>, <code>thisMonth</code>, <code>lastMonth</code>, <code>thisYear</code>. <code>presets: true</code> shows Today, Yesterday, Last 7 days, Last 30 days, This month, Last month in range mode — or Today/Yesterday/Tomorrow in single-date mode. Function-valued presets (<code>range: () =&gt; [a, b]</code>) are re-evaluated at click time, and the active preset is highlighted when the value matches it.</p>
+  </section>
+
+  <section class="api-block" id="api-methods">
+    <h3>Methods</h3>
+    <p>All methods return the instance (chainable) unless noted.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker instance methods">
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>open()</code></td><td><code>this</code></td><td>Show the popup (no-op for inline calendars).</td></tr>
+          <tr><td><code>close()</code></td><td><code>this</code></td><td>Hide the popup; returns focus to the input when focus was inside the panel.</td></tr>
+          <tr><td><code>toggle()</code></td><td><code>this</code></td><td>Open if closed, close if open.</td></tr>
+          <tr><td><code>getDate()</code></td><td><code>Date | {start, end} | null</code></td><td>Current value — a <code>Date</code>, or <code>{start, end}</code> in range mode.</td></tr>
+          <tr><td><code>setDate(value, config?)</code></td><td><code>this</code></td><td>Set the value: <code>Date | string | 'today' | null</code>; in range mode <code>[start, end]</code> or <code>{start, end}</code>. Pass <code>{ silent: true }</code> to skip <code>onSelect</code>, the <code>datepicker:select</code> event, and the input’s <code>change</code> event.</td></tr>
+          <tr><td><code>clear()</code></td><td><code>this</code></td><td>Clear the value (fires <code>onClear</code> / <code>datepicker:clear</code>).</td></tr>
+          <tr><td><code>setOptions(partial)</code></td><td><code>this</code></td><td>Change any option on the fly, e.g. <code>dp.setOptions({ min: 'today' })</code>; re-renders (and rebuilds the panel when chrome options like <code>panes</code>, <code>presets</code>, <code>inline</code> change).</td></tr>
+          <tr><td><code>destroy()</code></td><td><code>this</code></td><td>Remove the panel and all listeners, and unregister the instance.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-statics">
+    <h3>Statics &amp; helpers</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker static members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>DatePicker.create(target, options?)</code></td><td><code>DatePicker</code></td><td>Constructor alias — same as <code>new DatePicker(…)</code>.</td></tr>
+          <tr><td><code>DatePicker.get(target)</code></td><td><code>DatePicker | null</code></td><td>The instance bound to an element (or selector), or <code>null</code>.</td></tr>
+          <tr><td><code>DatePicker.autoInit(root?)</code></td><td><code>DatePicker[]</code></td><td>Initialize every <code>[data-datepicker]</code> under <code>root</code> (default: <code>document</code>) that has no instance yet. Runs automatically on load; call it for content added later.</td></tr>
+          <tr><td><code>DatePicker.formatDate(date, format?, locale?)</code></td><td><code>string</code></td><td>Pure helper — format a <code>Date</code> with the token format (default <code>'YYYY-MM-DD'</code>), e.g. <code>DatePicker.formatDate(new Date(), 'DD MMM YYYY', 'de')</code>.</td></tr>
+          <tr><td><code>DatePicker.parseDate(str, format?, locale?)</code></td><td><code>Date | null</code></td><td>Pure helper — parse a string in the token format; <code>null</code> for invalid or impossible dates (e.g. <code>2026-02-30</code>).</td></tr>
+          <tr><td><code>DatePicker.defaults</code></td><td><code>object</code></td><td>Global defaults — mutate once to affect every picker created afterwards.</td></tr>
+          <tr><td><code>DatePicker.salt</code></td><td><code>string | false</code></td><td>CSS isolation namespace (default <code>'vc1'</code>). Set your own token before the first picker, or <code>false</code> to disable salting.</td></tr>
+          <tr><td><code>DatePicker.css</code></td><td><code>string</code></td><td>The full stylesheet, always rendered with the current salt — a starting point for headless styling.</td></tr>
+          <tr><td><code>DatePicker.version</code></td><td><code>string</code></td><td>Library version.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-events">
+    <h3>Events &amp; callbacks</h3>
+    <p>Option callbacks:</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker callbacks">
+      <table class="api-table">
+        <thead><tr><th>Callback</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+          <tr><td><code>onSelect</code></td><td><code>fn(value, formatted, picker)</code></td><td>After a date (or complete range) is picked or set. <code>value</code> is a <code>Date</code>, or <code>{start, end}</code> in range mode; <code>formatted</code> is the input string.</td></tr>
+          <tr><td><code>onOpen</code></td><td><code>fn(picker)</code></td><td>When the popup opens.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>fn(picker)</code></td><td>When the popup closes.</td></tr>
+          <tr><td><code>onClear</code></td><td><code>fn(picker)</code></td><td>When the value is cleared.</td></tr>
+          <tr><td><code>onMonthChange</code></td><td><code>fn(viewDate, picker)</code></td><td>When the visible month changes (arrows, paging, quick views).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The bound input also fires native <code>input</code>/<code>change</code> events, plus bubbling <code>CustomEvent</code>s (dispatched on the target element for inline calendars):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker custom events">
+      <table class="api-table">
+        <thead><tr><th>Event</th><th><code>event.detail</code></th></tr></thead>
+        <tbody>
+          <tr><td><code>datepicker:select</code></td><td><code>{ value, formatted, picker }</code></td></tr>
+          <tr><td><code>datepicker:open</code></td><td><code>{ picker }</code></td></tr>
+          <tr><td><code>datepicker:close</code></td><td><code>{ picker }</code></td></tr>
+          <tr><td><code>datepicker:clear</code></td><td><code>{ picker }</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>input.addEventListener('datepicker:select', e =&gt; console.log(e.detail.value))</code></pre>
+  </section>
+
+  <section class="api-block" id="api-declarative">
+    <h3>Declarative init</h3>
+    <p>Mark an input with <code>data-datepicker</code> and it is initialized automatically on load (or later via <code>DatePicker.autoInit(root)</code>). Every option except the function-valued ones maps to a kebab-case attribute:</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker data attributes">
+      <table class="api-table">
+        <thead><tr><th>Attribute</th><th>Option</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>data-datepicker</code></td><td>—</td><td>Marks the element for auto-init.</td></tr>
+          <tr><td><code>data-value</code></td><td><code>value</code></td><td>String in <code>format</code>, ISO, or <code>today</code>.</td></tr>
+          <tr><td><code>data-format</code></td><td><code>format</code></td><td>e.g. <code>DD/MM/YYYY</code>.</td></tr>
+          <tr><td><code>data-min</code> / <code>data-max</code></td><td><code>min</code> / <code>max</code></td><td>Date string or <code>today</code>.</td></tr>
+          <tr><td><code>data-disabled-days</code></td><td><code>disabledDays</code></td><td>Comma list, e.g. <code>"0,6"</code>.</td></tr>
+          <tr><td><code>data-disabled-dates</code></td><td><code>disabledDates</code></td><td>Comma list, e.g. <code>"2026-12-25,2026-12-26"</code>.</td></tr>
+          <tr><td><code>data-range</code></td><td><code>range</code></td><td>Boolean flag; bare attribute = true, <code>"false"</code>/<code>"0"</code> = false.</td></tr>
+          <tr><td><code>data-range-separator</code></td><td><code>rangeSeparator</code></td><td></td></tr>
+          <tr><td><code>data-panes</code></td><td><code>panes</code></td><td>Number 1–3.</td></tr>
+          <tr><td><code>data-presets</code></td><td><code>presets</code></td><td>Bare attribute = built-ins; or a comma list of keys, e.g. <code>"last7,thisMonth"</code>.</td></tr>
+          <tr><td><code>data-inline</code></td><td><code>inline</code></td><td>Boolean flag.</td></tr>
+          <tr><td><code>data-locale</code></td><td><code>locale</code></td><td>BCP-47 tag.</td></tr>
+          <tr><td><code>data-first-day</code></td><td><code>firstDay</code></td><td>Number 0–6.</td></tr>
+          <tr><td><code>data-week-numbers</code></td><td><code>weekNumbers</code></td><td>Boolean flag.</td></tr>
+          <tr><td><code>data-theme</code></td><td><code>theme</code></td><td><code>auto</code> / <code>light</code> / <code>dark</code>.</td></tr>
+          <tr><td><code>data-styles</code></td><td><code>styles</code></td><td><code>data-styles="false"</code> for headless.</td></tr>
+          <tr><td><code>data-accent</code></td><td><code>accent</code></td><td>Any CSS color.</td></tr>
+          <tr><td><code>data-today-button</code> / <code>data-clear-button</code></td><td><code>todayButton</code> / <code>clearButton</code></td><td>Boolean flags.</td></tr>
+          <tr><td><code>data-auto-close</code></td><td><code>autoClose</code></td><td>Boolean flag.</td></tr>
+          <tr><td><code>data-position</code></td><td><code>position</code></td><td><code>auto</code> / <code>below</code> / <code>above</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre><code>&lt;input data-datepicker data-range data-panes="2"
+       data-presets="last7,last30,thisMonth,lastMonth"&gt;</code></pre>
+  </section>
+
+  <section class="api-block" id="api-theming">
+    <h3>Theming</h3>
+    <p><code>theme: 'auto'</code> (the default) resolves from, in order: <code>&lt;html data-theme="dark"&gt;</code> or <code>data-bs-theme</code> (Bootstrap) → <code>&lt;html class="dark"&gt;</code> (Tailwind-style) → the OS <code>prefers-color-scheme</code> — and re-resolves live when any of those change. Set <code>theme: 'light' | 'dark'</code> to pin it. All colors are CSS custom properties on <code>.vdp</code> (scope per theme with <code>.vdp[data-theme="dark"] { … }</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker CSS custom properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--vdp-accent</code></td><td>Primary color: selection, today, buttons.</td></tr>
+          <tr><td><code>--vdp-on-accent</code></td><td>Text on the accent color.</td></tr>
+          <tr><td><code>--vdp-accent-soft</code></td><td>Soft accent fill (in-range days, active preset).</td></tr>
+          <tr><td><code>--vdp-accent-mist</code></td><td>Faintest accent wash (range hover preview).</td></tr>
+          <tr><td><code>--vdp-bg</code></td><td>Panel background.</td></tr>
+          <tr><td><code>--vdp-surface</code></td><td>Hover fill.</td></tr>
+          <tr><td><code>--vdp-text</code></td><td>Text color.</td></tr>
+          <tr><td><code>--vdp-muted</code></td><td>Secondary text (weekday header, week numbers).</td></tr>
+          <tr><td><code>--vdp-faint</code></td><td>Borders.</td></tr>
+          <tr><td><code>--vdp-shadow</code></td><td>Panel shadow.</td></tr>
+          <tr><td><code>--vdp-radius</code></td><td>Panel corner radius.</td></tr>
+          <tr><td><code>--vdp-cell</code></td><td>Day cell size.</td></tr>
+          <tr><td><code>--vdp-font</code></td><td>UI font stack.</td></tr>
+          <tr><td><code>--vdp-display-font</code></td><td>Masthead (month/year) font.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>CSS isolation</strong> — the panel renders as <code>class="vdp vc1"</code> and structural rules ship salted, so host-page resets and generic state classes can’t override the widget; variable definitions stay unsalted so the overrides above keep working. Set <code>DatePicker.salt = 'acme'</code> before the first picker, or <code>DatePicker.salt = false</code> to disable.</p>
+    <p><strong>Headless</strong> — pass <code>styles: false</code> (or <code>data-styles="false"</code>) and no CSS is ever injected: you keep the full markup, behavior, keyboard handling, and ARIA, with stable <code>.vdp-*</code> class hooks and state classes (<code>is-selected</code>, <code>is-disabled</code>, <code>in-range</code>, …). Start from <code>DatePicker.css</code> (string) or <code>dist/datepicker.css</code>. Injection is deduped page-wide, so keep <code>styles: false</code> on every instance when going headless.</p>
+  </section>
+
+  <section class="api-block" id="api-a11y">
+    <h3>Accessibility</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="DatePicker keyboard map">
+      <table class="api-table">
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>↓</code> (on the input)</td><td>Open the calendar and move focus into the grid.</td></tr>
+          <tr><td><code>←</code> / <code>→</code></td><td>Move focus by one day.</td></tr>
+          <tr><td><code>↑</code> / <code>↓</code></td><td>Move focus by one week.</td></tr>
+          <tr><td><code>PageUp</code> / <code>PageDown</code></td><td>Previous / next month.</td></tr>
+          <tr><td><code>Shift+PageUp</code> / <code>Shift+PageDown</code></td><td>Previous / next year.</td></tr>
+          <tr><td><code>Home</code> / <code>End</code></td><td>First / last day of the week.</td></tr>
+          <tr><td><code>Enter</code> / <code>Space</code></td><td>Select the focused day.</td></tr>
+          <tr><td><code>Escape</code></td><td>Close and return focus to the input.</td></tr>
+          <tr><td><code>Tab</code></td><td>Tabbing out of the widget closes it.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>ARIA dialog/grid roles, <code>aria-selected</code>, <code>aria-current="date"</code> on today; month changes are announced politely; <code>prefers-reduced-motion</code> is respected. Typing a date by hand always works — invalid text (including impossible dates like <code>2026-02-30</code>) reverts on blur, and typed values respect <code>min</code>/<code>max</code>/disabled rules.</p>
+  </section>
+</section>
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

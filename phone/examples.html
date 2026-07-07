@@ -286,6 +286,389 @@ new PhoneInput('#b', { nationalMode: false })
   new PhoneInput('#mode-nat', { country: 'ae' }).setValue('+971501234567');
   new PhoneInput('#mode-e164', { country: 'ae', nationalMode: false }).setValue('+971501234567');
 </script>
+
+<!-- ==================== API reference ==================== -->
+<div class="wrap api-doc">
+<style>
+  .api-doc { padding-top: 0; }
+  .api-doc .api-rule { border: 0; height: 1px; background: var(--faint); margin: 0 0 56px; }
+  .api-doc h2 {
+    font-family: var(--display); font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600; line-height: 1.1; letter-spacing: -.01em; margin: 0 0 12px;
+  }
+  .api-doc h3 { font-size: 19px; font-weight: 650; margin: 48px 0 10px; }
+  .api-doc p { max-width: 78ch; }
+  .api-doc .api-note { color: var(--muted); font-size: 14px; }
+  .api-doc ul.api-toc {
+    list-style: none; display: flex; flex-wrap: wrap; gap: 6px 18px;
+    margin: 0 0 12px; padding: 0; font-size: 14px;
+  }
+  .api-doc a { color: var(--accent); text-decoration: none; }
+  .api-doc a:hover { text-decoration: underline; }
+  .api-doc table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api-doc th, .api-doc td {
+    border: 1px solid var(--faint); padding: 8px 12px;
+    text-align: left; vertical-align: top;
+  }
+  .api-doc th { background: var(--surface); font-weight: 650; white-space: nowrap; }
+  .api-doc td { color: var(--text); }
+  .api-doc code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+    white-space: nowrap;
+  }
+  .api-doc pre {
+    background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px;
+    padding: 12px 14px; font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.55; overflow-x: auto; max-width: 100%;
+  }
+  .api-doc pre code { background: none; border: 0; padding: 0; white-space: pre; font-size: inherit; }
+  .api-doc .api-muted { color: var(--muted); }
+</style>
+
+<hr class="api-rule">
+<h2 id="api">API reference</h2>
+<p class="api-note">Complete reference for <code>PhoneInput</code> v1.0.0, generated from the
+component source (<code>phone.js</code>) and README. Zero dependencies; UMD (browser global,
+CommonJS, AMD); SSR-safe — constructing without a DOM returns an inert handle, and the pure
+helpers work in Node.</p>
+
+<ul class="api-toc">
+  <li><a href="#api-usage">Constructor &amp; usage</a></li>
+  <li><a href="#api-options">Options</a></li>
+  <li><a href="#api-methods">Instance methods</a></li>
+  <li><a href="#api-statics">Statics &amp; helpers</a></li>
+  <li><a href="#api-events">Events &amp; callbacks</a></li>
+  <li><a href="#api-data">Declarative init</a></li>
+  <li><a href="#api-theming">Theming</a></li>
+  <li><a href="#api-a11y">Accessibility</a></li>
+</ul>
+
+<h3 id="api-usage">Constructor &amp; usage</h3>
+<pre><code>var phone = new PhoneInput(target, options)   // or PhoneInput.create(target, options)</code></pre>
+<p><code>target</code> is a CSS selector string or a DOM element. Two modes, decided by the
+target's tag:</p>
+<ul>
+  <li><strong>Anchor mode</strong> — target is an <code>&lt;input&gt;</code>: the input is adopted
+  in place (wrapped in the <code>.vph</code> control, coerced to <code>type="tel"</code>, given the
+  <code>vph-input</code> class). <code>destroy()</code> unwraps and restores it.</li>
+  <li><strong>Container mode</strong> — target is any other element: the whole control, including
+  its own tel input, is built inside it; with <code>options.name</code> a hidden input carrying the
+  E.164 value is added for form submission.</li>
+</ul>
+<ul>
+  <li>Throws <code>Error('PhoneInput: target element not found: …')</code> when the selector matches nothing.</li>
+  <li>Re-initializing on an element that already has an instance destroys the old instance first.</li>
+  <li>Without a DOM (SSR/Node) the constructor returns an inert no-op handle with the same method surface.</li>
+  <li>A pre-filled input value is adopted on init; a leading-<code>+</code> value also switches the country from its dial code.</li>
+  <li>Typing or pasting <code>+</code> + dial code auto-detects the country (longest-prefix match, area-code
+  aware for shared codes like +1/+7/+44) and switches the flag. Input is restricted to digits and
+  <code>+ ( ) - . space</code> (<code>+</code> only leading).</li>
+</ul>
+<p class="api-note">Useful instance properties: <code>phone.el</code> (original target),
+<code>phone.input</code> (the tel input), <code>phone.root</code> (the <code>.vph</code> wrapper),
+<code>phone.button</code> (country button), <code>phone.country</code> (current country record),
+<code>phone.isOpen</code>, <code>phone.opts</code>.</p>
+
+<h3 id="api-options">Options</h3>
+<p>All options with their defaults, exactly as in <code>PhoneInput.defaults</code> (mutable —
+change it to set global defaults before constructing).</p>
+<div tabindex="0" role="region" aria-label="Constructor options" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>country</code></td><td>string</td><td><code>'us'</code></td>
+      <td>Initial ISO-3166 alpha-2 country. If unknown or excluded, falls back to the first allowed country.</td></tr>
+    <tr><td><code>preferredCountries</code></td><td>string[]</td><td><code>[]</code></td>
+      <td>iso2 codes pinned to the top of the dropdown, above a separator.</td></tr>
+    <tr><td><code>onlyCountries</code></td><td>string[] | null</td><td><code>null</code></td>
+      <td>Whitelist of iso2 codes; all others are removed from the dropdown and auto-detection.</td></tr>
+    <tr><td><code>excludeCountries</code></td><td>string[] | null</td><td><code>null</code></td>
+      <td>Blacklist of iso2 codes.</td></tr>
+    <tr><td><code>nationalMode</code></td><td>boolean</td><td><code>true</code></td>
+      <td>Display national formatting (output is always E.164); <code>false</code> displays <code>+971 50 123 4567</code> style.</td></tr>
+    <tr><td><code>placeholder</code></td><td><code>'auto'</code> | string | false</td><td><code>'auto'</code></td>
+      <td><code>'auto'</code> = example number for the current country; a string is used verbatim; <code>false</code> removes the placeholder.</td></tr>
+    <tr><td><code>showDialCode</code></td><td>boolean</td><td><code>true</code></td>
+      <td>Show <code>+971</code> next to the flag in the country button.</td></tr>
+    <tr><td><code>searchable</code></td><td>boolean</td><td><code>true</code></td>
+      <td>Search box in the dropdown. When <code>false</code>, typeahead over country names kicks in instead.</td></tr>
+    <tr><td><code>validate</code></td><td><code>'blur'</code> | <code>'live'</code></td><td><code>'blur'</code></td>
+      <td><code>'blur'</code> shows the red/green state only after the field is first blurred (Maz-style); <code>'live'</code> judges every keystroke. Either way the state shows only when digits are present.</td></tr>
+    <tr><td><code>validator</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn({country, digits, e164}) → boolean</code> — replaces the built-in national-length check (<code>digits</code> are national significant digits, trunk 0 stripped).</td></tr>
+    <tr><td><code>name</code></td><td>string | null</td><td><code>null</code></td>
+      <td>Adds a hidden input with this name carrying the E.164 value (skipped in anchor mode when the input already has this name).</td></tr>
+    <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+      <td>Start disabled (<code>.vph-disabled</code>, input and button disabled).</td></tr>
+    <tr><td><code>theme</code></td><td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code></td><td><code>'auto'</code></td>
+      <td><code>'auto'</code> follows <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code>/<code>.light</code> class → OS scheme, re-resolved live.</td></tr>
+    <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+      <td><code>false</code> = headless: no CSS injected; full behavior and markup contract kept.</td></tr>
+    <tr><td><code>labels</code></td><td>object</td>
+      <td><code>{country:&#8202;'Choose country', search:&#8202;'Search countries', noResults:&#8202;'No matches', invalid:&#8202;'Invalid phone number'}</code></td>
+      <td>UI strings (button <code>aria-label</code> prefix, search placeholder/label, empty-list text, validation announcement). Merged shallowly with the defaults.</td></tr>
+    <tr><td><code>onChange</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn({e164, national, country, valid})</code> on every edit — see <a href="#api-events">Events</a>.</td></tr>
+    <tr><td><code>onCountryChange</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn(iso2)</code> when the country switches (dropdown, auto-detect, <code>setCountry</code>, <code>setValue</code>).</td></tr>
+    <tr><td><code>onValidityChange</code></td><td>function | null</td><td><code>null</code></td>
+      <td><code>fn(valid)</code> whenever validity flips (also fired once with the initial validity on construction).</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="api-note">Note: the pure helper functions (<code>PhoneInput.parse</code> etc.) do
+<em>not</em> take an options object — where they accept a second parameter it is an iso2 country
+code string. See <a href="#api-statics">Statics &amp; helpers</a>.</p>
+
+<h3 id="api-methods">Instance methods</h3>
+<p>All setters return the instance for chaining.</p>
+<div tabindex="0" role="region" aria-label="Instance methods" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>getValue()</code></td><td><code>{e164, national, country, valid}</code></td>
+      <td>Current value. <code>e164</code> is <code>''</code> when empty; <code>national</code> is the formatted national display; <code>country</code> the current iso2; output is E.164 regardless of <code>nationalMode</code>.</td></tr>
+    <tr><td><code>setValue(str)</code></td><td><code>this</code></td>
+      <td>Set the number. A leading <code>+</code> switches the country from the dial code (if allowed); otherwise digits are applied to the current country.</td></tr>
+    <tr><td><code>setCountry(iso2)</code></td><td><code>this</code></td>
+      <td>Switch the flag/dial code. Ignored for unknown or excluded countries.</td></tr>
+    <tr><td><code>getCountry()</code></td><td>string</td>
+      <td>Current iso2, e.g. <code>'ae'</code>.</td></tr>
+    <tr><td><code>setDisabled(disabled)</code></td><td><code>this</code></td>
+      <td>Enable/disable the control (closes the dropdown when disabling).</td></tr>
+    <tr><td><code>open()</code></td><td><code>this</code></td>
+      <td>Open the country dropdown (no-op when already open or disabled). The panel is portaled to <code>&lt;body&gt;</code>, or into an open <code>&lt;dialog&gt;</code>'s top layer.</td></tr>
+    <tr><td><code>close(refocus)</code></td><td><code>this</code></td>
+      <td>Close the dropdown. Unless <code>refocus === false</code>, focus returns to the country button when it was inside the panel.</td></tr>
+    <tr><td><code>focus()</code></td><td><code>this</code></td>
+      <td>Focus the tel input.</td></tr>
+    <tr><td><code>destroy()</code></td><td><code>this</code></td>
+      <td>Remove everything, unbind all listeners. In anchor mode the original input is unwrapped, its class list restored and <code>aria-invalid</code> removed.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-statics">Statics &amp; helpers</h3>
+<p><strong>Pure helpers</strong> — no DOM needed, usable in Node. None takes an options object;
+the optional second parameter is always an ISO-3166 alpha-2 string.</p>
+<div tabindex="0" role="region" aria-label="Pure helper functions" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Helper</th><th>Returns</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>PhoneInput.parse(str, iso2?)</code></td>
+      <td><code>{country, dialCode, national, e164, valid}</code></td>
+      <td>Parse any input. A leading <code>+</code> detects the country from the dial code (<code>iso2</code> ignored); otherwise <code>iso2</code> is used, falling back to <code>PhoneInput.defaults.country</code>, then <code>'us'</code>. <code>dialCode</code> comes back as <code>'+971'</code>-style; <code>national</code> is the formatted national number. When a <code>+</code> number matches no known dial code: <code>{country: null, dialCode: null, national: '', e164: '+&lt;digits&gt;', valid: false}</code>.</td></tr>
+    <tr><td><code>PhoneInput.format(str, iso2?)</code></td>
+      <td>string</td>
+      <td>Format as a national number: <code>PhoneInput.format('4155552671', 'us')</code> → <code>'(415) 555-2671'</code>. A leading <code>+</code> routes through <code>parse</code> (<code>iso2</code> ignored). Digits beyond the country's pattern are appended raw.</td></tr>
+    <tr><td><code>PhoneInput.isValid(str, iso2?)</code></td>
+      <td>boolean</td>
+      <td>Pragmatic length validation. With <code>iso2</code> given for a <code>+</code> number, the detected country only needs to share the dial code (a +1 number satisfies both <code>'us'</code> and <code>'ca'</code>).</td></tr>
+    <tr><td><code>PhoneInput.exampleNumber(iso2)</code></td>
+      <td>string</td>
+      <td>Example national number for placeholders — the country's pattern filled with 1–9 cycling: <code>PhoneInput.exampleNumber('gb')</code> → <code>'1234 567891'</code>. <code>''</code> for unknown iso2.</td></tr>
+    <tr><td><code>PhoneInput.flag(iso2)</code></td>
+      <td>string (SVG)</td>
+      <td>The 20×15 flag as an <code>&lt;svg&gt;</code> markup string (simplified, flagpack-style, generated by the built-in renderer). Unknown codes get a neutral rounded badge showing the uppercase iso2 — never an error.</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>Other statics</strong></p>
+<div tabindex="0" role="region" aria-label="Other static members" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Static</th><th>Type / Returns</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>PhoneInput.create(target, options)</code></td><td>instance</td>
+      <td>Constructor alias: <code>new PhoneInput(target, options)</code>.</td></tr>
+    <tr><td><code>PhoneInput.get(target)</code></td><td>instance | null</td>
+      <td>Registry lookup by element or selector — the live instance attached to that element, or <code>null</code>.</td></tr>
+    <tr><td><code>PhoneInput.autoInit(root?)</code></td><td>instance[]</td>
+      <td>Initialize every <code>[data-vph]</code> element under <code>root</code> (default <code>document</code>), skipping already-initialized ones. Returns the created instances; one bad element logs an error without aborting the rest.</td></tr>
+    <tr><td><code>PhoneInput.defaults</code></td><td>object</td>
+      <td>The live defaults object (see <a href="#api-options">Options</a>). Mutate before constructing, e.g. <code>PhoneInput.defaults.styles = false</code>.</td></tr>
+    <tr><td><code>PhoneInput.countries</code></td><td>array</td>
+      <td>The full data table — 242 records of <code>{iso2, name, dialCode, order, lengths, pattern, areaCodes}</code>.</td></tr>
+    <tr><td><code>PhoneInput.version</code></td><td>string</td>
+      <td><code>'1.0.0'</code>.</td></tr>
+    <tr><td><code>PhoneInput.salt</code></td><td>string | false</td>
+      <td>CSS isolation token (default <code>'vc1'</code>). Set your own token or <code>false</code> to disable, <em>before the first instance</em>.</td></tr>
+    <tr><td><code>PhoneInput.css</code></td><td>string (getter)</td>
+      <td>The full stylesheet, rendered live with the current salt — a starting point for headless styling.</td></tr>
+    <tr><td><code>PhoneInput.displayName</code> / <code>.rootClass</code> / <code>.themeVars</code> / <code>.varScopes</code></td><td>string / string / object / array</td>
+      <td>Family convergence contract used by the VC core: <code>'PhoneInput'</code>, <code>'vph'</code>, the map of themeable vars (<code>accent</code>, <code>radius</code>, <code>font</code>), and the CSS scopes where the vars are defined.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-events">Events &amp; callbacks</h3>
+<p>The component does <strong>not</strong> dispatch custom DOM events — all notifications go
+through the three option callbacks:</p>
+<div tabindex="0" role="region" aria-label="Callback options and payloads" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Callback</th><th>Payload</th><th>Fires</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>onChange</code></td>
+      <td><code>{e164: string, national: string, country: string, valid: boolean}</code></td>
+      <td>On every edit — typing, paste, country selection that reformats the value, <code>setValue()</code>, <code>setCountry()</code>. Same shape as <code>getValue()</code>.</td></tr>
+    <tr><td><code>onCountryChange</code></td>
+      <td><code>iso2: string</code></td>
+      <td>Whenever the country switches: dropdown pick, <code>+</code>-prefix auto-detection, <code>setCountry()</code>, <code>setValue('+…')</code>.</td></tr>
+    <tr><td><code>onValidityChange</code></td>
+      <td><code>valid: boolean</code></td>
+      <td>Whenever computed validity flips, independent of whether the red/green state is visible yet; also once at construction with the initial validity.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="api-note">The underlying <code>&lt;input type="tel"&gt;</code> is a real input, so native
+<code>input</code>/<code>blur</code>/<code>focus</code> events from user interaction behave normally;
+programmatic <code>setValue()</code> does not fire native events.</p>
+
+<h3 id="api-data">Declarative init (data attributes)</h3>
+<p>Any element with <code>data-vph</code> is auto-initialized on <code>DOMContentLoaded</code> (or
+immediately if the script loads after). Call <code>PhoneInput.autoInit(root)</code> for content added
+later. The attribute value itself is a country shorthand: <code>data-vph="ae"</code> ≡
+<code>data-vph data-country="ae"</code>.</p>
+<pre><code>&lt;input data-vph data-country="gb" data-preferred="gb,ie,us"&gt;</code></pre>
+<div tabindex="0" role="region" aria-label="Data attributes for declarative initialization" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Attribute</th><th>Maps to option</th><th>Value format</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>data-vph</code></td><td>marker (+ <code>country</code> if a value is given)</td><td>empty, or an iso2</td></tr>
+    <tr><td><code>data-country</code></td><td><code>country</code></td><td>iso2 (wins over the <code>data-vph</code> shorthand)</td></tr>
+    <tr><td><code>data-preferred</code></td><td><code>preferredCountries</code></td><td>comma-separated iso2 list</td></tr>
+    <tr><td><code>data-only</code></td><td><code>onlyCountries</code></td><td>comma-separated iso2 list</td></tr>
+    <tr><td><code>data-exclude</code></td><td><code>excludeCountries</code></td><td>comma-separated iso2 list</td></tr>
+    <tr><td><code>data-name</code></td><td><code>name</code></td><td>string</td></tr>
+    <tr><td><code>data-placeholder</code></td><td><code>placeholder</code></td><td>string; the literal <code>"false"</code> means no placeholder</td></tr>
+    <tr><td><code>data-validate</code></td><td><code>validate</code></td><td><code>blur</code> | <code>live</code></td></tr>
+    <tr><td><code>data-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code></td></tr>
+    <tr><td><code>data-national-mode</code></td><td><code>nationalMode</code></td><td>boolean*</td></tr>
+    <tr><td><code>data-show-dial-code</code></td><td><code>showDialCode</code></td><td>boolean*</td></tr>
+    <tr><td><code>data-searchable</code></td><td><code>searchable</code></td><td>boolean*</td></tr>
+    <tr><td><code>data-styles</code></td><td><code>styles</code></td><td>boolean*</td></tr>
+    <tr><td><code>data-disabled</code></td><td><code>disabled</code></td><td>boolean*</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="api-note">* Boolean attributes: <code>"false"</code> and <code>"0"</code> parse as false;
+anything else (including empty) as true. Callback options (<code>onChange</code> etc.),
+<code>validator</code> and <code>labels</code> have no data-attribute form — use the JS API.</p>
+
+<h3 id="api-theming">Theming</h3>
+<p>Auto light/dark with the family's resolution order (<code>&lt;html data-theme&gt;</code> /
+<code>data-bs-theme</code> / <code>.dark</code>/<code>.light</code> class →
+<code>prefers-color-scheme</code>, re-resolved live; via <code>VC.theme</code> when the core is
+loaded). Pin per instance with <code>theme: 'light' | 'dark'</code>. All colors are CSS custom
+properties, defined on <code>.vph, .vph-panel</code> (and overridden under
+<code>[data-theme=dark]</code>):</p>
+<div tabindex="0" role="region" aria-label="CSS custom properties" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--vph-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td>
+      <td>Focus border, focus-visible outlines, selected option, search focus.</td></tr>
+    <tr><td><code>--vph-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td>
+      <td>Field and panel background.</td></tr>
+    <tr><td><code>--vph-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td>
+      <td>Hover/active option background, country-button hover, search input.</td></tr>
+    <tr><td><code>--vph-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td>
+      <td>Primary text.</td></tr>
+    <tr><td><code>--vph-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td>
+      <td>Dial codes, caret, placeholders, empty-list text.</td></tr>
+    <tr><td><code>--vph-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td>
+      <td>Borders and separators.</td></tr>
+    <tr><td><code>--vph-danger</code></td><td><code>#e5484d</code></td><td><code>#f2555a</code></td>
+      <td>Invalid border color.</td></tr>
+    <tr><td><code>--vph-success</code></td><td><code>#1f9d5b</code></td><td><code>#4ccb8f</code></td>
+      <td>Valid border color.</td></tr>
+    <tr><td><code>--vph-ring</code></td><td><code>rgba(91,91,214,.16)</code></td><td><code>rgba(123,123,234,.24)</code></td>
+      <td>Focus ring; auto-derived from the accent via <code>color-mix</code> (18%) where supported.</td></tr>
+    <tr><td><code>--vph-shadow</code></td><td><code>0 14px 36px rgba(24,25,32,.16), 0 3px 10px rgba(24,25,32,.08)</code></td><td><code>0 14px 36px rgba(0,0,0,.5), 0 3px 10px rgba(0,0,0,.35)</code></td>
+      <td>Dropdown panel shadow.</td></tr>
+    <tr><td><code>--vph-radius</code></td><td><code>10px</code></td><td><span class="api-muted">same</span></td>
+      <td>Field corner radius (panel uses a fixed 12px).</td></tr>
+    <tr><td><code>--vph-font</code></td><td><code>system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code></td><td><span class="api-muted">same</span></td>
+      <td>Widget font stack.</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>CSS isolation:</strong> the control renders as <code>class="vph vc1"</code> and all
+structural rules ship salted (<code>.vph.vc1 .vph-input { … }</code>) so host design systems cannot
+override the widget, while <code>--vph-*</code> variable definitions stay unsalted so
+<code>.vph { --vph-accent: … }</code> page overrides keep working. Custom token:
+<code>PhoneInput.salt = 'acme'</code> before the first instance; disable with
+<code>PhoneInput.salt = false</code>. With the VC core loaded,
+<code>VC.config({ accent: '#b45309' })</code> themes the whole family at once.</p>
+<p><strong>Headless:</strong> pass <code>styles: false</code> (or set
+<code>PhoneInput.defaults.styles = false</code>) and no CSS is injected — behavior, ARIA and the
+<code>.vph-*</code> markup contract are kept; style them from your own CSS, starting from the
+<code>PhoneInput.css</code> string if you like.</p>
+<pre><code>.vph[data-theme=dark].vph-invalid     ← .vph-valid when valid (after blur)
+  .vph-country[aria-expanded]         ← button: flag + dial + caret
+    .vph-flag &gt; svg                   ← 20×15 flag
+    .vph-dial
+    .vph-caret
+  input.vph-input[type=tel]
+  input[type=hidden]                  ← only when opts.name given
+  .vph-sr[aria-live=polite]           ← validation announcements
+.vph-panel                            ← portaled to &lt;body&gt; while open
+  .vph-search &gt; input[role=combobox]
+  .vph-list[role=listbox]
+    .vph-opt[role=option].is-active.is-selected
+    .vph-sep / .vph-empty</code></pre>
+
+<h3 id="api-a11y">Accessibility</h3>
+<div tabindex="0" role="region" aria-label="Keyboard interaction map" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Where</th><th>Key</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="2">Country button</td><td><code>Enter</code> / <code>Space</code></td>
+      <td>Toggle the dropdown (native button activation).</td></tr>
+    <tr><td><code>ArrowDown</code> / <code>ArrowUp</code></td>
+      <td>Open the dropdown.</td></tr>
+    <tr><td rowspan="6">Dropdown open</td><td><code>ArrowDown</code> / <code>ArrowUp</code></td>
+      <td>Move the active option down/up (clamped at the ends).</td></tr>
+    <tr><td><code>Home</code> / <code>End</code></td>
+      <td>Jump to first/last option (left to the caret when pressed inside the search box).</td></tr>
+    <tr><td><code>Enter</code></td>
+      <td>Select the active country, close, refocus the tel input.</td></tr>
+    <tr><td><code>Escape</code></td>
+      <td>Close and return focus to the country button (also handled at document level).</td></tr>
+    <tr><td><code>Tab</code></td>
+      <td>Close without stealing focus back.</td></tr>
+    <tr><td>printable characters</td>
+      <td>Filter via the search box (name, iso2 or dial-code prefix); without a search box, typeahead over country names (700&nbsp;ms buffer).</td></tr>
+    <tr><td>Tel input</td><td>character keys</td>
+      <td>Restricted to digits and <code>+ ( ) - . space</code>; shortcuts with Ctrl/Cmd/Alt pass through untouched.</td></tr>
+  </tbody>
+</table>
+</div>
+<ul>
+  <li>The tel input is a real <code>&lt;input type="tel"&gt;</code>; <code>autocomplete="tel"</code> is preserved (or added when absent).</li>
+  <li>The country button carries <code>aria-label</code> ("Choose country: … +971"), <code>aria-haspopup="listbox"</code> and <code>aria-expanded</code>.</li>
+  <li>The dropdown is an ARIA listbox driven by <code>aria-activedescendant</code> (set on the search box — a <code>role="combobox"</code> with <code>aria-autocomplete="list"</code> and <code>aria-controls</code> — or on the list itself when <code>searchable: false</code>); options carry <code>role="option"</code> and <code>aria-selected</code>.</li>
+  <li>Invalid state sets <code>aria-invalid</code> on the input and announces <code>labels.invalid</code> through a polite live region — only after blur by default, so users aren't scolded mid-typing.</li>
+  <li><code>:focus-visible</code> outlines throughout; <code>prefers-reduced-motion</code> disables all transitions and animations.</li>
+</ul>
+</div>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

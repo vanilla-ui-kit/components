@@ -271,6 +271,368 @@ s.enable(); s.disable()</pre>
     else { locked.disable(); lockedBtn.textContent = 'Enable'; }
   });
 </script>
+<style>
+  .api { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(26px, 3.4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api h3 { font-size: 18px; font-weight: 650; margin: 44px 0 10px; }
+  .api h2, .api h3 { scroll-margin-top: 16px; }
+  .api p { margin: 0 0 12px; max-width: 76ch; }
+  .api p.note { color: var(--muted); font-size: 14px; }
+  .api .api-toc {
+    display: flex; flex-wrap: wrap; gap: 6px 14px;
+    margin: 0 0 8px; font-size: 14px;
+  }
+  .api .api-toc a { color: var(--accent); text-decoration: none; }
+  .api .api-toc a:hover { text-decoration: underline; }
+  .api pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api .table-scroll { overflow-x: auto; margin: 12px 0; }
+  .api .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td {
+    text-align: left; padding: 8px 12px; vertical-align: top;
+    border-bottom: 1px solid var(--faint);
+  }
+  .api thead th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--faint); }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <nav class="api-toc" aria-label="API reference sections">
+    <a href="#api-usage">Usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics</a>
+    <a href="#api-events">Events</a>
+    <a href="#api-declarative">Declarative</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p><code>new Slider(target, options?)</code> — <code>target</code> is a CSS
+  selector string or an element. A non-matching target throws; constructing on
+  an element that already holds an instance destroys the old instance first.
+  Without a DOM (SSR), the constructor returns an inert no-op instance.</p>
+  <p><strong>Build mode</strong> — pass an empty container and the slider is
+  built inside it. With <code>name</code> set, hidden input(s) are created so
+  plain form posts work:</p>
+  <pre>&lt;div id="volume"&gt;&lt;/div&gt;
+&lt;script&gt;
+  var volume = new Slider('#volume', { value: 40, suffix: '%' })
+&lt;/script&gt;</pre>
+  <p><strong>Dual thumb</strong> — a two-element array as <code>value</code>
+  creates a range with two thumbs that clamp at each other:</p>
+  <pre>new Slider('#price', {
+  min: 0, max: 1000, step: 10,
+  value: [200, 650],          // [lo, hi] — sorted, snapped, clamped
+  prefix: '$'
+})</pre>
+  <p><strong>Replace mode</strong> (progressive enhancement) — pass an
+  <code>&lt;input&gt;</code> and it is hidden (via the <code>hidden</code>
+  attribute) and kept synced, so the form keeps posting the real value
+  (<code>"20,80"</code> when dual) and receives native <code>input</code> /
+  <code>change</code> events. The input's own <code>min</code>,
+  <code>max</code>, <code>step</code>, <code>value</code> and
+  <code>disabled</code> attributes seed any omitted options.
+  <code>destroy()</code> restores the input untouched:</p>
+  <pre>&lt;input type="range" name="volume" min="0" max="100" value="40"&gt;
+&lt;script&gt;
+  new Slider(document.querySelector('[name=volume]'))
+&lt;/script&gt;</pre>
+  <p>Static helpers cover the same ground:</p>
+  <pre>Slider.create('#el', opts)   // identical to new Slider('#el', opts)
+Slider.get('#el')            // existing instance for an element, or null
+Slider.autoInit()            // init every [data-vsld] — also runs on page load</pre>
+
+  <h3 id="api-options">Options</h3>
+  <p>All keys of <code>Slider.defaults</code>, with their exact defaults.
+  Unknown option keys are ignored; there are no per-call-only constructor
+  options beyond these. In replace mode, omitted <code>min</code> /
+  <code>max</code> / <code>step</code> / <code>value</code> /
+  <code>disabled</code> are seeded from the replaced input's attributes.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Constructor options">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>min</code></td><td>number</td><td><code>0</code></td>
+          <td>Lower bound. Non-numeric values fall back to <code>0</code>; if <code>max &lt; min</code> the two are swapped.</td></tr>
+        <tr><td><code>max</code></td><td>number</td><td><code>100</code></td>
+          <td>Upper bound. Non-numeric values fall back to <code>100</code>.</td></tr>
+        <tr><td><code>step</code></td><td>number</td><td><code>1</code></td>
+          <td>Snap grid, anchored at <code>min</code>. Values not <code>&gt; 0</code> fall back to <code>1</code>.</td></tr>
+        <tr><td><code>value</code></td><td>number | [number, number] | null</td><td><code>null</code></td>
+          <td>Number = single thumb; two-element array = dual-thumb range (sorted, snapped, clamped); <code>null</code> starts at <code>min</code>.</td></tr>
+        <tr><td><code>marks</code></td><td>boolean | object</td><td><code>false</code></td>
+          <td><code>true</code> = one tick per step, only when the range spans 1–20 steps (otherwise no ticks). An object like <code>{ 0: 'Low', 50: 'Mid', 100: 'High' }</code> places labeled ticks at those values; keys outside <code>[min, max]</code> are ignored.</td></tr>
+        <tr><td><code>tooltip</code></td><td>'drag' | 'always' | false</td><td><code>'drag'</code></td>
+          <td><code>'drag'</code> shows the value bubble while dragging or keyboard-focused; <code>'always'</code> keeps it visible; <code>false</code> renders no bubble at all.</td></tr>
+        <tr><td><code>format</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value) → string</code> used for the tooltip and <code>aria-valuetext</code>. When set, <code>prefix</code>/<code>suffix</code> are ignored.</td></tr>
+        <tr><td><code>prefix</code></td><td>string</td><td><code>''</code></td>
+          <td>Shorthand formatting when no <code>format</code> is given: <code>prefix + value + suffix</code>.</td></tr>
+        <tr><td><code>suffix</code></td><td>string</td><td><code>''</code></td>
+          <td>See <code>prefix</code>.</td></tr>
+        <tr><td><code>vertical</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Rail runs bottom → top. <code>ArrowUp</code> still increases the value.</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Start disabled: thumbs unfocusable, form control(s) get the <code>disabled</code> attribute so nothing submits.</td></tr>
+        <tr><td><code>name</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Build mode only: creates hidden input(s) — <code>name</code> for a single value, <code>name[]</code> twice for dual (the <code>[]</code> is appended unless already present). Ignored when replacing an input, which carries the value itself.</td></tr>
+        <tr><td><code>theme</code></td><td>'auto' | 'light' | 'dark'</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> follows the page theme and re-resolves live; <code>'light'</code>/<code>'dark'</code> pin the instance.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no stylesheet is injected; you style the <code>.vsld-*</code> markup yourself (see <a href="#api-theming">Theming</a>).</td></tr>
+        <tr><td><code>onInput</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value, slider)</code> — called on every move. See <a href="#api-events">Events</a>.</td></tr>
+        <tr><td><code>onChange</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value, slider)</code> — called on release / commit. See <a href="#api-events">Events</a>.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ value: 'Value', min: 'Minimum value', max: 'Maximum value' }</code></td>
+          <td>Thumb <code>aria-label</code> texts, merged key-by-key with the defaults. <code>labels.value</code> labels a single thumb; <code>labels.min</code> / <code>labels.max</code> label the low / high thumb of a dual slider.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Instance methods</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance methods">
+    <table>
+      <thead>
+        <tr><th>Signature</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getValue()</code></td><td>number | [number,&nbsp;number]</td>
+          <td>Current value — a number for single thumb, a fresh two-element array for dual.</td></tr>
+        <tr><td><code>setValue(value, opts?)</code></td><td><code>this</code></td>
+          <td>Sets the value, snapped to the step grid and clamped. A dual slider accepts <code>[lo, hi]</code> (auto-sorted) or a single number applied to both thumbs. When the value actually changes it fires <code>onInput</code> + <code>onChange</code> and both CustomEvents — pass <code>{ silent: true }</code> to suppress all of them.</td></tr>
+        <tr><td><code>enable()</code></td><td><code>this</code></td>
+          <td>Re-enables interaction: thumbs get <code>tabindex="0"</code>, <code>aria-disabled</code> is removed, form control(s) are re-enabled.</td></tr>
+        <tr><td><code>disable()</code></td><td><code>this</code></td>
+          <td>Disables interaction (cancels any active drag): thumbs get <code>tabindex="-1"</code> and <code>aria-disabled="true"</code>; the replaced/hidden input(s) get <code>disabled</code> so the slider doesn't submit, like a native control.</td></tr>
+        <tr><td><code>destroy()</code></td><td><code>this</code></td>
+          <td>Removes all built DOM, restores every attribute it touched (un-hides and re-enables a replaced input), removes its classes, and unregisters the instance.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Useful instance properties: <code>el</code> (root element),
+  <code>track</code>, <code>thumbs</code>, <code>values</code>,
+  <code>input</code> (the replaced input, or <code>null</code> in build mode),
+  <code>opts</code>, <code>dual</code>.</p>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static properties and helpers">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Slider.defaults</code></td><td>object</td>
+          <td>The live defaults object (see <a href="#api-options">Options</a>). Mutate before constructing, e.g. <code>Slider.defaults.styles = false</code> for global headless mode.</td></tr>
+        <tr><td><code>Slider.create(target, options?)</code></td><td>function → Slider</td>
+          <td>Identical to <code>new Slider(target, options)</code>.</td></tr>
+        <tr><td><code>Slider.get(target)</code></td><td>function → Slider | null</td>
+          <td>The instance bound to an element (selector or element; matches either the original target or the built root), or <code>null</code>.</td></tr>
+        <tr><td><code>Slider.autoInit(root?)</code></td><td>function → Slider[]</td>
+          <td>Initializes every <code>[data-vsld]</code> element under <code>root</code> (default <code>document</code>), skipping elements that already have an instance. A failing element logs an error and doesn't abort the rest. Returns the created instances.</td></tr>
+        <tr><td><code>Slider.salt</code></td><td>string | false</td>
+          <td>CSS-isolation namespace token, default <code>'vc1'</code>. Set your own token or <code>false</code> (no salting) <em>before</em> the first instance is created.</td></tr>
+        <tr><td><code>Slider.css</code></td><td>string (getter)</td>
+          <td>The full embedded stylesheet, rendered with the <em>current</em> salt — a starting point for headless styling.</td></tr>
+        <tr><td><code>Slider.version</code></td><td>string</td>
+          <td><code>'1.0.0'</code>.</td></tr>
+        <tr><td><code>Slider.displayName</code></td><td>string</td>
+          <td><code>'Slider'</code> — family metadata used when registering with the VC core.</td></tr>
+        <tr><td><code>Slider.rootClass</code></td><td>string</td>
+          <td><code>'vsld'</code> — the root element's class.</td></tr>
+        <tr><td><code>Slider.themeVars</code></td><td>object</td>
+          <td>Maps family theme keys to CSS custom properties: <code>{ accent: '--vsld-accent', radius: '--vsld-radius', font: '--vsld-font' }</code>. Used by <code>VC.config()</code>.</td></tr>
+        <tr><td><code>Slider.varScopes</code></td><td>array</td>
+          <td><code>['.vsld', '.vsld[data-theme=dark]']</code> — the (deliberately unsalted) scopes where theme variables are defined; <code>VC.config()</code> writes its overrides there.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p><code>onInput</code> fires on every move (each drag tick, each key press,
+  and a changed <code>setValue</code>); <code>onChange</code> fires on commit —
+  pointer release when the value differs from where the drag started, every
+  key press, and a changed <code>setValue</code>. Both receive
+  <code>(value, slider)</code>, where <code>value</code> is a number or
+  <code>[lo, hi]</code> for dual.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Option callbacks">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>Arguments</th><th>When</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onInput</code></td><td><code>(value, slider)</code></td>
+          <td>Every value change: drag movement, each key press, non-silent <code>setValue</code>.</td></tr>
+        <tr><td><code>onChange</code></td><td><code>(value, slider)</code></td>
+          <td>Commit: pointer release with a changed value, each key press, non-silent <code>setValue</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The root element also dispatches CustomEvents, so you can
+  delegate without keeping a reference:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="DOM CustomEvents">
+    <table>
+      <thead>
+        <tr><th>Event</th><th>Fires on</th><th>Bubbles</th><th>Cancelable</th><th><code>event.detail</code></th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>slider:input</code></td><td>root element (<code>.vsld</code>)</td><td>yes</td><td>no</td>
+          <td><code>{ value, slider }</code></td></tr>
+        <tr><td><code>slider:change</code></td><td>root element (<code>.vsld</code>)</td><td>yes</td><td>no</td>
+          <td><code>{ value, slider }</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">In replace mode the hidden original input additionally
+  receives real, bubbling (non-cancelable) native <code>input</code> and
+  <code>change</code> events on the same occasions — dispatched before the
+  matching callback and CustomEvent — so existing listeners and frameworks
+  keep working.</p>
+
+  <h3 id="api-declarative">Declarative init (data-* attributes)</h3>
+  <p>Any element with a <code>data-vsld</code> attribute is initialized
+  automatically on <code>DOMContentLoaded</code> (or immediately if the script
+  loads later), and again by any explicit <code>Slider.autoInit(root?)</code>
+  call — already-initialized elements are skipped.</p>
+  <pre>&lt;div data-vsld data-min="0" data-max="100" data-value="40" data-suffix="%"&gt;&lt;/div&gt;
+&lt;div data-vsld data-value="20,80" data-name="range" data-tooltip="always"&gt;&lt;/div&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Declarative data attributes">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vsld</code></td><td>Marker only (no value) — opts the element into auto-init.</td></tr>
+        <tr><td><code>data-min</code></td><td>Number (empty ignored).</td></tr>
+        <tr><td><code>data-max</code></td><td>Number (empty ignored).</td></tr>
+        <tr><td><code>data-step</code></td><td>Number (empty ignored).</td></tr>
+        <tr><td><code>data-value</code></td><td>Number, or <code>"a,b"</code> for a dual-thumb range.</td></tr>
+        <tr><td><code>data-tooltip</code></td><td><code>drag</code> | <code>always</code>; <code>false</code> or <code>0</code> disables the bubble.</td></tr>
+        <tr><td><code>data-marks</code></td><td>Empty or <code>true</code> = per-step ticks; otherwise a JSON object of <code>{"value": "label"}</code> (invalid JSON falls back to <code>true</code>).</td></tr>
+        <tr><td><code>data-vertical</code></td><td>Boolean — any value except <code>false</code>/<code>0</code> is true.</td></tr>
+        <tr><td><code>data-disabled</code></td><td>Boolean — same rule.</td></tr>
+        <tr><td><code>data-prefix</code></td><td>String (non-empty).</td></tr>
+        <tr><td><code>data-suffix</code></td><td>String (non-empty).</td></tr>
+        <tr><td><code>data-name</code></td><td>String (non-empty) — hidden form input name(s).</td></tr>
+        <tr><td><code>data-theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code> (non-empty).</td></tr>
+        <tr><td><code>data-styles</code></td><td>Boolean — <code>false</code>/<code>0</code> = headless.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><code>format</code>, <code>labels</code>, <code>onInput</code>
+  and <code>onChange</code> have no declarative form — use the constructor, or
+  listen for the <code>slider:*</code> CustomEvents.</p>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>With <code>theme: 'auto'</code> (the default) the theme is resolved as:
+  VC core's shared engine when loaded, otherwise
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> →
+  <code>.dark</code> / <code>.light</code> class on <code>&lt;html&gt;</code> →
+  <code>prefers-color-scheme</code> — re-resolved live via a MutationObserver
+  and a media-query listener. <code>theme: 'light'</code> /
+  <code>'dark'</code> pins an instance. The resolved theme is stamped on the
+  root as <code>data-theme</code>.</p>
+  <p>All colors are CSS custom properties, defined on <code>.vsld</code> and
+  re-defined on <code>.vsld[data-theme=dark]</code>:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vsld-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td>
+          <td>Fill bar, thumb ring, focus ring.</td></tr>
+        <tr><td><code>--vsld-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td>
+          <td>Thumb body, tooltip text.</td></tr>
+        <tr><td><code>--vsld-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td>
+          <td>Component text, tooltip background.</td></tr>
+        <tr><td><code>--vsld-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td>
+          <td>Mark dots and mark labels.</td></tr>
+        <tr><td><code>--vsld-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td>
+          <td>Track rail.</td></tr>
+        <tr><td><code>--vsld-shadow</code></td><td><code>0 1px 4px rgba(24,25,32,.14), 0 1px 2px rgba(24,25,32,.08)</code></td>
+          <td><code>0 1px 4px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35)</code></td>
+          <td>Thumb shadow.</td></tr>
+        <tr><td><code>--vsld-radius</code></td><td><code>8px</code></td><td><code>8px</code></td>
+          <td>Tooltip corner radius.</td></tr>
+        <tr><td><code>--vsld-font</code></td><td>system-ui stack</td><td>system-ui stack</td>
+          <td>Component font family.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>CSS isolation:</strong> roots render as
+  <code>class="vsld vc1"</code> and all structural rules ship salted
+  (<code>.vsld.vc1 .vsld-thumb { … }</code>), so host-page design systems
+  can't override the slider — while <code>.vsld { --vsld-* }</code> variable
+  overrides keep working, because the variable <em>definitions</em> are
+  deliberately unsalted. The injected stylesheet is inserted before the page's
+  own CSS so your overrides win the cascade. Custom token:
+  <code>Slider.salt = 'acme'</code> before the first instance; disable with
+  <code>Slider.salt = false</code>. With the VC core loaded,
+  <code>VC.config({ accent: '#b45309' })</code> themes sliders and every other
+  family component at once.</p>
+  <p><strong>Headless:</strong> <code>Slider.defaults.styles = false</code>
+  (or <code>styles: false</code> per instance) injects no CSS while keeping
+  the full behavior — pointer capture, clamping, keyboard, ARIA, form sync.
+  The stock stylesheet is available as the <code>Slider.css</code> string as
+  a starting point. Markup contract:</p>
+  <pre>.vsld.vsld-vertical.vsld-tip-always.vsld-disabled[data-theme=dark]
+  .vsld-track                &larr; the rail (press/drag surface)
+    .vsld-fill               &larr; range fill bar
+    .vsld-mark               &larr; tick; one per step or per `marks` key
+      .vsld-mark-label       &larr; only for object marks
+    .vsld-thumb              &larr; role=slider; .vsld-active while dragging
+      .vsld-tip              &larr; value bubble (absent when tooltip: false)
+  input[type=hidden]         &larr; only when `name` given</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>Each thumb is a focusable <code>role="slider"</code> element carrying
+  <code>aria-valuemin</code> / <code>aria-valuemax</code> /
+  <code>aria-valuenow</code>, a formatted <code>aria-valuetext</code>, an
+  <code>aria-label</code> from <code>labels</code>, and
+  <code>aria-orientation="vertical"</code> when vertical. Dual thumbs
+  advertise the sibling as their live limit (the low thumb's
+  <code>aria-valuemax</code> is the high thumb's value, and vice versa).
+  Disabled thumbs get <code>aria-disabled="true"</code> and
+  <code>tabindex="-1"</code>; the tooltip bubble is <code>aria-hidden</code>.
+  Transitions are dropped under <code>prefers-reduced-motion: reduce</code>.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard shortcuts">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ArrowLeft</code> / <code>ArrowDown</code></td><td>Decrease by one <code>step</code>.</td></tr>
+        <tr><td><code>ArrowRight</code> / <code>ArrowUp</code></td><td>Increase by one <code>step</code> (<code>ArrowUp</code> increases even when vertical).</td></tr>
+        <tr><td><code>PageUp</code></td><td>Increase by 10 × <code>step</code>.</td></tr>
+        <tr><td><code>PageDown</code></td><td>Decrease by 10 × <code>step</code>.</td></tr>
+        <tr><td><code>Home</code></td><td>Jump to <code>min</code> (a dual slider's high thumb stops at the low thumb).</td></tr>
+        <tr><td><code>End</code></td><td>Jump to <code>max</code> (a dual slider's low thumb stops at the high thumb).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Key presses are ignored while disabled or with
+  <code>Alt</code>/<code>Ctrl</code>/<code>Meta</code> held. Every key press
+  is both a move and a commit — it fires <code>onInput</code> <em>and</em>
+  <code>onChange</code>.</p>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

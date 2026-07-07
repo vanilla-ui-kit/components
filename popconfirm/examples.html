@@ -324,6 +324,357 @@ VC.config({ accent: '#b45309' })</pre>
     }
   });
 </script>
+<style>
+  .api { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api h3 { font-size: 17px; font-weight: 650; margin: 44px 0 10px; }
+  .api p { margin: 0 0 12px; max-width: 76ch; }
+  .api p.api-note { color: var(--muted); font-size: 14px; }
+  .api .api-toc { font-size: 14px; margin: 0 0 6px; }
+  .api .api-toc a { color: var(--accent); text-decoration: none; }
+  .api .api-toc a:hover { text-decoration: underline; }
+  .api .api-toc span { color: var(--faint); margin: 0 6px; }
+  .api pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api .table-scroll { overflow-x: auto; margin: 12px 0; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td {
+    text-align: left; padding: 8px 12px; vertical-align: top;
+    border-bottom: 1px solid var(--faint);
+  }
+  .api th { font-weight: 650; border-bottom: 2px solid var(--faint); }
+  .api td { color: var(--muted); }
+  .api td:first-child { color: var(--text); white-space: nowrap; }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a><span>·</span>
+    <a href="#api-options">Options</a><span>·</span>
+    <a href="#api-methods">Methods</a><span>·</span>
+    <a href="#api-statics">Statics</a><span>·</span>
+    <a href="#api-events">Events</a><span>·</span>
+    <a href="#api-declarative">Declarative</a><span>·</span>
+    <a href="#api-theming">Theming</a><span>·</span>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p><strong>Persistent binding</strong> — <code>new Popconfirm(target, options)</code>
+  binds to an element (or the first match of a selector) and intercepts its
+  clicks until <code>destroy()</code>. Binding an already-bound element
+  destroys the previous instance first. Without a DOM, or when the target
+  can't be resolved, the constructor returns a shared inert instance whose
+  whole API is a harmless no-op. <code>Popconfirm.create(target, options)</code>
+  is the same thing without <code>new</code>.</p>
+  <pre>const pc = new Popconfirm('#delete-btn', {
+  message: 'Delete this file?',
+  danger: true,
+  onConfirm: (el) =&gt; {},   // after OK; the original click also proceeds
+  onCancel: () =&gt; {}
+})
+pc.show(); pc.hide(); pc.destroy()   // destroy() unbinds the interceptor</pre>
+  <p><strong>One-shot promise</strong> — <code>Popconfirm.ask(target, opts)</code>
+  anchors a confirm to any element and returns a
+  <code>Promise&lt;boolean&gt;</code>. <code>opts</code> may be a plain string,
+  used as the message.</p>
+  <pre>const ok = await Popconfirm.ask(el /* or selector */, 'Delete this file?')
+if (ok) remove()</pre>
+  <p><strong>Declarative</strong> — elements with a <code>data-vpc</code>
+  attribute are auto-bound at load; see
+  <a href="#api-declarative">Declarative init</a>.</p>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every option works for the constructor, <code>Popconfirm.ask()</code>,
+  and (where listed <a href="#api-declarative">below</a>) the
+  <code>data-vpc-*</code> attributes. Change a default for every popconfirm
+  via <code>Popconfirm.defaults</code>. Defaults below are quoted from the
+  source's <code>defaults</code> object.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Options table">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>message</code></td><td>string</td><td><code>'Are you sure?'</code></td>
+          <td>The confirmation text. Rendered as plain text unless <code>html: true</code>.</td></tr>
+        <tr><td><code>title</code></td><td>string</td><td><code>''</code></td>
+          <td>Optional bold first line above the message (always plain text). When present, the message is muted below it.</td></tr>
+        <tr><td><code>okLabel</code></td><td>string | null</td><td><code>null</code></td>
+          <td>OK button text. <code>null</code> falls back to <code>labels.ok</code>.</td></tr>
+        <tr><td><code>cancelLabel</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Cancel button text. <code>null</code> falls back to <code>labels.cancel</code>.</td></tr>
+        <tr><td><code>danger</code></td><td>boolean</td><td><code>false</code></td>
+          <td><code>true</code> = red OK button + red icon (adds the <code>vpc-danger</code> class).</td></tr>
+        <tr><td><code>placement</code></td><td>string</td><td><code>'top'</code></td>
+          <td><code>'top'</code> | <code>'bottom'</code> | <code>'left'</code> | <code>'right'</code>. Flips to the opposite side when there is no room, and clamps to the viewport. Unknown values fall back to <code>'top'</code>.</td></tr>
+        <tr><td><code>icon</code></td><td>boolean | string</td><td><code>true</code></td>
+          <td><code>true</code> = default warning triangle; <code>false</code> = no icon; a string is injected as custom <em>trusted</em> markup (e.g. an inline SVG).</td></tr>
+        <tr><td><code>width</code></td><td>number | string | null</td><td><code>null</code></td>
+          <td>Panel width — a px number or any CSS length. Default fits content, capped at <code>min(320px, 100vw − 16px)</code>.</td></tr>
+        <tr><td><code>offset</code></td><td>number</td><td><code>8</code></td>
+          <td>Gap in px between the anchor and the panel.</td></tr>
+        <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td>
+          <td>The message is TEXT by default; <code>true</code> opts in to rendering it as markup.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. <code>'auto'</code> follows the page (see <a href="#api-theming">Theming</a>); a pinned value wins.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is ever injected for this popconfirm.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ ok: 'OK', cancel: 'Cancel' }</code></td>
+          <td>Fallback button labels; merged key-by-key with the defaults, so a partial <code>labels</code> object is fine.</td></tr>
+        <tr><td><code>labels.ok</code></td><td>string</td><td><code>'OK'</code></td>
+          <td>OK label used when <code>okLabel</code> is <code>null</code>. Set <code>Popconfirm.defaults.labels</code> once to relabel every popconfirm (e.g. localization).</td></tr>
+        <tr><td><code>labels.cancel</code></td><td>string</td><td><code>'Cancel'</code></td>
+          <td>Cancel label used when <code>cancelLabel</code> is <code>null</code>.</td></tr>
+        <tr><td><code>onConfirm</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(triggerEl)</code> — called after OK. See <a href="#api-events">Events &amp; callbacks</a>.</td></tr>
+        <tr><td><code>onCancel</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn()</code> — called on any dismissal.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Instance methods</h3>
+  <p>All three return the instance, so they chain. Instances also expose
+  <code>el</code> (the bound trigger element) and <code>opts</code> (the
+  merged options).</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance methods table">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>show()</code></td><td><code>this</code></td>
+          <td>Opens the panel programmatically (the click interceptor calls this too). No-op if this instance is already the open one, or after <code>destroy()</code>. Opening settles any other open popconfirm as a cancel.</td></tr>
+        <tr><td><code>hide()</code></td><td><code>this</code></td>
+          <td>Closes the panel if this instance owns it. A programmatic close counts as a <em>cancel</em>: <code>onCancel</code> fires and the intercepted click does not proceed.</td></tr>
+        <tr><td><code>destroy()</code></td><td><code>this</code></td>
+          <td>Hides (as a cancel), unbinds the click interception, removes the <code>aria-haspopup</code>/<code>aria-expanded</code> attributes, and forgets the element. Safe to call twice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static properties and methods table">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Returns / value</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Popconfirm.ask(target, opts)</code></td><td><code>Promise&lt;boolean&gt;</code></td>
+          <td>One-shot confirm anchored to <code>target</code> (element or selector). <code>opts</code> may be an options object or just the message string. See resolution semantics below.</td></tr>
+        <tr><td><code>Popconfirm.create(target, options)</code></td><td>instance</td>
+          <td>Exactly <code>new Popconfirm(target, options)</code>, for factory-style call sites.</td></tr>
+        <tr><td><code>Popconfirm.get(target)</code></td><td>instance | <code>null</code></td>
+          <td>The instance bound to the element (or selector), or <code>null</code>.</td></tr>
+        <tr><td><code>Popconfirm.autoInit(root?)</code></td><td>array of instances</td>
+          <td>Binds every <code>[data-vpc]</code> element under <code>root</code> (default: <code>document</code>), skipping ones already bound; returns the instances it created. A bad element logs an error and does not abort the rest. Runs automatically at load.</td></tr>
+        <tr><td><code>Popconfirm.defaults</code></td><td>object</td>
+          <td>The live defaults object documented in <a href="#api-options">Options</a> — mutate it to change every future popconfirm.</td></tr>
+        <tr><td><code>Popconfirm.salt</code></td><td><code>'vc1'</code></td>
+          <td>CSS isolation token: set your own string or <code>false</code> <em>before the first popconfirm</em>. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>Popconfirm.css</code></td><td>string (getter)</td>
+          <td>The full embedded stylesheet, rendered with the <em>current</em> salt — a starting point for headless styling or for shipping the CSS yourself.</td></tr>
+        <tr><td><code>Popconfirm.version</code></td><td><code>'1.0.0'</code></td>
+          <td>Library version.</td></tr>
+        <tr><td><code>Popconfirm.displayName</code></td><td><code>'Popconfirm'</code></td>
+          <td>Family convergence metadata (used by the optional VC core).</td></tr>
+        <tr><td><code>Popconfirm.rootClass</code></td><td><code>'vpc'</code></td>
+          <td>Root class of rendered panels (convergence metadata).</td></tr>
+        <tr><td><code>Popconfirm.themeVars</code></td><td>object</td>
+          <td>Maps family tokens to CSS variables: <code>accent → --vpc-accent</code>, <code>radius → --vpc-radius</code>, <code>font → --vpc-font</code> — how <code>VC.config()</code> themes popconfirms.</td></tr>
+        <tr><td><code>Popconfirm.varScopes</code></td><td>array</td>
+          <td><code>['.vpc', '.vpc[data-theme=dark]']</code> — the selectors where theme variables are defined (deliberately unsalted), which VC core writes its overrides to.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong><code>Popconfirm.ask</code> promise semantics.</strong> The
+  promise <em>never rejects</em>. It resolves <code>true</code> only when the
+  OK button is activated. It resolves <code>false</code> for every dismissal:
+  the Cancel button, <kbd>Escape</kbd>, a pointer-down outside the panel, or
+  another popconfirm opening (only one is open at a time — the previous one
+  settles as a cancel). Without a DOM (SSR) or when the target can't be
+  resolved, it resolves <code>false</code> immediately — the safe answer to
+  "are you sure?" — via a thenable fallback even where <code>Promise</code>
+  itself is missing. There is no built-in async/pending state: the panel
+  closes as soon as a button is pressed.</p>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>Popconfirm's eventing is the two callback options; it dispatches
+  <strong>no DOM CustomEvents</strong> of its own. (The only synthetic event
+  it fires is the re-dispatched <code>click</code> on the trigger after a
+  confirmed interception — your existing click/submit handlers receive it
+  exactly once.)</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Callbacks table">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>Arguments</th><th>When it fires</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onConfirm</code></td><td><code>(triggerEl)</code> — the anchor element</td>
+          <td>After OK is pressed, just before the intercepted click is re-dispatched (bound instances) or the <code>ask()</code> promise resolves <code>true</code>. The return value is ignored — returning a Promise or <code>false</code> has no effect on the panel.</td></tr>
+        <tr><td><code>onCancel</code></td><td>(none)</td>
+          <td>On any dismissal: Cancel button, <kbd>Escape</kbd>, outside pointer-down, the trigger toggling its own open panel shut, <code>hide()</code>, or being displaced by another popconfirm opening.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Any element with a <code>data-vpc</code> attribute is bound
+  automatically at load (on <code>DOMContentLoaded</code>, or immediately if
+  the script loads later). For markup added afterwards, call
+  <code>Popconfirm.autoInit(root)</code> — already-bound elements are
+  skipped. Boolean attributes are true for any value except the literal
+  strings <code>"false"</code> and <code>"0"</code>; a bare attribute
+  (e.g. <code>data-vpc-danger</code>) counts as true.</p>
+  <pre>&lt;button data-vpc="Publish now?"
+        data-vpc-title="Publish"
+        data-vpc-ok="Publish" data-vpc-cancel="Not yet"
+        data-vpc-danger="false"
+        data-vpc-placement="bottom"
+        data-vpc-icon="false"&gt;Publish&lt;/button&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Data attributes table">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vpc</code></td><td><code>message</code></td>
+          <td>The confirmation text; this attribute is also the auto-init marker. An empty value falls back to <code>defaults.message</code>.</td></tr>
+        <tr><td><code>data-vpc-title</code></td><td><code>title</code></td>
+          <td>Bold first line above the message.</td></tr>
+        <tr><td><code>data-vpc-ok</code></td><td><code>okLabel</code></td>
+          <td>OK button text.</td></tr>
+        <tr><td><code>data-vpc-cancel</code></td><td><code>cancelLabel</code></td>
+          <td>Cancel button text.</td></tr>
+        <tr><td><code>data-vpc-danger</code></td><td><code>danger</code></td>
+          <td>Boolean. Bare attribute or any value except <code>"false"</code>/<code>"0"</code> = true.</td></tr>
+        <tr><td><code>data-vpc-placement</code></td><td><code>placement</code></td>
+          <td><code>top</code> | <code>bottom</code> | <code>left</code> | <code>right</code>.</td></tr>
+        <tr><td><code>data-vpc-icon</code></td><td><code>icon</code></td>
+          <td>Boolean only — <code>"false"</code>/<code>"0"</code> hides the icon. Custom icon markup is JS-only.</td></tr>
+        <tr><td><code>data-vpc-theme</code></td><td><code>theme</code></td>
+          <td><code>light</code> | <code>dark</code> | <code>auto</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>With <code>theme: 'auto'</code> (the default), the panel follows the
+  page using the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> attribute
+  → a <code>.dark</code> / <code>.light</code> class on <code>&lt;html&gt;</code>
+  → <code>prefers-color-scheme</code> — re-resolved live while a panel is
+  open (attribute changes and OS scheme flips are watched). Pin per call
+  with <code>theme: 'light' | 'dark'</code>. When the VC core is loaded its
+  shared theme engine is used instead, and
+  <code>VC.config({ accent: '#b45309' })</code> themes popconfirms together
+  with every other family component.</p>
+  <p>All colors are CSS custom properties defined on <code>.vpc</code>
+  (light) and <code>.vpc[data-theme=dark]</code> (dark). The injected
+  stylesheet is inserted <em>before</em> your page's own CSS, so a plain
+  <code>.vpc { --vpc-accent: … }</code> rule in your stylesheet wins the
+  cascade.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties table">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vpc-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td>
+          <td>OK button background and focus-visible outline.</td></tr>
+        <tr><td><code>--vpc-danger</code></td><td><code>#e5484d</code></td><td><code>#f2555a</code></td>
+          <td>OK button and icon in <code>danger</code> mode.</td></tr>
+        <tr><td><code>--vpc-warning</code></td><td><code>#b45309</code></td><td><code>#f5a623</code></td>
+          <td>Default (non-danger) icon color.</td></tr>
+        <tr><td><code>--vpc-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td>
+          <td>Panel and arrow background.</td></tr>
+        <tr><td><code>--vpc-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td>
+          <td>Body text and the Cancel button.</td></tr>
+        <tr><td><code>--vpc-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td>
+          <td>Message color when a title is present.</td></tr>
+        <tr><td><code>--vpc-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td>
+          <td>Panel/arrow border, Cancel border and hover fill.</td></tr>
+        <tr><td><code>--vpc-shadow</code></td><td>soft two-layer shadow</td><td>deeper two-layer shadow</td>
+          <td>Panel drop shadow.</td></tr>
+        <tr><td><code>--vpc-radius</code></td><td><code>12px</code></td><td><code>12px</code></td>
+          <td>Panel corner radius.</td></tr>
+        <tr><td><code>--vpc-font</code></td><td>system-ui stack</td><td>system-ui stack</td>
+          <td>Panel font family.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>CSS isolation (salting).</strong> Panels render as
+  <code>class="vpc vc1"</code> and every structural rule ships salted
+  (<code>.vpc.vc1 .vpc-btn { … }</code>), so host-page design systems can't
+  override the layout — while <code>--vpc-*</code> variable definitions stay
+  deliberately unsalted so your overrides keep working. Set a custom token
+  with <code>Popconfirm.salt = 'acme'</code> (sanitized to word characters
+  and dashes), or disable salting with <code>Popconfirm.salt = false</code> —
+  in both cases <em>before the first popconfirm</em>, since the stylesheet is
+  injected once.</p>
+  <p><strong>Headless.</strong> <code>Popconfirm.defaults.styles = false</code>
+  (or per-call <code>styles: false</code>) never injects CSS. You keep the
+  full behavior — interception, focus management, ARIA, positioning — and
+  style the markup contract below from your own CSS.
+  <code>Popconfirm.css</code> (a string, rendered with the current salt) is
+  available as a starting point, as is the <code>dist/popconfirm.css</code>
+  file mentioned in the source.</p>
+  <pre>.vpc.vpc-danger[data-theme="dark"][data-placement="top"].vpc-open
+  .vpc-arrow
+  .vpc-body
+    .vpc-icon                     ← unless icon: false
+    .vpc-content
+      .vpc-title                  ← only when `title` given
+      .vpc-msg
+  .vpc-actions
+    .vpc-btn.vpc-cancel
+    .vpc-btn.vpc-ok</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>The panel is a <code>role="alertdialog"</code> whose accessible name is
+  the message — or the title when one is given, with the message wired up
+  via <code>aria-describedby</code> (<code>aria-labelledby</code> points at
+  the title or message element accordingly). The arrow is
+  <code>aria-hidden</code>. Bound triggers get
+  <code>aria-haspopup="dialog"</code> and a live <code>aria-expanded</code>,
+  plus <code>aria-controls</code> pointing at the panel while it is open.</p>
+  <p>Focus opens on <strong>Cancel</strong> — the safe default, so a
+  reflexive <kbd>Enter</kbd> dismisses instead of confirming. On close,
+  focus returns to the trigger, but only when it was still inside the panel
+  (or lost entirely) — never stolen from something else the user clicked.
+  Reduced motion is respected (<code>prefers-reduced-motion</code> disables
+  the transitions). Inside an open <code>&lt;dialog&gt;</code>, the panel
+  renders into the dialog so it shares the top layer.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard map table">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Escape</kbd></td>
+          <td>Cancels. The key is consumed entirely (propagation and default prevented), so a host <code>&lt;dialog&gt;</code> or page listener doesn't also react.</td></tr>
+        <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td>
+          <td>Cycles focus between the two buttons — focus is trapped in the panel. If focus is elsewhere, Tab pulls it back to Cancel.</td></tr>
+        <tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+          <td>Activates the focused button (native button behavior — not intercepted).</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>
