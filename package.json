@@ -3,96 +3,120 @@
   "version": "1.0.0",
   "description": "Single-file, zero-dependency UI components for vanilla JavaScript \u2014 beautiful by default, headless when you want, usable together or standalone.",
   "main": "dist/vanilla-ui-kit.js",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./dist/esm/vanilla-ui-kit.js",
       "default": "./dist/vanilla-ui-kit.js"
     },
     "./core": {
+      "types": "./types/core.d.ts",
       "import": "./dist/esm/core.js",
       "default": "./core/core.js"
     },
     "./datepicker": {
+      "types": "./types/datepicker.d.ts",
       "import": "./dist/esm/datepicker.js",
       "default": "./datepicker/datepicker.js"
     },
     "./toast": {
+      "types": "./types/toast.d.ts",
       "import": "./dist/esm/toast.js",
       "default": "./toast/toast.js"
     },
     "./tooltip": {
+      "types": "./types/tooltip.d.ts",
       "import": "./dist/esm/tooltip.js",
       "default": "./tooltip/tooltip.js"
     },
     "./menu": {
+      "types": "./types/menu.d.ts",
       "import": "./dist/esm/menu.js",
       "default": "./menu/menu.js"
     },
     "./modal": {
+      "types": "./types/modal.d.ts",
       "import": "./dist/esm/modal.js",
       "default": "./modal/modal.js"
     },
     "./tabs": {
+      "types": "./types/tabs.d.ts",
       "import": "./dist/esm/tabs.js",
       "default": "./tabs/tabs.js"
     },
     "./select": {
+      "types": "./types/select.d.ts",
       "import": "./dist/esm/select.js",
       "default": "./select/select.js"
     },
     "./command": {
+      "types": "./types/command.d.ts",
       "import": "./dist/esm/command.js",
       "default": "./command/command.js"
     },
     "./form": {
+      "types": "./types/form.d.ts",
       "import": "./dist/esm/form.js",
       "default": "./form/form.js"
     },
     "./phone": {
+      "types": "./types/phone.d.ts",
       "import": "./dist/esm/phone.js",
       "default": "./phone/phone.js"
     },
     "./drawer": {
+      "types": "./types/drawer.d.ts",
       "import": "./dist/esm/drawer.js",
       "default": "./drawer/drawer.js"
     },
     "./segmented": {
+      "types": "./types/segmented.d.ts",
       "import": "./dist/esm/segmented.js",
       "default": "./segmented/segmented.js"
     },
     "./progress": {
+      "types": "./types/progress.d.ts",
       "import": "./dist/esm/progress.js",
       "default": "./progress/progress.js"
     },
     "./popconfirm": {
+      "types": "./types/popconfirm.d.ts",
       "import": "./dist/esm/popconfirm.js",
       "default": "./popconfirm/popconfirm.js"
     },
     "./rating": {
+      "types": "./types/rating.d.ts",
       "import": "./dist/esm/rating.js",
       "default": "./rating/rating.js"
     },
     "./autocomplete": {
+      "types": "./types/autocomplete.d.ts",
       "import": "./dist/esm/autocomplete.js",
       "default": "./autocomplete/autocomplete.js"
     },
     "./upload": {
+      "types": "./types/upload.d.ts",
       "import": "./dist/esm/upload.js",
       "default": "./upload/upload.js"
     },
     "./slider": {
+      "types": "./types/slider.d.ts",
       "import": "./dist/esm/slider.js",
       "default": "./slider/slider.js"
     },
     "./number": {
+      "types": "./types/number.d.ts",
       "import": "./dist/esm/number.js",
       "default": "./number/number.js"
     },
     "./pagination": {
+      "types": "./types/pagination.d.ts",
       "import": "./dist/esm/pagination.js",
       "default": "./pagination/pagination.js"
     },
     "./empty": {
+      "types": "./types/empty.d.ts",
       "import": "./dist/esm/empty.js",
       "default": "./empty/empty.js"
     },
@@ -121,6 +145,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "types",
     "core",
     "datepicker",
     "toast",
@@ -149,7 +174,7 @@
     "build": "node tools/build.js",
     "build:min": "node tools/minify.js",
     "size": "node tools/size-check.js",
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
     "test:browser": "node tools/browser-test.js"
   },
   "sideEffects": true,
