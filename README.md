@@ -24,9 +24,10 @@ you bring your own design.
 | Modals / dialogs (alert, confirm, prompt) | `Modal` | [`modal/modal.js`](./modal/modal.js) | [README](./modal/README.md) |
 | Tabs | `Tabs` | [`tabs/tabs.js`](./tabs/tabs.js) | [README](./tabs/README.md) |
 | Select / combobox (search, multiple, groups) | `Select` | [`select/select.js`](./select/select.js) | [README](./select/README.md) |
+| Command palette (Ctrl/⌘+K) | `CommandPalette` | [`command/command.js`](./command/command.js) | [README](./command/README.md) |
 | Convergence core (optional) | `VanillaUI` (alias `VC`) | [`core/core.js`](./core/core.js) | below |
 
-Roadmap: command palette, phone input — same contract, same DNA.
+Roadmap: phone input — same contract, same DNA.
 
 ## Get it any way you like
 

@@ -30,6 +30,7 @@ const FAMILY = [
   ['Modal', 'modal/modal.js', 'vmd', ['open', 'alert', 'confirm', 'prompt', 'get', 'autoInit']],
   ['Tabs', 'tabs/tabs.js', 'vtb', ['create', 'get', 'autoInit']],
   ['Select', 'select/select.js', 'vsel', ['create', 'get', 'autoInit']],
+  ['CommandPalette', 'command/command.js', 'vcmd', ['register', 'unregister', 'open', 'close', 'toggle', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -149,6 +150,15 @@ test('Select specifics: SSR no-op instance', () => {
   }
   assert.doesNotThrow(() => s.setValue('a'));
   assert.doesNotThrow(() => s.getValue());
+});
+
+test('CommandPalette specifics: SSR static registry no-ops', () => {
+  const CommandPalette = components[7].mod;
+  assert.doesNotThrow(() => CommandPalette.register({ id: 'test', label: 'Test' }));
+  assert.doesNotThrow(() => CommandPalette.open());
+  assert.doesNotThrow(() => CommandPalette.toggle());
+  assert.doesNotThrow(() => CommandPalette.close());
+  assert.doesNotThrow(() => CommandPalette.unregister('test'));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {
