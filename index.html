@@ -154,6 +154,13 @@
       <div class="try"><button class="btn" data-demo="palette">Open palette</button></div>
     </div>
     <div class="card">
+      <span class="pill">Form</span>
+      <h3>Forms</h3>
+      <p>Reactive values and errors, async validation, fetch submission with server error mapping, and a silent honeypot built in.</p>
+      <div class="links"><a href="./form/examples.html">Live demo</a><a href="https://github.com/vanilla-ui-kit/components/tree/main/form">Docs</a></div>
+      <div class="try" id="tryForm"></div>
+    </div>
+    <div class="card">
       <span class="pill">PhoneInput</span>
       <h3>Phone input</h3>
       <p>International phone field: SVG flags, searchable country dropdown, as-you-type formatting, validation, E.164 output.</p>
@@ -224,6 +231,13 @@ VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
     new PhoneInput('#tryPhone');
   }
   new Select('#trySelect', { searchable: true });
+  if (window.Form && document.getElementById('tryForm')) {
+    new Form('#tryForm', {
+      fields: [{ name: 'email', type: 'email', placeholder: 'you@example.com', required: true }],
+      labels: { submit: 'Subscribe' },
+      onSubmit: function () { Toast.success('Subscribed (not really).'); }
+    });
+  }
   new Tooltip('#tryTooltip', { content: 'Exactly what it says on the tin.', placement: 'top' });
   new Menu('#tryMenu', { items: [
     { label: 'Duplicate', hint: '⌘D', onSelect: function () { Toast.info('Duplicated'); } },

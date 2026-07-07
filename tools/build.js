@@ -29,7 +29,8 @@ var COMPONENTS = [
   ['modal/modal.js', 'Modal', 'modal.css', 'vanilla-modal'],
   ['tabs/tabs.js', 'Tabs', 'tabs.css', 'vanilla-tabs'],
   ['select/select.js', 'Select', 'select.css', 'vanilla-select'],
-  ['command/command.js', 'CommandPalette', 'command.css', 'vanilla-command']
+  ['command/command.js', 'CommandPalette', 'command.css', 'vanilla-command'],
+  ['form/form.js', 'Form', 'form.css', 'vanilla-form']
 ];
 
 var FILES = ['core/core.js'].concat(COMPONENTS.map(function (c) { return c[0]; }));

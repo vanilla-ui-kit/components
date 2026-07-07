@@ -31,6 +31,7 @@ const FAMILY = [
   ['Tabs', 'tabs/tabs.js', 'vtb', ['create', 'get', 'autoInit']],
   ['Select', 'select/select.js', 'vsel', ['create', 'get', 'autoInit']],
   ['CommandPalette', 'command/command.js', 'vcmd', ['register', 'unregister', 'open', 'close', 'toggle', 'autoInit']],
+  ['Form', 'form/form.js', 'vfm', ['create', 'get', 'autoInit']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -159,6 +160,23 @@ test('CommandPalette specifics: SSR static registry no-ops', () => {
   assert.doesNotThrow(() => CommandPalette.toggle());
   assert.doesNotThrow(() => CommandPalette.close());
   assert.doesNotThrow(() => CommandPalette.unregister('test'));
+});
+
+test('Form specifics: pure validators and SSR handle', async () => {
+  const Form = components[8].mod;
+  assert.equal(Form.validators.email('a@b.co'), null);
+  assert.equal(typeof Form.validators.email('not-an-email'), 'string');
+  assert.equal(Form.validators.required('x'), null);
+  assert.equal(typeof Form.validators.required(''), 'string');
+
+  const f = Form.create(null, { fields: [{ name: 'x' }] });
+  for (const fn of ['reset', 'destroy', 'clearErrors', 'enable', 'disable']) {
+    assert.doesNotThrow(() => f[fn](), `form.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => f.setValue('x', 1));
+  assert.doesNotThrow(() => f.getValue('x'));
+  assert.doesNotThrow(() => f.watch('x', () => {}));
+  await f.submit();
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

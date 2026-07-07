@@ -14,6 +14,7 @@
     "./tabs": "./tabs/tabs.js",
     "./select": "./select/select.js",
     "./command": "./command/command.js",
+    "./form": "./form/form.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -22,6 +23,7 @@
     "./tabs.css": "./dist/tabs.css",
     "./select.css": "./dist/select.css",
     "./command.css": "./dist/command.css",
+    "./form.css": "./dist/form.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -35,6 +37,7 @@
     "tabs",
     "select",
     "command",
+    "form",
     "dist"
   ],
   "scripts": {
