@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var __t=localStorage.getItem('vuk-theme');if(__t==='dark'||__t==='light')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<title>Install Vanilla UI Kit — CDN, npm via GitHub, ES modules</title>
+<link rel="canonical" href="https://vanilla-ui-kit.github.io/install.html">
+<meta name="description" content="Every way to install Vanilla UI Kit: one CDN script tag (no build step, no npm, no framework), per-component files, minified builds with SRI hashes, browser ES modules, npm via GitHub, plain file download, and TypeScript definitions.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Vanilla UI Kit">
+<meta property="og:title" content="Install Vanilla UI Kit — CDN, npm via GitHub, ES modules">
+<meta property="og:description" content="Every way to install Vanilla UI Kit: one CDN script tag (no build step, no npm, no framework), per-component files, minified builds with SRI hashes, browser ES modules, npm via GitHub, plain file download, and TypeScript definitions.">
+<meta property="og:url" content="https://vanilla-ui-kit.github.io/install.html">
+<meta property="og:image" content="https://vanilla-ui-kit.github.io/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235b5bd6'/%3E%3Cpath d='M8 9l8 15 8-15h-5l-3 6.5L13 9z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --accent:#5b5bd6; --bg:#fbfbfd; --surface:#ffffff; --text:#1c1d21;
+    --muted:#72747e; --faint:#e7e7ec; --code:#f4f4f8;
+    --shadow:0 10px 28px rgba(24,25,32,.10),0 2px 8px rgba(24,25,32,.06);
+  }
+  [data-theme=dark]{
+    --accent:#7b7bea; --bg:#131419; --surface:#1b1d24; --text:#e9eaf0;
+    --muted:#989aa6; --faint:#31343f; --code:#22242d;
+    --shadow:0 10px 28px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    transition:background .2s ease,color .2s ease;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:0 24px}
+  header{padding:56px 0 12px}
+  .back{display:inline-block;margin-bottom:18px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14.5px}
+  .back:hover{text-decoration:underline}
+  h1{font-size:38px;line-height:1.15;margin:0 0 12px;letter-spacing:-.02em}
+  h1 .accent{color:var(--accent)}
+  .lede{max-width:640px;color:var(--muted);font-size:18px;margin:0}
+  section{padding:26px 0}
+  h2{font-size:24px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:15px}
+  .sub a,p a{color:var(--accent);text-decoration:none;font-weight:600}
+  .sub a:hover,p a:hover{text-decoration:underline}
+  .card{
+    background:var(--surface);border:1px solid var(--faint);border-radius:14px;
+    padding:22px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);
+  }
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+  .card p b{color:var(--text)}
+  pre{
+    background:var(--code);border:1px solid var(--faint);border-radius:12px;
+    padding:16px 18px;overflow-x:auto;font-size:13.5px;line-height:1.55;margin:0;
+  }
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .codewrap{position:relative}
+  .copy{
+    position:absolute;top:8px;right:8px;padding:4px 12px;border-radius:8px;
+    border:1px solid var(--faint);background:var(--surface);color:var(--muted);
+    font:600 12.5px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    cursor:pointer;transition:border-color .15s ease,color .15s ease;
+  }
+  .copy:hover{border-color:var(--accent);color:var(--accent)}
+  .copy:active{transform:translateY(1px)}
+  .btn{
+    display:inline-block;padding:10px 20px;border-radius:10px;border:1px solid var(--faint);
+    background:var(--surface);color:var(--text);text-decoration:none;font-weight:600;
+    cursor:pointer;font-size:15px;transition:border-color .15s ease,transform .1s ease;
+    font-family:inherit;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn:active{transform:translateY(1px)}
+  .theme-toggle{position:fixed;top:18px;right:18px;z-index:10}
+  .pill{
+    display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;color:var(--accent);background:transparent;
+    border:1px solid var(--accent);border-radius:99px;padding:1px 9px;align-self:flex-start;
+  }
+  footer{padding:48px 0 64px;color:var(--muted);font-size:14.5px;text-align:center;border-top:1px solid var(--faint);margin-top:32px}
+  footer a{color:var(--accent);text-decoration:none}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<button class="btn theme-toggle" id="themeToggle" aria-label="Toggle color theme">🌗 Theme</button>
+
+<header class="wrap">
+  <a class="back" href="./index.html">← Vanilla UI Kit</a>
+  <h1>Install <span class="accent">Vanilla UI Kit</span></h1>
+  <p class="lede">One script tag, one component, minified with integrity, ES modules,
+  npm via GitHub, or plain copy-paste — every path is first-class. Pick yours.</p>
+</header>
+
+<section class="wrap">
+  <div class="card">
+    <span class="pill">Quick start</span>
+    <h2>CDN — the 30-second path</h2>
+    <p>One script tag from jsDelivr loads the whole family. <b>No build step, no npm,
+    no framework</b> — the globals are just there.</p>
+    <div class="codewrap">
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/vanilla-ui-kit.js"&gt;&lt;/script&gt;</code></pre>
+    </div>
+    <p>Then use any component directly:</p>
+    <div class="codewrap">
+<pre><code>&lt;script&gt;
+  new DatePicker('#date')
+  Toast.success('Saved')
+&lt;/script&gt;</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>One component only</h2>
+  <p class="sub">Every component is self-contained — one file, zero dependencies —
+  so you can load exactly the one you need and nothing else.</p>
+  <div class="codewrap">
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/toast/toast.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+  <p class="sub" style="margin:14px 0 10px">A few more examples — the pattern is always
+  <code>&lt;dir&gt;/&lt;name&gt;.js</code>:</p>
+  <div class="codewrap">
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/datepicker/datepicker.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/modal/modal.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/select/select.js"&gt;&lt;/script&gt;</code></pre>
+  </div>
+  <p class="sub" style="margin-top:14px">All 21 components work standalone this way —
+  see the <a href="./index.html">full list</a>.</p>
+</section>
+
+<section class="wrap">
+  <h2>Production — minified, with SRI</h2>
+  <p class="sub"><code>.min</code> flavors ship in <code>dist/</code>. Pin the major
+  version with <code>@1</code> and add an <code>integrity</code> hash so the browser
+  verifies the exact bytes:</p>
+  <div class="codewrap">
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components@1/dist/vanilla-ui-kit.min.js"
+        integrity="sha384-…see dist/sri.json…" crossorigin="anonymous"&gt;&lt;/script&gt;</code></pre>
+  </div>
+  <p class="sub" style="margin-top:14px"><a href="https://github.com/vanilla-ui-kit/components/blob/main/dist/sri.json">dist/sri.json</a>
+  in the repo carries the sha384 hash for every file in <code>dist/</code> — bundles,
+  minified builds, per-component ESM files, and the extracted CSS — so you can paste the
+  right value for whichever file you load.</p>
+</section>
+
+<section class="wrap">
+  <h2>ES modules</h2>
+  <p class="sub">The same code with real <code>import</code> ergonomics, from
+  <code>dist/esm/</code>. Straight in the browser, no bundler needed:</p>
+  <div class="codewrap">
+<pre><code>&lt;script type="module"&gt;
+  import { Toast, DatePicker, VC } from 'https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/esm/vanilla-ui-kit.js'
+  import Toast from 'https://cdn.jsdelivr.net/gh/vanilla-ui-kit/components/dist/esm/toast.js'  // one component
+&lt;/script&gt;</code></pre>
+  </div>
+  <p class="sub" style="margin:14px 0 10px">With a bundler (Vite, esbuild, webpack, …)
+  and the package installed (see below), the package exports resolve to the ESM builds
+  automatically:</p>
+  <div class="codewrap">
+<pre><code>import { Toast, DatePicker, VC } from 'vanilla-ui-kit'
+import Toast from 'vanilla-ui-kit/toast'</code></pre>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="card">
+    <span class="pill">npm</span>
+    <h2>npm — via GitHub</h2>
+    <p>The package is <b>not published to the npm registry</b>. The supported install is
+    straight from GitHub — npm treats the repo as the package:</p>
+    <div class="codewrap">
+<pre><code>npm i github:vanilla-ui-kit/components</code></pre>
+    </div>
+    <p>Optionally pin a tag:</p>
+    <div class="codewrap">
+<pre><code>npm i github:vanilla-ui-kit/components#v1.0.0</code></pre>
+    </div>
+    <p>Either way it installs as <code>vanilla-ui-kit</code>, and all the usual specifiers work:</p>
+    <div class="codewrap">
+<pre><code>const { DatePicker, Toast, VC } = require('vanilla-ui-kit')  // bundle (CJS)
+import { DatePicker, Toast, VC } from 'vanilla-ui-kit'       // bundle (ESM)
+import Toast from 'vanilla-ui-kit/toast'                     // one component</code></pre>
+    </div>
+    <p>The extracted stylesheets are exported too, for headless setups or build pipelines:</p>
+    <div class="codewrap">
+<pre><code>import 'vanilla-ui-kit/toast.css'
+import 'vanilla-ui-kit/vanilla-ui-kit.css'  // everything</code></pre>
+    </div>
+    <p>If the package ever ships to the npm registry later, the same specifiers keep
+    working — nothing in your code changes.</p>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Download</h2>
+  <p class="sub">Copying the file into your repo is a fully supported path, not a hack —
+  each component is one dependency-free file, and vendoring it means no CDN, no lockfile,
+  no supply chain. Grab any file from the
+  <a href="https://github.com/vanilla-ui-kit/components/tree/main">GitHub tree</a>:</p>
+  <div class="codewrap">
+<pre><code>&lt;script src="/vendor/toast.js"&gt;&lt;/script&gt;  &lt;!-- your local copy of toast/toast.js --&gt;</code></pre>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>TypeScript</h2>
+  <p class="sub">Definitions for every component ship in
+  <a href="https://github.com/vanilla-ui-kit/components/tree/main/types">types/</a>.
+  Bundler users don't need to do anything — <code>package.json</code> exports point each
+  specifier at its <code>.d.ts</code>, so types resolve automatically. Script-tag users
+  get the globals typed with one reference line:</p>
+  <div class="codewrap">
+<pre><code>/// &lt;reference types="vanilla-ui-kit/types/globals" /&gt;</code></pre>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Theming in one line</h2>
+  <p class="sub">With the bundle (or the optional core) loaded, one call themes the
+  whole family:</p>
+  <div class="codewrap">
+<pre><code>VC.config({
+  theme: 'dark', accent: '#b45309', radius: '10px'
+})</code></pre>
+  </div>
+  <p class="sub" style="margin-top:14px">Prefer to see it? The
+  <a href="./theme.html">theme builder</a> previews every component live and exports
+  this exact snippet.</p>
+</section>
+
+<footer>
+  <div class="wrap">
+    MIT licensed · <a href="https://github.com/vanilla-ui-kit/components">github.com/vanilla-ui-kit/components</a>
+    · <a href="https://www.jsdelivr.com/package/gh/vanilla-ui-kit/components">jsDelivr</a>
+  </div>
+</footer>
+
+<script src="./dist/vanilla-ui-kit.js"></script>
+<script>
+(function () {
+  'use strict';
+  // Theme toggle — VC.theme.set stamps <html data-theme>; every component follows.
+  var toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('click', function () {
+    var next = VC.theme.resolve() === 'dark' ? 'light' : 'dark';
+    VC.theme.set(next);
+    try { localStorage.setItem('vuk-theme', next); } catch (e) {}
+  });
+  // Guard: the watcher observes <html data-theme>, so writing it
+  // unconditionally would re-trigger the observer forever.
+  function applyTheme() {
+    var t = VC.theme.resolve();
+    if (document.documentElement.getAttribute('data-theme') !== t) {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  }
+  VC.theme.watch(applyTheme);
+  applyTheme();
+
+  // Copy buttons on every code block.
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copied() { Toast.success('Copied to clipboard'); }
+  function failed() { Toast.error('Copy failed — select the text manually'); }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.codewrap'), function (wrap) {
+    var code = wrap.querySelector('pre code');
+    if (!code) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', function () {
+      var text = code.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(copied, function () {
+          if (fallbackCopy(text)) copied(); else failed();
+        });
+      } else if (fallbackCopy(text)) {
+        copied();
+      } else {
+        failed();
+      }
+    });
+    wrap.appendChild(btn);
+  });
+})();
+</script>
+</body>
+</html>
