@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Star Rating — zero-dependency, one file · Vanilla UI Kit</title>
@@ -239,6 +240,400 @@ new Rating('#score')   // submits score=3.5</pre>
       }
     });
   }
+</script>
+<style>
+  /* ---- API reference ---- */
+  .api-sec { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api-sec h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-sec h3 { font-size: 18px; font-weight: 650; margin: 44px 0 8px; }
+  .api-sec h4 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  .api-sec p { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; }
+  .api-sec ul { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api-sec code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api-sec pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-sec pre code { background: none; border: 0; padding: 0; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .api-toc a {
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-table-wrap {
+    overflow-x: auto; margin: 12px 0; border: 1px solid var(--faint);
+    border-radius: 10px; background: var(--surface);
+  }
+  .api-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table.api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.api-table th {
+    text-align: left; font-weight: 600; padding: 8px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--faint); background: var(--surface-2);
+  }
+  table.api-table td {
+    padding: 8px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  table.api-table tr:last-child td { border-bottom: 0; }
+  table.api-table td:first-child { white-space: nowrap; }
+</style>
+<div class="wrap api-sec">
+  <h2 id="api">API reference</h2>
+  <p>The complete <code>Rating</code> API — constructor modes, every option,
+  instance methods, statics, events, declarative attributes, theming and
+  accessibility.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Constructor &amp; usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics &amp; helpers</a>
+    <a href="#api-events">Events &amp; callbacks</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <pre><code>new Rating(target, options?)     // → instance
+Rating.create(target, options?)  // same as new</code></pre>
+  <p><code>target</code> is a selector string or an element, in one of two modes:</p>
+  <ul>
+    <li><strong>Container mode</strong> — any element: the widget is built inside
+    it. Give <code>name</code> to get a hidden input for form submission, and an
+    <code>aria-label</code> on the container to name the slider.</li>
+    <li><strong>Input mode</strong> — an existing <code>&lt;input&gt;</code>: it
+    is hidden and kept in sync (so the form still submits it and native
+    <code>change</code> events still fire), and fully restored on
+    <code>destroy()</code>. Its current value seeds the rating (unless
+    <code>value</code> is passed explicitly), its <code>disabled</code> state is
+    inherited, and a <code>&lt;label for&gt;</code> pointing at it becomes the
+    widget's accessible name.</li>
+  </ul>
+  <p>The submitted value is the number as text (<code>"3.5"</code>), or the empty
+  string when the rating is 0/cleared. Constructing on an element that already
+  holds an instance destroys the old one first; a missing target throws; without
+  a DOM (SSR) the constructor returns an inert no-op instance.</p>
+  <pre><code>new Rating('#stars', { onChange: (v) =&gt; console.log(v) })
+
+&lt;input id="score" name="score" value="3"&gt;
+new Rating('#score')   // submits score=3.5</code></pre>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every key of <code>Rating.defaults</code>, with its default value.</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Rating options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>max</code></td><td>number</td><td><code>5</code></td>
+          <td>Number of stars (minimum 1, floored to an integer).</td></tr>
+        <tr><td><code>value</code></td><td>number</td><td><code>0</code></td>
+          <td>Initial value, clamped to <code>[0, max]</code>. In input mode the input's own value wins unless <code>value</code> is passed explicitly.</td></tr>
+        <tr><td><code>half</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Half-star steps on hover (left half of a star = .5), click and keyboard (step 0.5 instead of 1).</td></tr>
+        <tr><td><code>icon</code></td><td>string | object</td><td><code>'star'</code></td>
+          <td><code>'star'</code> | <code>'heart'</code>, or an <code>{ empty, full }</code> pair of TRUSTED SVG strings (injected verbatim — never user input). Unknown names fall back to <code>'star'</code>.</td></tr>
+        <tr><td><code>size</code></td><td>number</td><td><code>22</code></td>
+          <td>Icon size in px (minimum 8).</td></tr>
+        <tr><td><code>readOnly</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Display mode: no interaction, no focus stop — the group renders <code>role="img"</code> with the <code>labels</code> text.</td></tr>
+        <tr><td><code>clearable</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Clicking the value that is already committed clears back to 0.</td></tr>
+        <tr><td><code>name</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Adds a hidden input for form submission (container mode).</td></tr>
+        <tr><td><code>showValue</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Live value text (<code>'3.5'</code>) after the stars.</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Start disabled (input mode inherits the input's own <code>disabled</code> unless set explicitly).</td></tr>
+        <tr><td><code>labels</code></td><td>function</td><td><code>(v, max) =&gt; `${v} of ${max}`</code></td>
+          <td>Builds the <code>aria-valuetext</code> (interactive) or <code>aria-label</code> (read-only) — e.g. <code>"3.5 of 5"</code>. Customize for i18n.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto re-resolves live against the page theme.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is injected — style the <code>.vrt-*</code> markup yourself.</td></tr>
+        <tr><td><code>onChange</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value)</code> — fired when a value is committed (click, keyboard, non-silent <code>setValue</code>).</td></tr>
+        <tr><td><code>onHover</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value)</code> while previewing on hover, <code>fn(null)</code> on mouse-leave.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Methods</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Rating instance methods">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getValue()</code></td><td>number</td>
+          <td>The committed value (0 when cleared).</td></tr>
+        <tr><td><code>setValue(v, {silent}?)</code></td><td>instance</td>
+          <td>Any number 0..<code>max</code> — fractions are fine and render exactly via the clipped overlay (<code>setValue(4.3)</code> shows a 30% fifth star). Clamped; fires <code>onChange</code> and <code>rating:change</code> only when the value actually changed and not with <code>{silent: true}</code>.</td></tr>
+        <tr><td><code>enable()</code> / <code>disable()</code></td><td>instance</td>
+          <td>Toggle interactivity. <code>disable()</code> takes the slider out of the tab order (<code>tabindex="-1"</code>, <code>aria-disabled</code>) and, in input mode, mirrors <code>disabled</code> onto the native input so a disabled control never submits.</td></tr>
+        <tr><td><code>destroy()</code></td><td>instance</td>
+          <td>Remove everything the widget built and restore the target completely — an enhanced input reappears un-hidden, keeping its synced value.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Rating static members">
+    <table class="api-table">
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Rating.create(target, opts)</code></td>
+          <td>Same as <code>new Rating(target, opts)</code>.</td></tr>
+        <tr><td><code>Rating.get(target)</code></td>
+          <td>The instance previously bound to an element (or <code>null</code>).</td></tr>
+        <tr><td><code>Rating.autoInit(root?)</code></td>
+          <td>Initialize every <code>[data-vrt]</code> under <code>root</code> (default: <code>document</code>); returns the created instances. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>Rating.defaults</code></td>
+          <td>The live defaults object — mutate before constructing (e.g. <code>Rating.defaults.styles = false</code>).</td></tr>
+        <tr><td><code>Rating.css</code></td>
+          <td>The full stylesheet as a string (rendered with the current salt) — a starting point for headless styling.</td></tr>
+        <tr><td><code>Rating.salt</code></td>
+          <td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first instance.</td></tr>
+        <tr><td><code>Rating.version</code></td>
+          <td>Version string, <code>'1.0.0'</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <ul>
+    <li><code>onChange(value)</code> — the committed value, after click,
+    keyboard, or a non-silent <code>setValue()</code> that changed the value.</li>
+    <li><code>onHover(value | null)</code> — the preview value while hovering,
+    <code>null</code> on leave (the committed value is repainted).</li>
+    <li><code>rating:change</code> — a bubbling <code>CustomEvent</code>
+    dispatched from the widget root on every committed change, with
+    <code>detail: { value, rating }</code>.</li>
+    <li>In input mode, every commit also fires a bubbling native-style
+    <code>change</code> event on the enhanced input, like a user edit would.</li>
+  </ul>
+  <pre><code>document.getElementById('stars').addEventListener('rating:change', (e) =&gt; {
+  console.log(e.detail.value)   // the new value
+  console.log(e.detail.rating)  // the instance
+})</code></pre>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Add <code>data-vrt</code> to a container or input — instances are built on
+  <code>DOMContentLoaded</code> (or call <code>Rating.autoInit(root)</code>
+  after inserting markup).</p>
+  <pre><code>&lt;div data-vrt data-value="3.5" data-name="score"&gt;&lt;/div&gt;</code></pre>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Rating data attributes">
+    <table class="api-table">
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vrt</code></td><td>—</td><td>Marks the element.</td></tr>
+        <tr><td><code>data-max</code> / <code>data-value</code> / <code>data-size</code></td><td><code>max</code>/<code>value</code>/<code>size</code></td><td>Numbers (<code>data-value</code> accepts fractions).</td></tr>
+        <tr><td><code>data-half</code> / <code>data-clearable</code> / <code>data-show-value</code> / <code>data-disabled</code> / <code>data-styles</code></td><td><code>half</code>/<code>clearable</code>/<code>showValue</code>/<code>disabled</code>/<code>styles</code></td><td>Booleans; <code>"false"</code> and <code>"0"</code> are false.</td></tr>
+        <tr><td><code>data-read-only</code> (or <code>data-readonly</code>)</td><td><code>readOnly</code></td><td>Boolean; both spellings accepted.</td></tr>
+        <tr><td><code>data-icon</code></td><td><code>icon</code></td><td><code>star</code> | <code>heart</code>.</td></tr>
+        <tr><td><code>data-name</code></td><td><code>name</code></td><td>Hidden form input name.</td></tr>
+        <tr><td><code>data-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+  <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live.
+  Pin per instance with <code>theme: 'dark'</code>. All colors are CSS custom
+  properties; Rating is the one family component with a non-accent fill color —
+  a warm star gold — themeable separately:</p>
+  <pre><code>.vrt {
+  --vrt-fill: #f5a623;    /* the star fill (gold; dark theme: #f7b84d) */
+  --vrt-accent: #5b5bd6;  /* focus ring */
+  --vrt-text: …; --vrt-muted: …; --vrt-faint: …;
+  --vrt-radius: 8px; --vrt-font: …;
+}</code></pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  the focus ring and every other family component in one call (the gold fill
+  stays put unless you override <code>--vrt-fill</code>). Widgets render as
+  <code>class="vrt vc1"</code>; structural rules ship salted so host design
+  systems can't override them, while the unsalted <code>--vrt-*</code> variable
+  definitions keep page overrides working. Change the token with
+  <code>Rating.salt = 'acme'</code> (or <code>false</code>) before the first
+  instance.</p>
+  <p><strong>Headless:</strong> <code>Rating.defaults.styles = false</code> (or
+  per instance) injects no CSS — you keep the full behavior (hover preview,
+  keyboard, ARIA, form sync) and style this markup contract yourself
+  (<code>Rating.css</code> is the reference stylesheet as a string):</p>
+  <pre><code>.vrt[data-theme=dark].vrt-readonly.vrt-disabled
+  .vrt-stars[role=slider|img]      ← .vrt-static when non-interactive
+    .vrt-star                      ← × max, sized inline
+      .vrt-star-empty              ← outline SVG
+      .vrt-star-fill               ← overlay clipped to N% width
+        .vrt-star-full             ← filled SVG, fixed width
+  .vrt-value                       ← only when showValue
+  input[type=hidden]               ← only when name given (container mode)</code></pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>The whole group is a single tab stop with <code>role="slider"</code>,
+  <code>aria-orientation="horizontal"</code>, <code>aria-valuemin/max/now</code>
+  and an <code>aria-valuetext</code> built by <code>labels</code>
+  (e.g. <code>"3.5 of 5"</code>).</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Rating keyboard map">
+    <table class="api-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowRight</kbd> / <kbd>ArrowUp</kbd></td><td>+ step (step = <code>half</code> ? 0.5 : 1); lands on the nearest grid mark upward — a programmatic 4.3 becomes 4.5</td></tr>
+        <tr><td><kbd>ArrowLeft</kbd> / <kbd>ArrowDown</kbd></td><td>− step; nearest grid mark downward — 4.3 becomes 4</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>0 (clear)</td></tr>
+        <tr><td><kbd>End</kbd></td><td><code>max</code></td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>Jump straight to that value (capped at <code>max</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <ul>
+    <li><code>readOnly</code> renders <code>role="img"</code> with the
+    <code>labels</code> text and takes no focus stop.</li>
+    <li><code>disable()</code> keeps the slider out of the tab order
+    (<code>tabindex="-1"</code>, <code>aria-disabled="true"</code>).</li>
+    <li>In input mode a <code>&lt;label for&gt;</code> pointing at the original
+    input is adopted as the slider's accessible name; in container mode put an
+    <code>aria-label</code> on the container.</li>
+    <li>Any fraction renders exactly — the fill is a clipped overlay whose width
+    is a percentage — while interaction still snaps to steps. Reduced motion is
+    respected (the hover scale transition is disabled).</li>
+  </ul>
+</div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Rating injects no CSS at all — the full
+  behavior (hover preview, keyboard, form sync), the <code>role="slider"</code>
+  ARIA contract and the stable <code>.vrt-*</code> class hooks all remain; you
+  bring the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>Zero injected CSS — no colors, no sizes, no transitions. The frame adds
+      only the five structural lines below (the overlay-clip geometry every
+      design needs), and hover, click, keyboard and half-stars all work.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Rating with styles: false — unstyled interactive stars" height="110"></iframe>
+      <pre>new Rating('#stars', {
+  value: 3.5,
+  styles: false,   // ← zero CSS injected
+  onChange: function (v) { /* … */ }
+})
+
+/* the component injected nothing — this structural minimum
+   is the page's own (no colors, no sizes anywhere): */
+.vrt-star { display: inline-block; position: relative; }
+.vrt-star svg { display: block; width: 100%; height: 100%; }
+.vrt-star-empty, .vrt-star-fill { position: absolute; inset: 0; }
+.vrt-star-fill { overflow: hidden; }
+.vrt-star-full { display: block; height: 100%; }</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — hearts instead of stars, a rose palette, a scale-up
+      hover. Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Rating styled with Tailwind" height="140" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vrt        { @apply inline-flex items-center gap-3; }
+  .vrt-stars  { @apply inline-flex gap-1 rounded-xl bg-white/70 p-2
+                shadow ring-1 ring-rose-100 outline-none
+                focus-visible:ring-2 focus-visible:ring-rose-400; }
+  .vrt-star   { @apply relative inline-block cursor-pointer text-rose-200
+                transition-transform hover:scale-125; }
+  .vrt-star svg { @apply block h-full w-full; }
+  .vrt-star-empty, .vrt-star-fill { @apply absolute inset-0; }
+  .vrt-star-fill  { @apply overflow-hidden text-rose-500 drop-shadow; }
+  .vrt-star-full  { @apply block h-full; }
+  .vrt-value  { @apply text-sm font-bold tabular-nums text-rose-600; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'rating.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<style>',
+    'body{margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui}',
+    '/* the page\'s own structural minimum — the component injected nothing: */',
+    '.vrt-star{display:inline-block;position:relative}',
+    '.vrt-star svg{display:block;width:100%;height:100%}',
+    '.vrt-star-empty,.vrt-star-fill{position:absolute;inset:0}',
+    '.vrt-star-fill{overflow:hidden}',
+    '.vrt-star-full{display:block;height:100%}',
+    '</style>',
+    '<body>',
+    '<div id="stars" aria-label="Rate this"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">value: 3.5</p>',
+    '<script src="rating.js"><\/script>',
+    '<script>',
+    'new Rating("#stars", { value: 3.5, styles: false,',
+    '  onChange: function (v) { document.getElementById("out").textContent = "value: " + v; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="rating.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vrt        { @apply inline-flex items-center gap-3; }',
+    '  .vrt-stars  { @apply inline-flex gap-1 rounded-xl bg-white/70 p-2 shadow ring-1 ring-rose-100 outline-none focus-visible:ring-2 focus-visible:ring-rose-400; }',
+    '  .vrt-star   { @apply relative inline-block cursor-pointer text-rose-200 transition-transform hover:scale-125; }',
+    '  .vrt-star svg { @apply block h-full w-full; }',
+    '  .vrt-star-empty, .vrt-star-fill { @apply absolute inset-0; }',
+    '  .vrt-star-fill  { @apply overflow-hidden text-rose-500 drop-shadow; }',
+    '  .vrt-star-full  { @apply block h-full; }',
+    '  .vrt-value  { @apply text-sm font-bold tabular-nums text-rose-600; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-rose-50 to-pink-100 font-sans">',
+    '<div id="stars" aria-label="How much do you love it?"></div>',
+    '<script>',
+    'new Rating("#stars", { value: 3.5, size: 28, icon: "heart",',
+    '  showValue: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>

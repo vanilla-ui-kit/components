@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Segmented Control — zero-dependency, one file · Vanilla UI Kit</title>
@@ -294,6 +295,458 @@ size: 'sm'</pre>
     });
   }
 </script>
+<style>
+  .api { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api h3 {
+    font-family: var(--display); font-size: 21px; font-weight: 600;
+    margin: 44px 0 12px;
+  }
+  .api p { max-width: 72ch; }
+  .api .api-toc { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+  .api .api-toc a {
+    color: var(--accent); text-decoration: none;
+    margin-right: 14px; white-space: nowrap;
+  }
+  .api .api-toc a:hover { text-decoration: underline; }
+  .api pre {
+    margin: 14px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td {
+    text-align: left; padding: 8px 12px; vertical-align: top;
+    border-bottom: 1px solid var(--faint);
+  }
+  .api th {
+    font-weight: 600; border-bottom: 2px solid var(--faint);
+    white-space: nowrap;
+  }
+  .api .table-scroll { overflow-x: auto; margin: 14px 0; }
+  .api .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics</a>
+    <a href="#api-events">Events</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p><code>new Segmented(target, options?)</code> — <code>target</code> is a CSS
+  selector string or an element. Creating a second instance on the same element
+  destroys the first. Without a DOM (SSR), the constructor returns an inert
+  no-op instance instead of throwing.</p>
+  <p><strong>Build into a container</strong> — pass <code>options</code> and the
+  control is rendered from scratch:</p>
+  <pre>&lt;div id="view"&gt;&lt;/div&gt;
+&lt;script&gt;
+  var seg = new Segmented('#view', {
+    options: ['List', 'Board', 'Calendar'],   // shorthand: value = label
+    onChange: function (value, seg) { console.log(value) }
+  })
+&lt;/script&gt;</pre>
+  <p><strong>Enhance existing buttons</strong> — omit <code>options</code> and each
+  direct <code>&lt;button&gt;</code> child becomes a segment: label from its text,
+  value from <code>data-value</code> (falling back to the text), and
+  <code>disabled</code> respected. <code>destroy()</code> restores the original
+  children and attributes exactly as they were.</p>
+  <pre>&lt;div id="env"&gt;
+  &lt;button data-value="dev"&gt;Dev&lt;/button&gt;
+  &lt;button data-value="staging"&gt;Staging&lt;/button&gt;
+  &lt;button disabled&gt;Timeline&lt;/button&gt;
+&lt;/div&gt;
+&lt;script&gt;new Segmented('#env')&lt;/script&gt;</pre>
+  <p><strong>Zero JS</strong> — add <code>data-vsg</code> to the container and it
+  is initialized automatically (see
+  <a href="#api-declarative">Declarative init</a>). Static helpers:
+  <code>Segmented.create(el, opts)</code> is the same as
+  <code>new Segmented(...)</code>, and <code>Segmented.get(el)</code> returns the
+  live instance for an element (or <code>null</code>).</p>
+  <p>Entries in the <code>options</code> array are either primitives
+  (shorthand — the value doubles as the label) or objects:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Option item shape">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>value</code></td><td>any</td><td>The option's value. Defaults to <code>label</code> when omitted.</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td>Visible text (always rendered as text, never HTML). Defaults to <code>String(value)</code>.</td></tr>
+        <tr><td><code>icon</code></td><td>string</td><td><strong>Trusted</strong> SVG string rendered before the label (same trust model as Toast's built-in icons) — never pass user-generated content.</td></tr>
+        <tr><td><code>iconOnly</code></td><td>boolean</td><td>Render the icon without visible text; the label/value becomes the segment's <code>aria-label</code>. Also implied by giving an <code>icon</code> with no <code>label</code>.</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td>Segment can't be selected; skipped by clicks and keyboard navigation.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-options">Options</h3>
+  <p>All constructor options with their defaults (<code>Segmented.defaults</code>,
+  mutable to change them globally):</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Constructor options">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>options</code></td><td>array</td><td><code>null</code></td><td>Array of option objects (shape above) or <code>['a', 'b']</code> shorthand. When omitted or empty, enhance mode reads the container's <code>&lt;button&gt;</code> children instead; if neither yields options, the constructor throws.</td></tr>
+        <tr><td><code>value</code></td><td>any</td><td><code>undefined</code></td><td>Initial value. When missing, unmatched, or pointing at a disabled option, the first enabled option is selected. Matching is exact first, then string-loose (<code>'2'</code> matches <code>2</code>).</td></tr>
+        <tr><td><code>name</code></td><td>string</td><td><code>null</code></td><td>Renders a hidden <code>&lt;input type="hidden"&gt;</code> with this name that always carries the current value, so the control submits in forms.</td></tr>
+        <tr><td><code>size</code></td><td>string</td><td><code>'md'</code></td><td><code>'sm'</code> | <code>'md'</code>. <code>'sm'</code> adds the <code>vsg-sm</code> class (tighter padding, 13px text).</td></tr>
+        <tr><td><code>fullWidth</code></td><td>boolean</td><td><code>false</code></td><td>Stretch segments evenly across the container (<code>vsg-full</code>).</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td><code>null</code></td><td><code>aria-label</code> for the radiogroup. An existing <code>aria-label</code>/<code>aria-labelledby</code> on the element is never clobbered; with none at all, <code>labels.group</code> is used.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td><td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. <code>'auto'</code> follows the page and re-resolves live (see <a href="#api-theming">Theming</a>).</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td><td><code>false</code> = headless: no CSS is injected; you style the <code>.vsg-*</code> markup contract yourself.</td></tr>
+        <tr><td><code>onChange</code></td><td>function</td><td><code>null</code></td><td><code>fn(value, instance)</code> — called when the selection changes (see <a href="#api-events">Events</a>).</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ group: 'Options' }</code></td><td>Overridable UI strings. <code>labels.group</code> is the fallback accessible name for the radiogroup when no <code>label</code> option is given and the element has no <code>aria-label</code>/<code>aria-labelledby</code> of its own.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>There are no per-call-only constructor options beyond these. The one
+  method-level option is <code>setValue(value, { silent: true })</code>, covered
+  below.</p>
+
+  <h3 id="api-methods">Instance methods</h3>
+  <p>All methods except <code>getValue()</code> return the instance, so calls
+  chain. Useful instance properties: <code>el</code> (the container),
+  <code>options</code> (normalized option objects), <code>index</code> (selected
+  index, <code>-1</code> if none), <code>segs</code> (segment buttons), and
+  <code>input</code> (the hidden input, or <code>null</code>).</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance methods">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getValue()</code></td><td>any | <code>null</code></td><td>The currently selected value, or <code>null</code> when nothing is selected (e.g. every option disabled).</td></tr>
+        <tr><td><code>setValue(value, opts?)</code></td><td>instance</td><td>Select the option with this value (exact match first, then string-loose). Fires <code>onChange</code> and <code>segmented:change</code> when the selection actually changes — pass <code>{ silent: true }</code> to suppress both. Unknown values and disabled options are no-ops.</td></tr>
+        <tr><td><code>enable()</code></td><td>instance</td><td>Re-enable the whole control after <code>disable()</code>. Per-option <code>disabled</code> state survives; the hidden input resumes submitting.</td></tr>
+        <tr><td><code>disable()</code></td><td>instance</td><td>Disable the whole control: adds <code>vsg-disabled</code> and <code>aria-disabled="true"</code>, disables every segment button, and disables the hidden input so it stops submitting.</td></tr>
+        <tr><td><code>update(options)</code></td><td>instance</td><td>Replace the option set. The current value is kept when it still exists and is enabled; otherwise selection falls back to the first enabled option. Never fires <code>onChange</code>. Whole-control disabled state is preserved.</td></tr>
+        <tr><td><code>destroy()</code></td><td>instance</td><td>Unbind all listeners, remove everything the control built, restore the original children, every touched attribute, and drop the added classes — the element ends up exactly as it started. Safe to call twice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static properties and helpers">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Segmented.create(target, opts)</code></td><td>function</td><td>Same as <code>new Segmented(target, opts)</code>.</td></tr>
+        <tr><td><code>Segmented.get(target)</code></td><td>function</td><td>The live instance for a selector/element, or <code>null</code>.</td></tr>
+        <tr><td><code>Segmented.autoInit(root?)</code></td><td>function</td><td>Initialize every <code>[data-vsg]</code> element under <code>root</code> (default: <code>document</code>); returns the array of created instances. Already-initialized elements are skipped; one bad container logs an error without aborting the rest.</td></tr>
+        <tr><td><code>Segmented.defaults</code></td><td>object</td><td>The live defaults object (table above). Mutate before constructing to change defaults globally, e.g. <code>Segmented.defaults.styles = false</code>.</td></tr>
+        <tr><td><code>Segmented.version</code></td><td>string</td><td><code>'1.0.0'</code>.</td></tr>
+        <tr><td><code>Segmented.salt</code></td><td>string | false</td><td>CSS isolation token, default <code>'vc1'</code>. Set to your own token or <code>false</code> <em>before</em> the first instance (see <a href="#api-theming">Theming</a>).</td></tr>
+        <tr><td><code>Segmented.css</code></td><td>string</td><td>The full stylesheet, always rendered with the <em>current</em> salt (a live getter). Starting point for headless styling.</td></tr>
+        <tr><td><code>Segmented.displayName</code></td><td>string</td><td><code>'Segmented'</code> — part of the VC family convergence contract.</td></tr>
+        <tr><td><code>Segmented.rootClass</code></td><td>string</td><td><code>'vsg'</code> — the root class the control renders with.</td></tr>
+        <tr><td><code>Segmented.themeVars</code></td><td>object</td><td>Map of family theme keys to CSS custom properties: <code>{ accent: '--vsg-accent', radius: '--vsg-radius', font: '--vsg-font' }</code> — used by <code>VC.config()</code>.</td></tr>
+        <tr><td><code>Segmented.varScopes</code></td><td>array</td><td><code>['.vsg', '.vsg[data-theme=dark]']</code> — the (deliberately unsalted) scopes where theme variables are defined; <code>VC.config()</code> writes its overrides there.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>Two ways to hear about selection changes; both fire only when the selection
+  actually changes, and neither fires for the initial selection,
+  <code>setValue(v, { silent: true })</code>, or <code>update()</code>.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Events and callbacks">
+    <table>
+      <thead>
+        <tr><th>Hook</th><th>Kind</th><th>Arguments / detail</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onChange</code></td><td>option callback</td><td><code>(value, instance)</code></td><td>Called before the DOM event is dispatched.</td></tr>
+        <tr><td><code>segmented:change</code></td><td>CustomEvent</td><td><code>detail: { value, segmented }</code> — the new value and the instance</td><td>Dispatched from the container element with <code>bubbles: true</code>, so you can listen on any ancestor (or <code>document</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre>document.addEventListener('segmented:change', function (e) {
+  console.log(e.detail.value, e.detail.segmented)
+})</pre>
+  <p>No native <code>change</code>/<code>input</code> events are dispatched on the
+  hidden form input; its <code>value</code> is simply kept in sync.</p>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Any element with <code>data-vsg</code> is auto-initialized on
+  <code>DOMContentLoaded</code> (or immediately, if the script loads after
+  parsing). Call <code>Segmented.autoInit(root?)</code> yourself for content added
+  later. Options come from data attributes on the container; segments come from
+  its <code>&lt;button&gt;</code> children (value from <code>data-value</code> on
+  each button, label from its text, <code>disabled</code> respected):</p>
+  <pre>&lt;div data-vsg data-name="view" data-size="sm" data-full-width="true"&gt;
+  &lt;button data-value="list"&gt;List&lt;/button&gt;
+  &lt;button data-value="board"&gt;Board&lt;/button&gt;
+&lt;/div&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Data attributes">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Value semantics</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vsg</code></td><td>—</td><td>Marker: opts the container into <code>autoInit()</code>.</td></tr>
+        <tr><td><code>data-value</code></td><td><code>value</code></td><td>Initial value (string; matched loosely against option values). Ignored when empty.</td></tr>
+        <tr><td><code>data-name</code></td><td><code>name</code></td><td>Hidden form input name.</td></tr>
+        <tr><td><code>data-size</code></td><td><code>size</code></td><td><code>'sm'</code> | <code>'md'</code>.</td></tr>
+        <tr><td><code>data-full-width</code></td><td><code>fullWidth</code></td><td>Boolean: <code>"false"</code> and <code>"0"</code> are false, any other value (including empty) is true.</td></tr>
+        <tr><td><code>data-label</code></td><td><code>label</code></td><td>Accessible name for the radiogroup.</td></tr>
+        <tr><td><code>data-theme</code></td><td><code>theme</code></td><td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>.</td></tr>
+        <tr><td><code>data-styles</code></td><td><code>styles</code></td><td>Boolean, same parsing as <code>data-full-width</code>; <code>"false"</code> = headless.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>With <code>theme: 'auto'</code> (the default) the control resolves its theme
+  in the family's order: <code>&lt;html data-theme&gt;</code> /
+  <code>data-bs-theme</code> → a <code>.dark</code>/<code>.light</code> class on
+  <code>&lt;html&gt;</code> → <code>prefers-color-scheme</code> — re-resolved live
+  when any of those change (via <code>MutationObserver</code> and a media-query
+  listener, or the shared VC theme engine when the core is loaded). Pin per
+  instance with <code>theme: 'light'</code> or <code>'dark'</code>. The resolved
+  theme is stamped on the container as <code>data-theme</code>.</p>
+  <p>All colors are CSS custom properties, defined on <code>.vsg</code> (light)
+  and <code>.vsg[data-theme=dark]</code> (dark):</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vsg-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td><td>Checked label color, focus ring.</td></tr>
+        <tr><td><code>--vsg-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td><td>The sliding thumb.</td></tr>
+        <tr><td><code>--vsg-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td><td>Text / hover color.</td></tr>
+        <tr><td><code>--vsg-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td><td>Unchecked label color.</td></tr>
+        <tr><td><code>--vsg-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td><td>The pill track background.</td></tr>
+        <tr><td><code>--vsg-shadow</code></td><td>subtle drop shadow</td><td>darker shadow</td><td>Thumb shadow.</td></tr>
+        <tr><td><code>--vsg-radius</code></td><td><code>10px</code></td><td>—</td><td>Track radius (segments/thumb derive theirs from it).</td></tr>
+        <tr><td><code>--vsg-font</code></td><td>system-ui stack</td><td>—</td><td>Font family.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre>.vsg { --vsg-accent: #b45309; --vsg-radius: 8px; }</pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  this and every other family component in one call.</p>
+  <p><strong>CSS isolation:</strong> the control renders as
+  <code>class="vsg vc1"</code> and all structural rules ship salted
+  (<code>.vsg.vc1 .vsg-seg { … }</code>) so host-page design systems can't
+  override it — while the <code>--vsg-*</code> variable definitions are
+  deliberately unsalted, so overrides like the one above keep working. The
+  injected stylesheet is inserted <em>before</em> the page's own CSS so your
+  overrides win the cascade. Custom token: <code>Segmented.salt = 'acme'</code>
+  before the first instance; disable salting with
+  <code>Segmented.salt = false</code>.</p>
+  <p><strong>Headless:</strong> <code>Segmented.defaults.styles = false</code> (or
+  per instance <code>{ styles: false }</code>) injects no CSS while keeping the
+  full behavior — thumb measurement, roving tabindex, ARIA, hidden input. Use
+  <code>Segmented.css</code> (string) or <code>dist/segmented.css</code> (file) as
+  a starting point, and style this markup contract:</p>
+  <pre>.vsg[.vsg-sm][.vsg-full][.vsg-disabled][data-theme=dark]   role=radiogroup
+  .vsg-thumb[.vsg-thumb-on]        &larr; JS sets transform/width/height
+  .vsg-seg[aria-checked]           &larr; role=radio button, data-value
+    .vsg-icon                      &larr; only when `icon` given
+    .vsg-label                     &larr; omitted when icon-only
+  input[type=hidden]               &larr; only when `name` given</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>The control is a <code>role="radiogroup"</code> whose segments are
+  <code>role="radio"</code> buttons with <code>aria-checked</code>, using a roving
+  tabindex — the whole control is one Tab stop, and the checked segment is the
+  one that receives focus. The group gets an accessible name from the
+  <code>label</code> option; an author-provided <code>aria-label</code> /
+  <code>aria-labelledby</code> is never clobbered. Icon-only segments carry an
+  <code>aria-label</code> from their label/value, and icon spans plus the thumb
+  are <code>aria-hidden="true"</code>. <code>disable()</code> sets
+  <code>aria-disabled="true"</code> on the group. The thumb re-measures on window
+  resize and animates only after the first placement;
+  <code>prefers-reduced-motion</code> disables the animation entirely.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard map">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>→</kbd> / <kbd>↓</kbd></td><td>Move focus to the next enabled segment <em>and</em> select it (wraps; disabled segments are skipped).</td></tr>
+        <tr><td><kbd>←</kbd> / <kbd>↑</kbd></td><td>Move focus to the previous enabled segment and select it (wraps).</td></tr>
+        <tr><td><kbd>Home</kbd></td><td>Jump to the first enabled segment and select it.</td></tr>
+        <tr><td><kbd>End</kbd></td><td>Jump to the last enabled segment and select it.</td></tr>
+        <tr><td><kbd>Space</kbd> / <kbd>Enter</kbd></td><td>Select the focused segment (native button activation).</td></tr>
+        <tr><td><kbd>Tab</kbd></td><td>Leave the control — it occupies a single Tab stop.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Key presses with <kbd>Alt</kbd>, <kbd>Ctrl</kbd>, or <kbd>Cmd</kbd> held are
+  left to the browser.</p>
+</section>
+
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (thumb measurement, roving tabindex, hidden input), the radiogroup ARIA and
+  keyboard handling, and the stable <code>.vsg-*</code> class hooks; you
+  bring your own CSS. Each demo runs in its own <code>&lt;iframe&gt;</code>:
+  the styled examples above already injected the segmented stylesheet into
+  this page, so only a clean document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — <code>role="radiogroup"</code> with
+      <code>role="radio"</code> buttons and class hooks, zero CSS injected.
+      Arrow keys still move and select.</p>
+      <iframe id="hl-raw-frame" title="Headless segmented control demo, unstyled" style="height:150px"></iframe>
+      <pre>new Segmented('#view', {
+  styles: false,        // zero CSS injected
+  options: [
+    { value: 'list',     label: 'List' },
+    { value: 'board',    label: 'Board' },
+    { value: 'timeline', label: 'Timeline' }
+  ],
+  value: 'board',
+  label: 'View'
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless control mapped to a different design — the JS keeps
+      driving the thumb's <code>transform</code>/size while Tailwind draws it —
+      loaded on demand from <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless segmented control demo, styled with Tailwind" style="height:180px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vsg { @apply relative inline-flex rounded-full
+  bg-slate-900 p-1; }
+.vsg-thumb { @apply absolute left-0 top-0 rounded-full
+  bg-emerald-400 opacity-0 shadow
+  transition-[transform,width] duration-200; }
+.vsg-thumb.vsg-thumb-on { @apply opacity-100; }
+.vsg-seg { @apply relative z-[1] cursor-pointer
+  rounded-full border-0 bg-transparent px-4 py-1.5
+  text-sm font-medium text-slate-400 transition-colors; }
+.vsg-seg[aria-checked="true"] { @apply text-slate-950; }
+.vsg-seg:focus-visible { @apply outline-none ring-2
+  ring-emerald-300; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless segmented control, unstyled</title>',
+    '<p>Clean document: no segmented CSS exists here.</p>',
+    '<div id="view"></div>',
+    '<p>Selected: <output id="out" aria-live="polite">board</output></p>',
+    S + ' src="segmented.js">' + E,
+    S + '>',
+    'new Segmented("#view", {',
+    '  styles: false,',
+    '  label: "View",',
+    '  options: [',
+    '    { value: "list", label: "List" },',
+    '    { value: "board", label: "Board" },',
+    '    { value: "timeline", label: "Timeline" }',
+    '  ],',
+    '  value: "board",',
+    '  onChange: function (v) { document.getElementById("out").value = v; }',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless segmented control, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="segmented.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vsg { @apply relative inline-flex rounded-full bg-slate-900 p-1; }',
+    '  .vsg-thumb { @apply absolute left-0 top-0 rounded-full bg-emerald-400 opacity-0 shadow transition-[transform,width] duration-200; }',
+    '  .vsg-thumb.vsg-thumb-on { @apply opacity-100; }',
+    '  .vsg-seg { @apply relative z-[1] cursor-pointer rounded-full border-0 bg-transparent px-4 py-1.5 text-sm font-medium text-slate-400 transition-colors; }',
+    '  .vsg-seg[aria-checked="true"] { @apply text-slate-950; }',
+    '  .vsg-seg:focus-visible { @apply outline-none ring-2 ring-emerald-300; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-slate-100 font-sans">',
+    '<div class="text-center">',
+    '<div id="plan" class="inline-block"></div>',
+    '<p class="mt-3 text-xs text-slate-400">Selected: <output id="out" aria-live="polite">pro</output></p>',
+    '</div>',
+    S + '>',
+    'new Segmented("#plan", {',
+    '  styles: false,',
+    '  label: "Plan",',
+    '  options: [',
+    '    { value: "free", label: "Free" },',
+    '    { value: "pro", label: "Pro" },',
+    '    { value: "team", label: "Team" },',
+    '    { value: "scale", label: "Scale" }',
+    '  ],',
+    '  value: "pro",',
+    '  onChange: function (v) { document.getElementById("out").value = v; }',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

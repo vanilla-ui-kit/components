@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vanilla UI Kit — 21 zero-dependency UI components for vanilla JavaScript</title>
@@ -104,6 +105,7 @@
   automatic light/dark, fully keyboard-accessible, headless when you want.</p>
   <div class="cta">
     <a class="btn primary" href="https://github.com/vanilla-ui-kit/components">GitHub</a>
+    <a class="btn" href="./install.html">📦 Install</a>
     <a class="btn" href="./theme.html">🎨 Theme builder</a>
     <a class="btn" href="./demo/admin.html">🛠 Demo app</a>
     <button class="btn" id="heroToast">Try a toast</button>
@@ -370,6 +372,7 @@ VC.config({ theme: 'dark', accent: '#b45309', radius: '10px' })</code></pre>
     { id: 'modal', label: 'Open the dialog', group: 'Demos', action: openDemoModal },
     { id: 'dark', label: 'Switch to dark theme', keywords: 'night', group: 'Theme', action: function () { VC.theme.set('dark'); } },
     { id: 'light', label: 'Switch to light theme', keywords: 'day', group: 'Theme', action: function () { VC.theme.set('light'); } },
+    { id: 'install', label: 'Installation guide', keywords: 'npm cdn download setup usage', group: 'Links', action: function () { location.href = './install.html'; } },
     { id: 'theme-builder', label: 'Open the theme builder', keywords: 'colors accent radius font', group: 'Links', action: function () { location.href = './theme.html'; } },
     { id: 'demo-app', label: 'Open the demo app', keywords: 'admin dashboard orders', group: 'Links', action: function () { location.href = './demo/admin.html'; } },
     { id: 'github', label: 'Open GitHub repository', group: 'Links', action: function () { window.open('https://github.com/vanilla-ui-kit/components', '_blank'); } }

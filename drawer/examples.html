@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Drawer / Side Panel — zero-dependency, one file · Vanilla UI Kit</title>
@@ -255,6 +256,501 @@ return false   // keep the first one open</pre>
     });
   }
 </script>
+<style>
+  .api { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api h3 { font-size: 17px; font-weight: 650; margin: 44px 0 12px; }
+  .api p { color: var(--muted); font-size: 14px; margin: 0 0 14px; max-width: 76ch; }
+  .api .toc { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 8px; font-size: 14px; }
+  .api .toc a { color: var(--accent); text-decoration: none; }
+  .api .toc a:hover { text-decoration: underline; }
+  .api pre {
+    margin: 0 0 16px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api .table-scroll { overflow-x: auto; margin: 0 0 16px; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td { text-align: left; padding: 8px 12px; vertical-align: top; }
+  .api th { color: var(--text); font-weight: 600; border-bottom: 1px solid var(--faint); }
+  .api td { color: var(--muted); border-bottom: 1px solid var(--faint); }
+  .api td:first-child { color: var(--text); }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <nav class="toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics</a>
+    <a href="#api-events">Events</a>
+    <a href="#api-declarative">Declarative</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p><code>Drawer.open(opts)</code> builds a drawer from options and returns a
+  handle — <code>{ el, close(result), update(opts) }</code>. Strings passed as
+  <code>title</code>/<code>content</code> are rendered as text; markup requires
+  the explicit <code>html: true</code> opt-in.</p>
+  <pre>Drawer.open({
+  side: 'right',           // 'right' | 'left' | 'top' | 'bottom'
+  title: 'Your cart',
+  content: 'Text',         // string | DOM element | markup with {html: true}
+  size: '360px',           // width for left/right, height for top/bottom
+  buttons: [
+    { label: 'Clear', onClick: function (h) {} },        // return false = stay open
+    { label: 'Checkout', variant: 'primary', close: true }
+  ],
+  dismissible: true,       // Esc, backdrop click, and the &#10005; button
+  onOpen: function (h) {},
+  onClose: function (result) {}  // result = the `close` value of the button used
+})
+// &rarr; handle: { el, close(result), update(opts) }</pre>
+  <p><strong>Enhance mode</strong> — <code>new Drawer(target, opts)</code> adopts an
+  in-page element (selector or element) as the drawer's content and restores it
+  where it came from — including its <code>hidden</code> attribute — on close or
+  <code>destroy()</code>. <code>.open({...})</code> merges per-call options over
+  the constructor's.</p>
+  <pre>var cart = new Drawer('#cart-panel', { side: 'right', title: 'Cart' })
+cart.open()                    // .open({...extra}) merges per-call options
+cart.close()                   // cart.isOpen() &rarr; boolean
+cart.destroy()                 // restores the element, drops the instance
+
+Drawer.create(el, opts)        // constructor sugar &rarr; instance
+Drawer.get(el)                 // &rarr; instance | null</pre>
+  <p>No JS at all? See <a href="#api-declarative">declarative init</a> —
+  <code>data-vdr-open</code> triggers are wired automatically on load.</p>
+
+  <h3 id="api-options">Options</h3>
+  <p>All keys of <code>Drawer.defaults</code> can be changed globally
+  (<code>Drawer.defaults.side = 'left'</code>) or passed per call. The options
+  below the defaults are per-call only.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Drawer options">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>side</code></td><td>string</td><td><code>'right'</code></td>
+          <td><code>'right'</code> | <code>'left'</code> | <code>'top'</code> | <code>'bottom'</code>. Unknown values fall back to <code>'right'</code>.</td></tr>
+        <tr><td><code>size</code></td><td>string</td><td><code>'360px'</code></td>
+          <td>The drawer's one dimension — width for left/right, height for top/bottom (the other axis is 100%). Any CSS length.</td></tr>
+        <tr><td><code>dismissible</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Esc, backdrop click, and the &#10005; button. <code>false</code> removes the &#10005; and ignores Esc/backdrop.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is ever injected. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto follows the page; see <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ close: 'Close', dialog: 'Drawer' }</code></td>
+          <td>Accessible names: <code>close</code> for the &#10005; button, <code>dialog</code> as the fallback <code>aria-label</code> when there is no title. Merged shallowly per call.</td></tr>
+        <tr><td><code>title</code></td><td>string</td><td>—</td>
+          <td>Heading text (always rendered as text). Sets <code>aria-labelledby</code>.</td></tr>
+        <tr><td><code>content</code></td><td>string | Element</td><td>—</td>
+          <td>String (text by default, markup with <code>html: true</code>) or a DOM element, which is adopted into the drawer and restored on close.</td></tr>
+        <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Opt-in: render a string <code>content</code> as trusted markup instead of text.</td></tr>
+        <tr><td><code>buttons</code></td><td>array</td><td>—</td>
+          <td>Optional footer buttons; entry shape below. Omit for no footer.</td></tr>
+        <tr><td><code>onOpen</code></td><td>function</td><td>—</td>
+          <td><code>onOpen(handle)</code>, called after the drawer is in the DOM and focused.</td></tr>
+        <tr><td><code>onClose</code></td><td>function</td><td>—</td>
+          <td><code>onClose(result)</code>, called when the close begins. See <a href="#api-events">Events</a>.</td></tr>
+        <tr><td><code>ariaLabel</code></td><td>string</td><td>—</td>
+          <td>Accessible name used when there is no <code>title</code> (falls back to <code>labels.dialog</code>).</td></tr>
+        <tr><td><code>opener</code></td><td>Element</td><td>—</td>
+          <td>Element to return focus to on close. Defaults to <code>document.activeElement</code> at open time; declarative triggers pass themselves.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><code>buttons</code> entry shape:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Button entry properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>label</code></td><td>string</td><td>Button text (rendered as text).</td></tr>
+        <tr><td><code>variant</code></td><td>string</td><td><code>'primary'</code> or <code>'danger'</code> for accent styling; anything else is the neutral default.</td></tr>
+        <tr><td><code>close</code></td><td>any</td><td>Value passed to <code>onClose(result)</code> when this button closes the drawer.</td></tr>
+        <tr><td><code>onClick</code></td><td>function</td><td><code>onClick(handle)</code>. Return <code>false</code> to keep the drawer open (validation etc.); otherwise the drawer closes with <code>close</code> as the result.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Instance &amp; handle methods</h3>
+  <p>Instances come from <code>new Drawer(target, opts)</code> /
+  <code>Drawer.create()</code>; handles come from <code>Drawer.open()</code>
+  (and <code>handle.el</code> is the root <code>&lt;dialog&gt;</code>/<code>&lt;div&gt;</code> element).</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance and handle methods">
+    <table>
+      <thead>
+        <tr><th>Signature</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>instance.open(extra?)</code></td><td>instance</td>
+          <td>Opens the enhanced element as a drawer; <code>extra</code> merges over the constructor options for this call. No-op if already open. Reads <code>data-vdr-title</code> off the element when no <code>title</code> option is set.</td></tr>
+        <tr><td><code>instance.close(result?)</code></td><td>instance</td>
+          <td>Closes if open; <code>result</code> is forwarded to <code>onClose</code>.</td></tr>
+        <tr><td><code>instance.isOpen()</code></td><td>boolean</td>
+          <td>Whether the drawer is currently open.</td></tr>
+        <tr><td><code>instance.destroy()</code></td><td>instance</td>
+          <td>Closes (restoring the adopted element) and drops the instance registration so the element can be re-enhanced.</td></tr>
+        <tr><td><code>handle.close(result?)</code></td><td>—</td>
+          <td>Closes the drawer; <code>result</code> is forwarded to <code>onClose</code>.</td></tr>
+        <tr><td><code>handle.update(opts)</code></td><td>handle</td>
+          <td>Merges new options and rebuilds the drawer in place (title, content, buttons, side, size…). Focus is re-seated only if the rebuild dropped it out of the drawer. No-op after close.</td></tr>
+        <tr><td><code>handle.el</code></td><td>Element</td>
+          <td>The root element (a native <code>&lt;dialog&gt;</code> where supported).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static members">
+    <table>
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Drawer.open(opts)</code></td>
+          <td>Opens a drawer, returns the handle. SSR-safe: without a DOM it returns an inert no-op handle.</td></tr>
+        <tr><td><code>Drawer.create(target, opts?)</code></td>
+          <td>Constructor sugar — same as <code>new Drawer(target, opts)</code>, returns the instance.</td></tr>
+        <tr><td><code>Drawer.get(target)</code></td>
+          <td>The instance registered for an element (or selector), or <code>null</code>.</td></tr>
+        <tr><td><code>Drawer.autoInit(root?)</code></td>
+          <td>Wires all unbound <code>[data-vdr-open]</code> triggers under <code>root</code> (default: document) and pre-creates instances for their targets; returns the created instances. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>Drawer.defaults</code></td>
+          <td>The defaults object documented under <a href="#api-options">Options</a>; mutate it to change a default once.</td></tr>
+        <tr><td><code>Drawer.salt</code></td>
+          <td>CSS-isolation namespace token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first drawer. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>Drawer.css</code></td>
+          <td>The full stylesheet as a string — a live getter, always rendered with the current salt. For headless setups.</td></tr>
+        <tr><td><code>Drawer.version</code></td>
+          <td>Version string, <code>'1.0.0'</code>.</td></tr>
+        <tr><td><code>Drawer.displayName</code>, <code>Drawer.rootClass</code>, <code>Drawer.themeVars</code>, <code>Drawer.varScopes</code></td>
+          <td>Convergence contract read by the VC family core (<code>VC.register</code>/<code>VC.config</code>); not needed in app code.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>The drawer communicates through option callbacks; it does not dispatch any
+  DOM <code>CustomEvent</code>s. (Internally it listens to the native
+  <code>&lt;dialog&gt;</code> <code>cancel</code>/<code>close</code> events so
+  platform-initiated closes stay in sync.)</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Callbacks">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>When</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onOpen(handle)</code></td>
+          <td>After the drawer is appended, focused, and the enter animation is queued.</td>
+          <td>Receives the same handle <code>Drawer.open()</code> returns.</td></tr>
+        <tr><td><code>onClose(result)</code></td>
+          <td>As soon as the close begins (before the ~0.2&nbsp;s exit animation ends).</td>
+          <td><code>result</code> is the closing button's <code>close</code> value, or the argument given to <code>close(result)</code>; it is <code>undefined</code> for Esc, backdrop, and the &#10005; button.</td></tr>
+        <tr><td>button <code>onClick(handle)</code></td>
+          <td>On footer-button click, before closing.</td>
+          <td>Return <code>false</code> to keep the drawer open; otherwise it closes and <code>onClose</code> receives the button's <code>close</code> value.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <pre>&lt;button data-vdr-open="#cart-panel"&gt;Cart&lt;/button&gt;
+
+&lt;div id="cart-panel" hidden data-vdr-title="Your cart"
+     data-vdr-side="right" data-vdr-size="380px"&gt;
+  &hellip; &lt;button data-vdr-close&gt;Done&lt;/button&gt;
+&lt;/div&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Declarative data attributes">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>On</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vdr-open="#sel"</code></td><td>trigger</td>
+          <td>Click opens the referenced element as a drawer. The trigger becomes the <code>opener</code>, so focus returns to it on close.</td></tr>
+        <tr><td><code>data-vdr-close</code></td><td>anything inside a drawer</td>
+          <td>Click closes the containing drawer (works in every drawer, not just declarative ones).</td></tr>
+        <tr><td><code>data-vdr-title="&hellip;"</code></td><td>drawer element</td>
+          <td>Drawer title. Also honored by <code>instance.open()</code> when no <code>title</code> option is set.</td></tr>
+        <tr><td><code>data-vdr-side="&hellip;"</code></td><td>drawer element</td>
+          <td><code>right</code> | <code>left</code> | <code>top</code> | <code>bottom</code>.</td></tr>
+        <tr><td><code>data-vdr-size="&hellip;"</code></td><td>drawer element</td>
+          <td>Any CSS length — width for left/right, height for top/bottom.</td></tr>
+        <tr><td><code>data-vdr-dismissible="&hellip;"</code></td><td>drawer element</td>
+          <td><code>"false"</code> or <code>"0"</code> disables Esc/backdrop/&#10005;; any other value (or bare presence) keeps them enabled.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Triggers present at load are wired automatically on
+  <code>DOMContentLoaded</code>; call <code>Drawer.autoInit(root?)</code> for
+  triggers added later. A trigger is only bound once, and one bad target does
+  not abort init for the rest of the page.</p>
+
+  <h3 id="api-theming">Theming</h3>
+  <p><strong>Resolution order</strong> — a per-call <code>theme</code> or
+  <code>Drawer.defaults.theme</code> of <code>'light'</code>/<code>'dark'</code>
+  pins the theme. Otherwise: the shared VC engine when the family core is
+  loaded; else <code>&lt;html data-theme&gt;</code> /
+  <code>data-bs-theme</code> &rarr; a <code>.dark</code>/<code>.light</code>
+  class on <code>&lt;html&gt;</code> &rarr;
+  <code>prefers-color-scheme</code>. Open drawers re-resolve live — a
+  <code>MutationObserver</code> watches those attributes/classes and a media
+  query listener watches the OS scheme.</p>
+  <p>All colors are CSS custom properties, defined unsalted on
+  <code>.vdr</code> (dark values on <code>.vdr[data-theme=dark]</code>) so page
+  overrides keep working:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vdr-accent</code></td><td><code>#5b5bd6</code></td><td>Primary button, focus rings.</td></tr>
+        <tr><td><code>--vdr-on-accent</code></td><td><code>#ffffff</code></td><td>Text on accent/danger buttons.</td></tr>
+        <tr><td><code>--vdr-danger</code></td><td><code>#e5484d</code></td><td><code>danger</code> button variant.</td></tr>
+        <tr><td><code>--vdr-bg</code></td><td><code>#ffffff</code></td><td>Panel background.</td></tr>
+        <tr><td><code>--vdr-surface</code></td><td><code>#f2f2f5</code></td><td>Neutral button background.</td></tr>
+        <tr><td><code>--vdr-text</code></td><td><code>#1c1d21</code></td><td>Body text.</td></tr>
+        <tr><td><code>--vdr-muted</code></td><td><code>#72747e</code></td><td>Secondary text, &#10005; button.</td></tr>
+        <tr><td><code>--vdr-faint</code></td><td><code>#e7e7ec</code></td><td>Borders, hover fills.</td></tr>
+        <tr><td><code>--vdr-backdrop</code></td><td><code>rgba(20,21,26,.45)</code></td><td>Scrim behind the panel.</td></tr>
+        <tr><td><code>--vdr-shadow</code></td><td><code>0 10px 28px rgba(24,25,32,.14), 0 2px 8px rgba(24,25,32,.08)</code></td><td>Panel shadow.</td></tr>
+        <tr><td><code>--vdr-radius</code></td><td><code>14px</code></td><td>Inner-edge panel radius.</td></tr>
+        <tr><td><code>--vdr-font</code></td><td>system-ui stack</td><td>Panel font family.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>CSS isolation</strong> — drawers render as
+  <code>class="vdr vc1 vdr-right"</code> and every structural rule ships salted
+  (<code>.vdr.vc1 .vdr-panel { &hellip; }</code>), so host-page design systems
+  can't override them, while the unsalted <code>--vdr-*</code> variable
+  definitions above stay overridable. Set a custom token with
+  <code>Drawer.salt = 'acme'</code> before the first drawer, or disable salting
+  with <code>Drawer.salt = false</code>. With the VC core loaded,
+  <code>VC.config({ accent: '#b45309' })</code> themes drawers and the rest of
+  the family in one call.</p>
+  <p><strong>Headless</strong> — <code>Drawer.defaults.styles = false</code>
+  (or per-call <code>styles: false</code>) never injects CSS; you keep the full
+  behavior (focus trap, scroll lock, stacking, ARIA) and style the markup
+  contract yourself. Our stylesheet is a starting point:
+  <code>Drawer.css</code> (string, rendered with the current salt) or
+  <code>dist/drawer.css</code> (file).</p>
+  <pre>dialog.vdr.vdr-right.vdr-has-title.vdr-in[data-theme="dark"]   &larr; .vdr-out while leaving
+  .vdr-panel                    &larr; slides; inline width/height from `size`
+    .vdr-head
+      .vdr-title                &larr; only when `title` given (else .vdr-head-spacer)
+      .vdr-x                    &larr; only when dismissible
+    .vdr-body
+      .vdr-msg                  &larr; string content (adopted elements go here raw)
+    .vdr-foot                   &larr; only when `buttons` given
+      .vdr-btn.vdr-btn-primary</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>The root is a native <code>&lt;dialog&gt;</code> opened with
+  <code>showModal()</code> where supported (an identical fallback overlay
+  otherwise, which gets an explicit <code>role="dialog"</code>). Either way it
+  carries <code>aria-modal="true"</code> and <code>aria-labelledby</code>
+  pointing at the title — or <code>aria-label</code> from the
+  <code>ariaLabel</code> option / <code>labels.dialog</code> when there is no
+  title.</p>
+  <p>Initial focus: <code>[autofocus]</code> &rarr; first focusable in the body
+  &rarr; primary footer button &rarr; any footer button &rarr; the panel itself
+  (<code>tabindex="-1"</code>). Tab is trapped inside — by the native top layer,
+  or by a manual cycle on the fallback path — and focus returns to the opener
+  once the exit animation finishes. Body scroll is locked while any drawer is
+  open, with scrollbar-width compensation so the page never shifts. Drawers
+  stack; Esc closes only the top-most. Animations honor
+  <code>prefers-reduced-motion</code>.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard map">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>Esc</kbd></td>
+          <td>Closes the top-most drawer (via the native <code>cancel</code> event, or the fallback keydown handler). Ignored when <code>dismissible: false</code>.</td></tr>
+        <tr><td><kbd>Tab</kbd></td>
+          <td>Next focusable element inside the drawer; wraps from the last back to the first.</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>Tab</kbd></td>
+          <td>Previous focusable element; wraps from the first (or the panel) to the last.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (focus trap, scroll lock, stacking), the ARIA wiring and keyboard handling,
+  and the stable <code>.vdr-*</code> class hooks; you bring your own CSS. Each
+  demo runs in its own <code>&lt;iframe&gt;</code>: the styled examples above
+  already injected the drawer stylesheet into this page, so only a clean
+  document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a native <code>&lt;dialog&gt;</code> with
+      semantic children and class hooks, zero CSS injected.</p>
+      <iframe id="hl-raw-frame" title="Headless drawer demo, unstyled" style="height:240px"></iframe>
+      <pre>Drawer.open({
+  styles: false,        // zero CSS injected
+  title: 'Headless drawer',
+  content: 'Bring your own styles.',
+  buttons: [{ label: 'Close',
+    variant: 'primary', close: true }]
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless drawer mapped to a different design with Tailwind
+      utilities — loaded on demand from <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless drawer demo, styled with Tailwind" style="height:320px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vdr { @apply fixed inset-0 m-0 h-full max-h-none w-full
+  max-w-none border-0 p-0 opacity-0 transition-opacity
+  duration-150; background: rgb(15 23 42 / 0.55); }
+.vdr::backdrop { background: transparent; }
+.vdr.vdr-in  { @apply opacity-100; }
+.vdr.vdr-out { @apply opacity-0; }
+.vdr-panel { @apply absolute inset-y-0 right-0 flex
+  translate-x-full flex-col bg-slate-900 text-slate-100
+  shadow-2xl transition-transform duration-200; }
+.vdr-in  .vdr-panel { @apply translate-x-0; }
+.vdr-out .vdr-panel { @apply translate-x-full; }
+.vdr-head { @apply flex items-center justify-between
+  border-b border-slate-700/60 px-5 py-4; }
+.vdr-title { @apply m-0 text-base font-semibold; }
+.vdr-x { @apply cursor-pointer border-0 bg-transparent p-0
+  text-xl leading-none text-slate-400 hover:text-white; }
+.vdr-body { @apply flex-1 overflow-y-auto px-5 py-4; }
+.vdr-msg { @apply m-0 text-sm leading-6 text-slate-300; }
+.vdr-foot { @apply flex justify-end gap-2 border-t
+  border-slate-700/60 px-5 py-4; }
+.vdr-btn { @apply cursor-pointer rounded-full border-0
+  bg-slate-800 px-4 py-2 text-sm font-medium
+  text-slate-200 hover:bg-slate-700; }
+.vdr-btn-primary { @apply bg-emerald-400 text-slate-950
+  hover:bg-emerald-300; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless drawer, unstyled</title>',
+    '<p>Clean document: no drawer CSS exists here.</p>',
+    '<button id="open" type="button">Open headless drawer</button>',
+    S + ' src="drawer.js">' + E,
+    S + '>',
+    'document.getElementById("open").onclick = function () {',
+    '  Drawer.open({',
+    '    styles: false,',
+    '    title: "Headless drawer",',
+    '    content: "Zero CSS injected. Focus trap, Esc and ARIA still work.",',
+    '    buttons: [{ label: "Close", variant: "primary", close: true }]',
+    '  });',
+    '};',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless drawer, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="drawer.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vdr { @apply fixed inset-0 m-0 h-full max-h-none w-full max-w-none border-0 p-0 opacity-0 transition-opacity duration-150; background: rgb(15 23 42 / 0.55); }',
+    '  .vdr::backdrop { background: transparent; }',
+    '  .vdr.vdr-in { @apply opacity-100; }',
+    '  .vdr.vdr-out { @apply opacity-0; }',
+    '  .vdr-panel { @apply absolute inset-y-0 right-0 flex translate-x-full flex-col bg-slate-900 text-slate-100 shadow-2xl transition-transform duration-200; }',
+    '  .vdr-in .vdr-panel { @apply translate-x-0; }',
+    '  .vdr-out .vdr-panel { @apply translate-x-full; }',
+    '  .vdr-head { @apply flex items-center justify-between border-b border-slate-700/60 px-5 py-4; }',
+    '  .vdr-title { @apply m-0 text-base font-semibold; }',
+    '  .vdr-x { @apply cursor-pointer border-0 bg-transparent p-0 text-xl leading-none text-slate-400 hover:text-white; }',
+    '  .vdr-body { @apply flex-1 overflow-y-auto px-5 py-4; }',
+    '  .vdr-msg { @apply m-0 text-sm leading-6 text-slate-300; }',
+    '  .vdr-foot { @apply flex justify-end gap-2 border-t border-slate-700/60 px-5 py-4; }',
+    '  .vdr-btn { @apply cursor-pointer rounded-full border-0 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-700; }',
+    '  .vdr-btn-primary { @apply bg-emerald-400 text-slate-950 hover:bg-emerald-300; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-slate-100">',
+    '<button id="open" type="button" class="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-slate-700">Open the redesigned drawer</button>',
+    S + '>',
+    'document.getElementById("open").onclick = function () {',
+    '  Drawer.open({',
+    '    styles: false, side: "right", size: "300px",',
+    '    title: "Your cart",',
+    '    content: "The same headless drawer, dressed entirely in Tailwind utilities.",',
+    '    buttons: [',
+    '      { label: "Keep shopping", close: true },',
+    '      { label: "Checkout", variant: "primary", close: "go" }',
+    '    ]',
+    '  });',
+    '};',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

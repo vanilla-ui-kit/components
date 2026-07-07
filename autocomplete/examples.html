@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Autocomplete / Typeahead — zero-dependency, one file · Vanilla UI Kit</title>
@@ -344,6 +345,479 @@
     else location.reload();
   });
 </script>
+<style>
+  .api { margin-top: 80px; border-top: 1px solid var(--faint); padding-top: 56px; }
+  .api h2 {
+    font-family: var(--display); font-size: clamp(28px, 4vw, 36px);
+    font-weight: 600; line-height: 1.1; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api h3 { font-size: 18px; font-weight: 650; margin: 44px 0 10px; }
+  .api h4 { font-size: 15px; font-weight: 650; margin: 24px 0 8px; }
+  .api p { max-width: 74ch; margin: 8px 0; }
+  .api .api-toc { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+  .api .api-toc a { color: var(--accent); text-decoration: none; }
+  .api .api-toc a:hover { text-decoration: underline; }
+  .api pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .api th, .api td {
+    text-align: left; padding: 8px 12px; vertical-align: top;
+    border-bottom: 1px solid var(--faint);
+  }
+  .api th { color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--faint); }
+  .api td:first-child code { white-space: nowrap; }
+  .api .table-scroll { overflow-x: auto; margin: 12px 0; }
+  .api .table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<section class="wrap api" id="api" aria-labelledby="api-h">
+  <h2 id="api-h">API reference</h2>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a> ·
+    <a href="#api-options">Options</a> ·
+    <a href="#api-methods">Methods</a> ·
+    <a href="#api-statics">Statics</a> ·
+    <a href="#api-events">Events</a> ·
+    <a href="#api-declarative">Declarative init</a> ·
+    <a href="#api-theming">Theming</a> ·
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <p>Bind to any <code>&lt;input&gt;</code> by CSS selector or element. Binding an
+  element that already has an instance destroys the old one first; a target that
+  can't be found throws. Without a DOM (SSR) the constructor returns an inert
+  instance whose methods all no-op.</p>
+  <pre>var ac = new Autocomplete('#q', { source: ['Apple', 'Apricot'] })
+
+Autocomplete.create('#q', {...})   // constructor alias, same signature
+Autocomplete.get('#q')             // instance already bound to that element, or null
+Autocomplete.autoInit(root?)       // init every [data-vac] under root (default: document)</pre>
+  <p>The <code>source</code> option accepts three shapes — results may be plain
+  strings or item objects (see <a href="#api-options">Options</a>):</p>
+  <pre>// 1. Array — filtered locally (case/diacritic-insensitive substring on label)
+source: ['Alpha', 'Beta', { value: 'g', label: 'Gamma' }]
+
+// 2. Callback — call done(results) whenever you're ready
+source: function (query, done) {
+  fetch('/api?q=' + encodeURIComponent(query))
+    .then(r =&gt; r.json()).then(done)
+}
+
+// 3. Promise — return a thenable that resolves to results
+source: query =&gt; fetch('/api?q=' + encodeURIComponent(query)).then(r =&gt; r.json())</pre>
+  <p>Every lookup carries a sequence token: results arriving for a superseded
+  query are discarded, so a slow response can never overwrite the current list.
+  A rejected promise or thrown source closes the panel silently and calls
+  <code>onError</code>. If a function source both calls <code>done()</code> and
+  returns a promise, whichever settles first wins.</p>
+
+  <h3 id="api-options">Options</h3>
+  <p>All keys of <code>Autocomplete.defaults</code>, with their exact defaults
+  from the source. Mutate <code>Autocomplete.defaults</code> to change them
+  globally; per-instance options win over defaults.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Constructor options">
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>source</code></td><td>array | function</td><td><code>null</code></td><td>Suggestion source: array, <code>fn(query, done)</code> callback, or <code>fn(query)</code> returning a promise. See <a href="#api-usage">Usage</a>.</td></tr>
+        <tr><td><code>minChars</code></td><td>number</td><td><code>1</code></td><td>Fewer typed characters than this keeps the panel closed. Ignored by <code>open()</code> and <code>openOnFocus</code> lookups.</td></tr>
+        <tr><td><code>debounce</code></td><td>number</td><td><code>150</code></td><td>Milliseconds between the last keystroke and the lookup.</td></tr>
+        <tr><td><code>maxResults</code></td><td>number</td><td><code>10</code></td><td>Cap applied after the source answers.</td></tr>
+        <tr><td><code>highlight</code></td><td>boolean</td><td><code>true</code></td><td>Wrap the matched substring of each label in a <code>.vac-match</code> span (built from DOM nodes, never <code>innerHTML</code>). Skipped for items with <code>html: true</code>.</td></tr>
+        <tr><td><code>openOnFocus</code></td><td>boolean</td><td><code>false</code></td><td>Look up on focus, ignoring <code>minChars</code> — an empty query matches everything against an array source (recent-searches lists).</td></tr>
+        <tr><td><code>allowNew</code></td><td>boolean</td><td><code>true</code></td><td>Free text stays valid. <code>false</code> reverts text that matches no suggestion (by value or label, case/diacritic-insensitive) to the last accepted value on blur; clearing the field is always allowed.</td></tr>
+        <tr><td><code>emptyText</code></td><td>string | null</td><td><code>null</code></td><td>Text of the "no results" row. <code>null</code> falls back to <code>labels.noResults</code>.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td><td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td><td><code>false</code> = headless: no CSS injected, style the <code>.vac-*</code> markup yourself.</td></tr>
+        <tr><td><code>position</code></td><td>string</td><td><code>'auto'</code></td><td><code>'auto'</code> | <code>'below'</code> | <code>'above'</code>. Auto flips above when there is no room below and clamps to the viewport.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td>see below</td><td>UI strings; merged key-by-key with the defaults.</td></tr>
+        <tr><td><code>onSelect</code></td><td>function | null</td><td><code>null</code></td><td><code>fn(item, autocomplete)</code> — see <a href="#api-events">Events</a>.</td></tr>
+        <tr><td><code>onInput</code></td><td>function | null</td><td><code>null</code></td><td><code>fn(query, autocomplete)</code> — every keystroke.</td></tr>
+        <tr><td><code>onError</code></td><td>function | null</td><td><code>null</code></td><td><code>fn(error, autocomplete)</code> — source failures.</td></tr>
+        <tr><td><code>onOpen</code></td><td>function | null</td><td><code>null</code></td><td><code>fn(autocomplete)</code> — panel opened.</td></tr>
+        <tr><td><code>onClose</code></td><td>function | null</td><td><code>null</code></td><td><code>fn(autocomplete)</code> — panel closed.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>labels.*</h4>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Label strings">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>labels.noResults</code></td><td><code>'No results'</code></td><td>Empty-state row (unless <code>emptyText</code> is set).</td></tr>
+        <tr><td><code>labels.loading</code></td><td><code>'Loading…'</code></td><td>Loading row shown while an async lookup is in flight.</td></tr>
+        <tr><td><code>labels.suggestions</code></td><td><code>'Suggestions'</code></td><td><code>aria-label</code> of the listbox.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>There are no per-call-only options beyond the defaults keys above.</p>
+
+  <h4>Item shape</h4>
+  <p>Source results may be plain strings (shorthand for value = label = the
+  string) or objects. A missing <code>value</code> falls back to
+  <code>label</code> and vice versa; both are coerced to strings.</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Item object properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>value</code></td><td>string</td><td><code>label</code></td><td>What lands in the input when the item is committed.</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td><code>value</code></td><td>What the row shows. Rendered as text via <code>textContent</code>.</td></tr>
+        <tr><td><code>group</code></td><td>string | null</td><td><code>null</code></td><td>Items sharing a group render under an uppercase header.</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td><td>Row is skipped by keyboard browsing and can't be chosen.</td></tr>
+        <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td><td>Per-item opt-in: render <code>label</code> as trusted markup via <code>innerHTML</code>; skips highlighting.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Instance methods</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Instance methods">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>open()</code></td><td>this</td><td>Look up suggestions for the current text right now (no debounce, ignores <code>minChars</code>) and show them.</td></tr>
+        <tr><td><code>close()</code></td><td>this</td><td>Close the panel; also cancels any in-flight or debounced lookup.</td></tr>
+        <tr><td><code>setSource(src)</code></td><td>this</td><td>Swap the source (array or function); an open panel refreshes in place.</td></tr>
+        <tr><td><code>getInput()</code></td><td>HTMLInputElement | null</td><td>The bound <code>&lt;input&gt;</code> (<code>null</code> after <code>destroy()</code>).</td></tr>
+        <tr><td><code>destroy()</code></td><td>this</td><td>Tear down: remove the panel and all listeners, restore the input's original attributes, orphan any in-flight lookup.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Readable instance properties: <code>input</code> (the bound element),
+  <code>opts</code> (resolved options), <code>isOpen</code> (boolean), and
+  <code>items</code> (the last delivered, normalized results).</p>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Static properties and helpers">
+    <table>
+      <thead>
+        <tr><th>Static</th><th>Type / value</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Autocomplete.version</code></td><td><code>'1.0.0'</code></td><td>Library version.</td></tr>
+        <tr><td><code>Autocomplete.defaults</code></td><td>object</td><td>The live defaults object documented under <a href="#api-options">Options</a>; mutate to change defaults globally.</td></tr>
+        <tr><td><code>Autocomplete.create(target, options)</code></td><td>function</td><td>Constructor alias; returns the new instance.</td></tr>
+        <tr><td><code>Autocomplete.get(target)</code></td><td>function</td><td>Instance already bound to that selector/element, or <code>null</code>.</td></tr>
+        <tr><td><code>Autocomplete.autoInit(root?)</code></td><td>function</td><td>Initialize every <code>[data-vac]</code> element under <code>root</code> (default <code>document</code>); skips already-bound elements, logs per-element errors without aborting, returns the created instances.</td></tr>
+        <tr><td><code>Autocomplete.salt</code></td><td><code>'vc1'</code></td><td>CSS isolation token. Set a custom string or <code>false</code> (disable) before the first instance. See <a href="#api-theming">Theming</a>.</td></tr>
+        <tr><td><code>Autocomplete.css</code></td><td>string (getter)</td><td>The full stylesheet, rendered with the current salt — a starting point for headless styling.</td></tr>
+        <tr><td><code>Autocomplete.displayName</code></td><td><code>'Autocomplete'</code></td><td>Family convergence contract.</td></tr>
+        <tr><td><code>Autocomplete.rootClass</code></td><td><code>'vac'</code></td><td>Root class of the panel (convergence contract).</td></tr>
+        <tr><td><code>Autocomplete.themeVars</code></td><td>object</td><td>Maps family theme keys to CSS custom properties: <code>{ accent: '--vac-accent', radius: '--vac-radius', font: '--vac-font' }</code> — used by <code>VC.config()</code>.</td></tr>
+        <tr><td><code>Autocomplete.varScopes</code></td><td>array</td><td><code>['.vac', '.vac[data-theme=dark]']</code> — the selectors where theme variables are defined (deliberately unsalted).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>Option callbacks receive the instance as their last argument:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Option callbacks">
+    <table>
+      <thead>
+        <tr><th>Callback</th><th>Arguments</th><th>Fires when</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>onSelect</code></td><td><code>(item, autocomplete)</code></td><td>A suggestion is committed with Enter or a click. <code>item</code> is the normalized item object (<code>value</code>/<code>label</code>/<code>group</code>/<code>disabled</code>/<code>html</code>).</td></tr>
+        <tr><td><code>onInput</code></td><td><code>(query, autocomplete)</code></td><td>Every keystroke, with the raw input value, before the debounced lookup.</td></tr>
+        <tr><td><code>onError</code></td><td><code>(error, autocomplete)</code></td><td>A source throws or its promise rejects; the panel has already closed silently.</td></tr>
+        <tr><td><code>onOpen</code></td><td><code>(autocomplete)</code></td><td>The panel opens.</td></tr>
+        <tr><td><code>onClose</code></td><td><code>(autocomplete)</code></td><td>The panel closes.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The component also dispatches bubbling <code>CustomEvent</code>s on the
+  bound input, so you can listen without a reference to the instance:</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="DOM events">
+    <table>
+      <thead>
+        <tr><th>Event</th><th><code>event.detail</code></th><th>Fires when</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>autocomplete:select</code></td><td><code>{ item, autocomplete }</code></td><td>A suggestion is committed (after <code>onSelect</code>).</td></tr>
+        <tr><td><code>autocomplete:open</code></td><td><code>{ autocomplete }</code></td><td>The panel opens (after <code>onOpen</code>).</td></tr>
+        <tr><td><code>autocomplete:close</code></td><td><code>{ autocomplete }</code></td><td>The panel closes (after <code>onClose</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre>document.getElementById('q').addEventListener('autocomplete:select', function (e) {
+  console.log(e.detail.item.value)
+})</pre>
+  <p>All three bubble (<code>bubbles: true</code>). No native <code>input</code>
+  or <code>change</code> events are dispatched programmatically — when a
+  selection fills the input (or <code>allowNew: false</code> reverts it), the
+  value is written directly.</p>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Add <code>data-vac</code> to an input and it is picked up automatically on
+  <code>DOMContentLoaded</code> (or immediately if the script loads later); call
+  <code>Autocomplete.autoInit(root)</code> yourself for content added after
+  that. Already-bound elements are skipped.</p>
+  <pre>&lt;input data-vac data-vac-source='["Apple","Apricot","Banana"]' data-vac-min-chars="2"&gt;</pre>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Data attributes">
+    <table>
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Value semantics</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vac</code></td><td>—</td><td>Marker: opts the element in to auto-init.</td></tr>
+        <tr><td><code>data-vac-source</code></td><td><code>source</code></td><td>JSON array (strings or item objects); anything that fails to parse as JSON is split on commas as a shorthand list.</td></tr>
+        <tr><td><code>data-vac-min-chars</code></td><td><code>minChars</code></td><td>Number.</td></tr>
+        <tr><td><code>data-vac-debounce</code></td><td><code>debounce</code></td><td>Number (ms).</td></tr>
+        <tr><td><code>data-vac-max-results</code></td><td><code>maxResults</code></td><td>Number.</td></tr>
+        <tr><td><code>data-vac-highlight</code></td><td><code>highlight</code></td><td>Boolean: every value except <code>"false"</code> and <code>"0"</code> is true.</td></tr>
+        <tr><td><code>data-vac-open-on-focus</code></td><td><code>openOnFocus</code></td><td>Boolean, same parsing.</td></tr>
+        <tr><td><code>data-vac-allow-new</code></td><td><code>allowNew</code></td><td>Boolean, same parsing.</td></tr>
+        <tr><td><code>data-vac-styles</code></td><td><code>styles</code></td><td>Boolean, same parsing.</td></tr>
+        <tr><td><code>data-vac-empty-text</code></td><td><code>emptyText</code></td><td>String.</td></tr>
+        <tr><td><code>data-vac-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code>.</td></tr>
+        <tr><td><code>data-vac-position</code></td><td><code>position</code></td><td><code>auto</code> | <code>below</code> | <code>above</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The component itself sets <code>data-vac-bound</code> on the input while an
+  instance is attached; it is removed on <code>destroy()</code>.</p>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>With <code>theme: 'auto'</code> (the default) the panel resolves its theme
+  in the family's order — <code>&lt;html data-theme&gt;</code> /
+  <code>data-bs-theme</code> → <code>.dark</code> / <code>.light</code> class on
+  <code>&lt;html&gt;</code> → <code>prefers-color-scheme</code> — and re-resolves
+  live when any of those change (via the shared VC engine when the core is
+  loaded, otherwise a private watcher). Pin per instance with
+  <code>theme: 'light'</code> or <code>'dark'</code>. Every color is a CSS custom
+  property on <code>.vac</code> (dark values on
+  <code>.vac[data-theme=dark]</code>):</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="CSS custom properties">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Light default</th><th>Dark default</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--vac-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td><td>Match highlight + active tint.</td></tr>
+        <tr><td><code>--vac-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td><td>Panel background.</td></tr>
+        <tr><td><code>--vac-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td><td>Active option background.</td></tr>
+        <tr><td><code>--vac-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td><td>Option text.</td></tr>
+        <tr><td><code>--vac-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td><td>Group headers, status rows.</td></tr>
+        <tr><td><code>--vac-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td><td>Panel border.</td></tr>
+        <tr><td><code>--vac-shadow</code></td><td><code>0 10px 28px rgba(24,25,32,.14), 0 2px 8px rgba(24,25,32,.08)</code></td><td><code>0 10px 28px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.35)</code></td><td>Panel shadow.</td></tr>
+        <tr><td><code>--vac-radius</code></td><td><code>12px</code></td><td>(same)</td><td>Panel corner radius.</td></tr>
+        <tr><td><code>--vac-font</code></td><td>system-ui stack</td><td>(same)</td><td>Panel font family.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre>.vac { --vac-accent: #b45309; }   /* per page — no core needed */
+VC.config({ accent: '#b45309' })  /* with the VC core: themes the whole family */</pre>
+  <p><strong>CSS isolation:</strong> the panel renders as
+  <code>class="vac vac-panel vc1"</code> and every structural rule ships salted
+  (<code>.vac.vc1 .vac-option { … }</code>) so host-page design systems can't
+  override it, while the <code>--vac-*</code> variable definitions stay
+  deliberately unsalted so page overrides keep working. Set
+  <code>Autocomplete.salt = 'acme'</code> for a custom token or
+  <code>Autocomplete.salt = false</code> to disable — before the first instance.
+  The host <code>&lt;input&gt;</code> itself is never styled.</p>
+  <p><strong>Headless:</strong> pass <code>styles: false</code> (or set
+  <code>Autocomplete.defaults.styles = false</code>) and no CSS is ever
+  injected; you keep the full behavior — async guards, keyboard, ARIA — and
+  style the markup contract below yourself. The stock stylesheet is available
+  as the <code>Autocomplete.css</code> string as a starting point.</p>
+  <pre>input[data-vac-bound]                 ← your input, untouched
+.vac.vac-panel[data-theme="dark"]     ← .vac-open while visible;
+  .vac-list[role="listbox"]             is-loading / is-empty state classes
+    [role="group"] &gt; .vac-group-label ← only when items carry `group`
+    .vac-option.is-active             ← .vac-match wraps the matched substring
+  .vac-loading                        ← spinner row while a lookup is in flight
+  .vac-empty                          ← shown when query ≥ minChars, no results</pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <p>The bound input becomes the combobox: it gets <code>role="combobox"</code>,
+  <code>aria-autocomplete="list"</code>, <code>aria-expanded</code>,
+  <code>aria-controls</code> (pointing at the list) and
+  <code>autocomplete="off"</code>; original attribute values are restored on
+  <code>destroy()</code>. The panel's list is <code>role="listbox"</code>
+  (labelled by <code>labels.suggestions</code>) with <code>role="option"</code>
+  rows carrying <code>aria-selected</code> and, when disabled,
+  <code>aria-disabled="true"</code>; grouped items sit inside
+  <code>role="group"</code> containers labelled with the group name. Browsing
+  moves <code>aria-activedescendant</code> on the input only — the typed text is
+  never changed until a commit. Reduced motion is respected
+  (<code>prefers-reduced-motion</code> disables all transitions).</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard map">
+    <table>
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>↓</code> / <code>↑</code></td><td>Move the active suggestion; wraps around and skips disabled items. Either arrow on a closed panel reopens it with suggestions for the current text.</td></tr>
+        <tr><td><code>Enter</code></td><td>With an active suggestion: commit it (fills the input with <code>item.value</code>, fires <code>onSelect</code>, closes; default prevented). With nothing active: the free text stands, the panel closes, and the Enter reaches your form.</td></tr>
+        <tr><td><code>Esc</code></td><td>Close the panel; the typed text is kept. (Default prevented and propagation stopped, so a surrounding dialog stays open.)</td></tr>
+        <tr><td><code>Tab</code></td><td>Close and let focus move on naturally.</td></tr>
+        <tr><td>typing</td><td>Reopens with fresh suggestions, debounced by <code>debounce</code> ms.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Blur closes the panel; with <code>allowNew: false</code> it also reverts
+  unmatched text first. Home and End are not intercepted — they keep their
+  native caret behavior in the input.</p>
+</section>
+
+<style>
+  .hl { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .hl h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .hl > p { color: var(--muted); font-size: 14px; margin: 0 0 28px; max-width: 76ch; }
+  .hl code {
+    font-family: var(--mono); font-size: .92em; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .hl pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .hl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .hl iframe {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+  .hl button.hl-load {
+    font: inherit; font-size: 14px; font-weight: 500; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 8px 14px; cursor: pointer; align-self: flex-start;
+  }
+  .hl button.hl-load:hover { border-color: var(--accent); color: var(--accent); }
+  .hl button.hl-load[disabled] { opacity: .6; cursor: default; }
+</style>
+
+<section class="wrap hl" id="headless" aria-labelledby="headless-h">
+  <h2 id="headless-h">Headless mode</h2>
+  <p><code>styles: false</code> injects nothing — you keep the full behavior
+  (async guards, keyboard navigation), the ARIA combobox wiring and the stable
+  <code>.vac-*</code> class hooks; you bring your own CSS. Each demo runs in
+  its own <code>&lt;iframe&gt;</code>: the styled examples above already
+  injected the autocomplete stylesheet into this page, so only a clean
+  document can show truly unstyled output.</p>
+  <div class="hl-grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — your input untouched, a plain listbox
+      panel with class hooks, zero CSS injected. Type <code>a</code>.</p>
+      <iframe id="hl-raw-frame" title="Headless autocomplete demo, unstyled" style="height:260px"></iframe>
+      <pre>new Autocomplete('#q', {
+  styles: false,        // zero CSS injected
+  source: ['Amsterdam', 'Auckland',
+    'Austin', 'Barcelona', 'Berlin'],
+  minChars: 1,
+  openOnFocus: true
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same headless instance mapped to a different design — groups,
+      active option and match highlight — loaded on demand from
+      <code>cdn.tailwindcss.com</code>.</p>
+      <button type="button" class="hl-load" id="hl-tw-btn">Load Tailwind demo</button>
+      <iframe id="hl-tw-frame" title="Headless autocomplete demo, styled with Tailwind" style="height:320px" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+.vac-panel { @apply z-10 overflow-hidden rounded-2xl
+  border border-slate-200 bg-white shadow-2xl; }
+.vac-list { @apply max-h-60 overflow-y-auto p-1.5; }
+.vac-group-label { @apply px-3 pb-1 pt-2 text-[11px]
+  font-bold uppercase tracking-widest text-indigo-400; }
+.vac-option { @apply cursor-pointer rounded-xl px-3 py-2
+  text-sm text-slate-700; }
+.vac-option.is-active { @apply bg-indigo-600 text-white; }
+.vac-match { @apply font-extrabold; }
+.vac-loading, .vac-empty { @apply px-3 py-6 text-center
+  text-sm text-slate-400; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  var S = '<' + 'script', E = '<' + '/script>';
+  var raw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless autocomplete, unstyled</title>',
+    '<p>Clean document: no autocomplete CSS exists here.</p>',
+    '<label for="q">City </label>',
+    '<input id="q" placeholder="Type a…" autocomplete="off">',
+    S + ' src="autocomplete.js">' + E,
+    S + '>',
+    'new Autocomplete("#q", {',
+    '  styles: false,',
+    '  source: ["Amsterdam", "Auckland", "Austin", "Barcelona",',
+    '    "Berlin", "Bogota", "Boston", "Brisbane"],',
+    '  minChars: 1,',
+    '  openOnFocus: true',
+    '});',
+    E
+  ].join('\n');
+  document.getElementById('hl-raw-frame').srcdoc = raw;
+
+  var tw = [
+    '<!doctype html>',
+    '<meta charset="utf-8">',
+    '<title>Headless autocomplete, Tailwind</title>',
+    S + ' src="https://cdn.tailwindcss.com">' + E,
+    S + ' src="autocomplete.js">' + E,
+    '<style type="text/tailwindcss">',
+    '  .vac-panel { @apply z-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl; }',
+    '  .vac-list { @apply max-h-60 overflow-y-auto p-1.5; }',
+    '  .vac-group-label { @apply px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-widest text-indigo-400; }',
+    '  .vac-option { @apply cursor-pointer rounded-xl px-3 py-2 text-sm text-slate-700; }',
+    '  .vac-option.is-active { @apply bg-indigo-600 text-white; }',
+    '  .vac-match { @apply font-extrabold; }',
+    '  .vac-loading, .vac-empty { @apply px-3 py-6 text-center text-sm text-slate-400; }',
+    '</style>',
+    '<body class="bg-slate-50 p-6 font-sans">',
+    '<label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500" for="city">Destination</label>',
+    '<input id="city" placeholder="Type a…" autocomplete="off"',
+    '  class="w-72 rounded-xl border border-slate-300 px-4 py-2.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/15">',
+    S + '>',
+    'new Autocomplete("#city", {',
+    '  styles: false,',
+    '  minChars: 1,',
+    '  openOnFocus: true,',
+    '  source: [',
+    '    { value: "amsterdam", label: "Amsterdam", group: "Europe" },',
+    '    { value: "barcelona", label: "Barcelona", group: "Europe" },',
+    '    { value: "berlin", label: "Berlin", group: "Europe" },',
+    '    { value: "auckland", label: "Auckland", group: "Oceania" },',
+    '    { value: "brisbane", label: "Brisbane", group: "Oceania" },',
+    '    { value: "austin", label: "Austin", group: "Americas" },',
+    '    { value: "boston", label: "Boston", group: "Americas" }',
+    '  ]',
+    '});',
+    E
+  ].join('\n');
+  var btn = document.getElementById('hl-tw-btn');
+  btn.addEventListener('click', function () {
+    var f = document.getElementById('hl-tw-frame');
+    f.hidden = false;
+    f.srcdoc = tw; // cdn.tailwindcss.com loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
+</script>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

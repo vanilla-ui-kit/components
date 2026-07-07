@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Pagination — zero-dependency, one file · Vanilla UI Kit</title>
@@ -228,6 +229,378 @@ pager.update({ total: ITEMS.length })</pre>
     onChange: function (page) { renderSlice(page); }
   });
   renderSlice(listPager.getPage());
+</script>
+<style>
+  /* ---- API reference ---- */
+  .api-sec { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api-sec h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-sec h3 { font-size: 18px; font-weight: 650; margin: 44px 0 8px; }
+  .api-sec h4 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  .api-sec p { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; }
+  .api-sec ul { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api-sec code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api-sec pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-sec pre code { background: none; border: 0; padding: 0; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .api-toc a {
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-table-wrap {
+    overflow-x: auto; margin: 12px 0; border: 1px solid var(--faint);
+    border-radius: 10px; background: var(--surface);
+  }
+  .api-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table.api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.api-table th {
+    text-align: left; font-weight: 600; padding: 8px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--faint); background: var(--surface-2);
+  }
+  table.api-table td {
+    padding: 8px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  table.api-table tr:last-child td { border-bottom: 0; }
+  table.api-table td:first-child { white-space: nowrap; }
+</style>
+<div class="wrap api-sec">
+  <h2 id="api">API reference</h2>
+  <p>The complete <code>Pagination</code> API — constructor, every option,
+  instance methods, statics, events, declarative attributes, theming and
+  accessibility.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Constructor &amp; usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics &amp; helpers</a>
+    <a href="#api-events">Events &amp; callbacks</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <pre><code>new Pagination(target, options?)     // → instance
+Pagination.create(target, options?)  // same as new</code></pre>
+  <p><code>target</code> is a selector string or an element — the
+  <code>&lt;nav&gt;</code> of real buttons is rendered inside it. Give it either
+  an item count (<code>total</code> + <code>perPage</code>) or the page count
+  directly (<code>pages</code>, which takes precedence). Constructing on an
+  element that already holds an instance destroys the old one first; the initial
+  <code>page</code> is clamped and never fires <code>onChange</code>. A missing
+  target throws; without a DOM (SSR) the constructor returns an inert no-op
+  instance.</p>
+  <pre><code>const pager = new Pagination('#pager', {
+  total: 97,               // 97 items, 10 per page → 10 pages
+  onChange: (page) =&gt; loadPage(page)
+})</code></pre>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every key of <code>Pagination.defaults</code>, with its default value.</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Pagination options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>total</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Item count — pairs with <code>perPage</code> to derive the page count (<code>ceil(total / perPage)</code>, minimum 1).</td></tr>
+        <tr><td><code>perPage</code></td><td>number</td><td><code>10</code></td>
+          <td>Items per page (minimum 1).</td></tr>
+        <tr><td><code>pages</code></td><td>number | null</td><td><code>null</code></td>
+          <td>OR pass the page count directly — takes precedence over <code>total</code>/<code>perPage</code>.</td></tr>
+        <tr><td><code>page</code></td><td>number</td><td><code>1</code></td>
+          <td>Initial page, 1-based, clamped to <code>[1, pageCount]</code>.</td></tr>
+        <tr><td><code>siblings</code></td><td>number</td><td><code>1</code></td>
+          <td>Pages shown on each side of the current one.</td></tr>
+        <tr><td><code>boundaries</code></td><td>number</td><td><code>1</code></td>
+          <td>Pages pinned at each end of the strip.</td></tr>
+        <tr><td><code>compact</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Swap the page strip for a live <code>3 / 12</code> readout between the prev/next buttons.</td></tr>
+        <tr><td><code>showTotal</code></td><td>boolean | function</td><td><code>false</code></td>
+          <td><code>true</code> = built-in <code>"1–10 of 97"</code> readout, or a formatter <code>(total, [from, to]) =&gt; string</code>. Only rendered in <code>total</code>/<code>perPage</code> mode.</td></tr>
+        <tr><td><code>showJump</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Labelled "Go to" number input; <kbd>Enter</kbd> jumps to the clamped page and never submits a surrounding form.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto re-resolves live against the page theme.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is injected — style the <code>.vpn-*</code> markup yourself.</td></tr>
+        <tr><td><code>onChange</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(page, pagination)</code> — fired on every real page change (never for the initial clamp).</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td>see below</td>
+          <td>Every string is replaceable (i18n); merged key-by-key over the defaults.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>The <code>labels</code> object</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Pagination labels">
+    <table class="api-table">
+      <thead>
+        <tr><th>Key</th><th>Default</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>pagination</code></td><td><code>'Pagination'</code></td><td><code>aria-label</code> on the <code>&lt;nav&gt;</code>.</td></tr>
+        <tr><td><code>prev</code></td><td><code>'Prev'</code></td><td>Visible prev text (<code>''</code> = glyph only).</td></tr>
+        <tr><td><code>next</code></td><td><code>'Next'</code></td><td>Visible next text (<code>''</code> = glyph only).</td></tr>
+        <tr><td><code>prevAria</code></td><td><code>'Previous page'</code></td><td><code>aria-label</code> on the prev button.</td></tr>
+        <tr><td><code>nextAria</code></td><td><code>'Next page'</code></td><td><code>aria-label</code> on the next button.</td></tr>
+        <tr><td><code>page</code></td><td><code>'Page'</code></td><td><code>aria-label</code> prefix on page buttons ("Page 7").</td></tr>
+        <tr><td><code>jump</code></td><td><code>'Go to'</code></td><td>Visible label on the jump field.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Methods</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Pagination instance methods">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getPage()</code></td><td>number</td>
+          <td>The current page (1-based).</td></tr>
+        <tr><td><code>setPage(p, {silent}?)</code></td><td>instance</td>
+          <td>Clamped to <code>[1, pageCount]</code>. Fires <code>onChange</code> and the <code>pagination:change</code> event only on an actual move, and never with <code>{silent: true}</code>.</td></tr>
+        <tr><td><code>update({total, perPage, pages})</code></td><td>instance</td>
+          <td>Swap the data shape in place; the current page is re-clamped <em>silently</em> (no <code>onChange</code> for the clamp).</td></tr>
+        <tr><td><code>destroy()</code></td><td>instance</td>
+          <td>Remove the <code>&lt;nav&gt;</code>, its listeners and the theme watcher, and unbind the instance from the element.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Pagination static members">
+    <table class="api-table">
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Pagination.create(el, opts)</code></td>
+          <td>Same as <code>new Pagination(el, opts)</code>.</td></tr>
+        <tr><td><code>Pagination.get(el)</code></td>
+          <td>The instance previously bound to an element (or <code>null</code>).</td></tr>
+        <tr><td><code>Pagination.autoInit(root?)</code></td>
+          <td>Initialize every <code>[data-vpn]</code> under <code>root</code> (default: <code>document</code>); returns the created instances. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>Pagination.defaults</code></td>
+          <td>The live defaults object — mutate before constructing.</td></tr>
+        <tr><td><code>Pagination.css</code></td>
+          <td>The full stylesheet as a string (rendered with the current salt) — a starting point for headless styling.</td></tr>
+        <tr><td><code>Pagination.salt</code></td>
+          <td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first instance.</td></tr>
+        <tr><td><code>Pagination.version</code></td>
+          <td>Version string, <code>'1.0.0'</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-events">Events &amp; callbacks</h3>
+  <p>Two channels report every real page move (a <code>setPage</code> to the same
+  page, an initial clamp, or <code>{silent: true}</code> fire neither):</p>
+  <ul>
+    <li><code>onChange(page, pagination)</code> — the option callback.</li>
+    <li><code>pagination:change</code> — a bubbling <code>CustomEvent</code>
+    dispatched from the target element with
+    <code>detail: { page, pagination }</code>.</li>
+  </ul>
+  <pre><code>document.getElementById('pager').addEventListener('pagination:change', (e) =&gt; {
+  console.log(e.detail.page)        // the new page
+  console.log(e.detail.pagination)  // the instance
+})</code></pre>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Add <code>data-vpn</code> to a container — instances are built on
+  <code>DOMContentLoaded</code> (or call <code>Pagination.autoInit(root)</code>
+  after inserting markup). Listen for <code>pagination:change</code> on the
+  container to react.</p>
+  <pre><code>&lt;div data-vpn data-total="97" data-per-page="10" data-show-jump&gt;&lt;/div&gt;</code></pre>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Pagination data attributes">
+    <table class="api-table">
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vpn</code></td><td>—</td><td>Marks the container.</td></tr>
+        <tr><td><code>data-total</code> / <code>data-per-page</code> / <code>data-pages</code> / <code>data-page</code></td><td><code>total</code>/<code>perPage</code>/<code>pages</code>/<code>page</code></td><td>Numbers.</td></tr>
+        <tr><td><code>data-siblings</code> / <code>data-boundaries</code></td><td><code>siblings</code>/<code>boundaries</code></td><td>Numbers.</td></tr>
+        <tr><td><code>data-compact</code> / <code>data-show-total</code> / <code>data-show-jump</code> / <code>data-styles</code></td><td><code>compact</code>/<code>showTotal</code>/<code>showJump</code>/<code>styles</code></td><td>Booleans; present = true, <code>"false"</code> and <code>"0"</code> = false.</td></tr>
+        <tr><td><code>data-theme</code></td><td><code>theme</code></td><td><code>auto</code> | <code>light</code> | <code>dark</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+  <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live.
+  Pin one instance with <code>theme: 'dark'</code>. All colors are CSS custom
+  properties on <code>.vpn</code>:</p>
+  <pre><code>.vpn {
+  --vpn-accent: #b45309;   /* current page, focus rings */
+  --vpn-text: …; --vpn-muted: …; --vpn-faint: …; --vpn-bg: …;
+  --vpn-on-accent: …;      /* text on the current-page button */
+  --vpn-radius: 8px; --vpn-font: …;
+}</code></pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  the pager and every other family component in one call. The nav renders as
+  <code>class="vpn vc1"</code>; structural rules ship salted so host design
+  systems can't override it, while the unsalted <code>--vpn-*</code> variable
+  definitions keep page overrides working. Change the token with
+  <code>Pagination.salt = 'acme'</code> (or <code>false</code>) before the first
+  instance.</p>
+  <p><strong>Headless:</strong> pass <code>styles: false</code> (per instance, or
+  via <code>Pagination.defaults</code>) and no CSS is injected — you keep the
+  full behavior (windowing, clamping, ARIA, keyboard) and style this markup
+  contract yourself (<code>Pagination.css</code> is the reference stylesheet as a
+  string):</p>
+  <pre><code>nav.vpn[aria-label="Pagination"][data-theme="dark"]
+  .vpn-total                      ← only when showTotal (total mode)
+  button.vpn-btn.vpn-prev         ← disabled on page 1
+  .vpn-pages                      ← or .vpn-status[aria-live] when compact
+    button.vpn-btn[data-page]     ← [aria-current="page"] on the current one
+    .vpn-gap                      ← the … separators
+  button.vpn-btn.vpn-next         ← disabled on the last page
+  label.vpn-jump &gt; input          ← only when showJump</code></pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <ul>
+    <li>Renders inside <code>&lt;nav aria-label="Pagination"&gt;</code>; every
+    page is a real <code>&lt;button&gt;</code>, so keyboard access is native
+    (<kbd>Tab</kbd> + <kbd>Enter</kbd>/<kbd>Space</kbd>) — no custom key
+    handling to learn.</li>
+    <li>The current page carries <code>aria-current="page"</code> and ignores
+    clicks; prev/next carry full <code>aria-label</code>s (their arrow glyphs
+    are <code>aria-hidden</code>) and disable themselves at the ends; ellipses
+    are inert <code>aria-hidden</code> separators.</li>
+    <li>The strip keeps a <strong>constant item count</strong> while paging —
+    the sibling window shifts inward near the edges instead of shrinking, so
+    nothing jumps around under the pointer, and a gap that would hide only a
+    single page becomes that page. If focus was inside the strip when it
+    re-renders, focus is handed to the new current-page button.</li>
+    <li>In compact mode the <code>3 / 12</code> readout is an
+    <code>aria-live="polite"</code> region, so page flips are announced.</li>
+    <li>The jump field is a <code>&lt;label&gt;</code>-wrapped number input;
+    <kbd>Enter</kbd> jumps to the clamped page and never submits a surrounding
+    form. Reduced motion is respected.</li>
+  </ul>
+</div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Pagination injects no CSS at all — the full
+  behavior (windowing, clamping, callbacks), native keyboard access, the ARIA
+  contract and the stable <code>.vpn-*</code> class hooks all remain; you bring
+  the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a real <code>&lt;nav&gt;</code> of native
+      <code>&lt;button&gt;</code>s with <code>aria-current="page"</code> on the
+      current one. Zero CSS was injected, yet it is a fully working pager —
+      click around.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Pagination with styles: false — unstyled working pager" height="120"></iframe>
+      <pre>new Pagination('#pager', {
+  total: 97, page: 3,
+  showTotal: true,
+  styles: false,   // ← zero CSS injected
+  onChange: function (p) { /* … */ }
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — pill buttons, a filled <code>aria-current</code>
+      state, a rounded jump field. Nothing loads from the CDN until you
+      click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Pagination styled with Tailwind" height="150" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vpn        { @apply flex flex-wrap items-center gap-1.5; }
+  .vpn-total  { @apply mr-2 text-xs font-medium text-slate-500; }
+  .vpn-pages  { @apply flex items-center gap-1.5; }
+  .vpn-btn    { @apply h-9 min-w-9 cursor-pointer rounded-full border-0
+                bg-white px-3 text-sm font-semibold text-slate-600 shadow-sm
+                ring-1 ring-slate-200 hover:bg-sky-50 hover:text-sky-700
+                hover:ring-sky-300 disabled:cursor-not-allowed
+                disabled:opacity-40; }
+  .vpn-btn[aria-current="page"] { @apply bg-sky-600 text-white ring-sky-600
+                shadow-md shadow-sky-200; }
+  .vpn-gap    { @apply px-1 text-slate-400; }
+  .vpn-jump   { @apply ml-2 flex items-center gap-1.5 text-xs text-slate-500; }
+  .vpn-jump input { @apply w-14 rounded-lg border-0 px-2 py-1.5 text-sm
+                ring-1 ring-slate-200 outline-none focus:ring-2
+                focus:ring-sky-500; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'pagination.js' resolves
+  // to the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<body style="margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui">',
+    '<div id="pager"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">page: 3</p>',
+    '<script src="pagination.js"><\/script>',
+    '<script>',
+    'new Pagination("#pager", { total: 97, page: 3, showTotal: true, styles: false,',
+    '  onChange: function (p) { document.getElementById("out").textContent = "page: " + p; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="pagination.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vpn        { @apply flex flex-wrap items-center gap-1.5; }',
+    '  .vpn-total  { @apply mr-2 text-xs font-medium text-slate-500; }',
+    '  .vpn-pages  { @apply flex items-center gap-1.5; }',
+    '  .vpn-btn    { @apply h-9 min-w-9 cursor-pointer rounded-full border-0 bg-white px-3 text-sm font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:ring-sky-300 disabled:cursor-not-allowed disabled:opacity-40; }',
+    '  .vpn-btn[aria-current="page"] { @apply bg-sky-600 text-white ring-sky-600 shadow-md shadow-sky-200; }',
+    '  .vpn-gap    { @apply px-1 text-slate-400; }',
+    '  .vpn-jump   { @apply ml-2 flex items-center gap-1.5 text-xs text-slate-500; }',
+    '  .vpn-jump input { @apply w-14 rounded-lg border-0 px-2 py-1.5 text-sm ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-sky-500; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-sky-50 to-indigo-100 font-sans">',
+    '<div id="pager"></div>',
+    '<script>',
+    'new Pagination("#pager", { total: 97, page: 3, showJump: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>

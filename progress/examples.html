@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Progress Bars &amp; Skeletons — zero-dependency, one file · Vanilla UI Kit</title>
@@ -267,6 +268,475 @@ sk.release()  // or Progress.skeleton.release(el)</pre>
   Progress.bar('#variant-slot', { size: 'sm', value: 45, label: 'Small' });
   Progress.bar('#variant-slot', { size: 'sm', color: 'success', value: 80, label: 'Success' });
   Progress.bar('#variant-slot', { indeterminate: true, size: 'sm', label: 'Indeterminate, small' });
+</script>
+<style>
+  /* ---- API reference ---- */
+  .api-sec { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api-sec h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-sec h3 { font-size: 18px; font-weight: 650; margin: 44px 0 8px; }
+  .api-sec h4 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  .api-sec p { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; }
+  .api-sec ul { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api-sec code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api-sec pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-sec pre code { background: none; border: 0; padding: 0; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .api-toc a {
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-table-wrap {
+    overflow-x: auto; margin: 12px 0; border: 1px solid var(--faint);
+    border-radius: 10px; background: var(--surface);
+  }
+  .api-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table.api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.api-table th {
+    text-align: left; font-weight: 600; padding: 8px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--faint); background: var(--surface-2);
+  }
+  table.api-table td {
+    padding: 8px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  table.api-table tr:last-child td { border-bottom: 0; }
+  table.api-table td:first-child { white-space: nowrap; }
+</style>
+<div class="wrap api-sec">
+  <h2 id="api">API reference</h2>
+  <p><code>Progress</code> is a namespace of three static primitives —
+  <code>Progress.bar()</code>, <code>Progress.spinner()</code> and
+  <code>Progress.skeleton()</code>. Each takes a target (element or selector,
+  the widget is appended into it), merges its options over
+  <code>Progress.defaults</code>, and returns a small plain-object handle.
+  SSR-safe: without a DOM (or with a missing target) every call returns an
+  inert handle whose methods are all safe to call.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Usage</a>
+    <a href="#api-bar">Bars</a>
+    <a href="#api-spinner">Spinners</a>
+    <a href="#api-skeleton">Skeletons</a>
+    <a href="#api-statics">Defaults, statics &amp; helpers</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Usage</h3>
+  <pre><code>var bar = Progress.bar('#upload', { label: 'Uploading…', showValue: true })
+bar.set(42)
+bar.done()                        // fills to 100% in the success color
+
+var sp = Progress.spinner('#slot', { size: 28 })
+sp.remove()
+
+var sk = Progress.skeleton('#card', { avatar: true, lines: 3 })
+sk.release()                      // or: Progress.skeleton.release('#card')</code></pre>
+
+  <h3 id="api-bar">Bars — <code>Progress.bar(target, opts)</code></h3>
+  <h4>Options</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress bar options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>value</code></td><td>number</td><td><code>0</code></td>
+          <td>Starting value, clamped to <code>[0, max]</code>.</td></tr>
+        <tr><td><code>max</code></td><td>number</td><td><code>100</code></td>
+          <td>The 100% mark (values ≤ 0 fall back to 100).</td></tr>
+        <tr><td><code>indeterminate</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Sweeping animation for an unknown total; <code>aria-valuenow</code> is omitted while indeterminate.</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td><code>''</code></td>
+          <td>Visible text above the bar — always plain text (<code>textContent</code>, never HTML). Also becomes the track's <code>aria-label</code>.</td></tr>
+        <tr><td><code>showValue</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Rounded percentage (<code>'42%'</code>) at the right of the label row.</td></tr>
+        <tr><td><code>size</code></td><td>string</td><td><code>'md'</code></td>
+          <td><code>'sm'</code> | <code>'md'</code> — track height 5px vs 8px.</td></tr>
+        <tr><td><code>color</code></td><td>string</td><td><code>'accent'</code></td>
+          <td><code>'accent'</code> | <code>'success'</code> fill color.</td></tr>
+        <tr><td><code>autoRemove</code></td><td>boolean | number</td><td><code>false</code></td>
+          <td>After <code>done()</code>: <code>true</code> → remove the bar after 800&nbsp;ms; a number → custom delay in ms.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Shared: <code>false</code> = headless, no CSS injected.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td>Shared: <code>'auto'</code> | <code>'light'</code> | <code>'dark'</code> (pin globally via <code>Progress.defaults.theme</code>).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>Handle</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress bar handle">
+    <table class="api-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>el</code></td><td>The root <code>.vpg.vpg-bar</code> element (or <code>null</code> for the inert SSR handle).</td></tr>
+        <tr><td><code>set(value)</code></td><td>Clamps to <code>[0, max]</code>, updates the fill, <code>aria-valuenow</code> and the percentage readout. On an indeterminate bar the first <code>set()</code> promotes it to determinate. Chainable.</td></tr>
+        <tr><td><code>done()</code></td><td>Fills to 100% in the success color (and promotes an indeterminate bar), then removes the bar if <code>autoRemove</code> is set. Chainable.</td></tr>
+        <tr><td><code>setLabel(text)</code></td><td>Replaces the label text (creating the label row if needed) and keeps <code>aria-label</code> in sync. Chainable.</td></tr>
+        <tr><td><code>remove()</code></td><td>Removes the bar from the DOM immediately. Idempotent.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-spinner">Spinners — <code>Progress.spinner(target, opts)</code></h3>
+  <p>An SVG arc — the same arc as Toast's loading icon — spinning in the accent
+  color, with visually-hidden accessible text.</p>
+  <h4>Options</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress spinner options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>size</code></td><td>number</td><td><code>20</code></td>
+          <td>Diameter in px. Because <code>size</code> doubles as the bar's <code>'sm'|'md'</code> in the shared defaults, only a numeric value applies here — <code>spinnerSize</code> (the actual defaults key, <code>20</code>) is an equivalent, unambiguous spelling.</td></tr>
+        <tr><td><code>spinnerSize</code></td><td>number</td><td><code>20</code></td>
+          <td>Alias of <code>size</code> in px; used when <code>size</code> is not a positive number.</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td><code>''</code></td>
+          <td>Visually-hidden accessible text; falls back to <code>Progress.defaults.labels.loading</code> (<code>'Loading…'</code>).</td></tr>
+        <tr><td><code>inline</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> renders as a block (<code>.vpg-block</code>) instead of inline-flex.</td></tr>
+        <tr><td><code>styles</code> / <code>theme</code></td><td>—</td><td>—</td>
+          <td>Shared options, as for bars.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>Handle</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress spinner handle">
+    <table class="api-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>el</code></td><td>The root <code>.vpg.vpg-spinner</code> element.</td></tr>
+        <tr><td><code>remove()</code></td><td>Removes the spinner. Idempotent.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-skeleton">Skeletons — <code>Progress.skeleton(target, opts)</code></h3>
+  <p>Shimmering placeholder blocks rendered <strong>inside</strong>
+  <code>target</code>. The original element children are hidden (inline
+  <code>display:none</code>), never removed — <code>release()</code> restores
+  each one's exact prior inline display. Calling <code>skeleton()</code> twice on
+  the same target is idempotent: the existing handle is returned.</p>
+  <h4>Options</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress skeleton options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>lines</code></td><td>number</td><td><code>3</code></td>
+          <td>Number of placeholder lines.</td></tr>
+        <tr><td><code>avatar</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Leading 40px circle.</td></tr>
+        <tr><td><code>header</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Taller first line (1.5 × <code>height</code>, class <code>.vpg-head</code>).</td></tr>
+        <tr><td><code>widths</code></td><td>array | null</td><td><code>null</code></td>
+          <td>Per-line CSS widths, e.g. <code>['100%','85%','60%']</code>. Default is a staggered pattern: <code>100%</code>/<code>85%</code> alternating, with a short <code>60%</code> last line.</td></tr>
+        <tr><td><code>height</code></td><td>number</td><td><code>12</code></td>
+          <td>Line height in px.</td></tr>
+        <tr><td><code>styles</code> / <code>theme</code></td><td>—</td><td>—</td>
+          <td>Shared options, as for bars.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>Handle</h4>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress skeleton handle">
+    <table class="api-table">
+      <thead>
+        <tr><th>Member</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>el</code></td><td>The root <code>.vpg.vpg-skeleton</code> element.</td></tr>
+        <tr><td><code>release()</code></td><td>Removes the skeleton, restores every hidden child's prior inline <code>display</code>, and restores the target's previous <code>aria-busy</code> state. Safe to call twice.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Static form:</strong> <code>Progress.skeleton.release(target)</code>
+  releases the skeleton on a target without needing the handle — handy when the
+  cover and the reveal happen in different places.</p>
+
+  <h3 id="api-statics">Defaults, statics &amp; helpers</h3>
+  <p><code>Progress.defaults</code> is one live, shared object holding every
+  option above — bar keys (<code>value</code>, <code>max</code>,
+  <code>indeterminate</code>, <code>label</code>, <code>showValue</code>,
+  <code>size</code>, <code>color</code>, <code>autoRemove</code>), spinner keys
+  (<code>spinnerSize</code>, <code>inline</code>), skeleton keys
+  (<code>lines</code>, <code>avatar</code>, <code>header</code>,
+  <code>widths</code>, <code>height</code>) and the shared keys below. Mutate it
+  before rendering to change the global behavior.</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress shared defaults">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is ever injected — style the <code>.vpg-*</code> markup yourself.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Pin globally with <code>Progress.defaults.theme = 'dark'</code>.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ loading: 'Loading…' }</code></td>
+          <td>Fallback accessible text for bars without a <code>label</code> and for spinners (i18n).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress static members">
+    <table class="api-table">
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Progress.bar(target, opts)</code></td><td>Render a bar → <code>{ el, set, done, setLabel, remove }</code>.</td></tr>
+        <tr><td><code>Progress.spinner(target, opts)</code></td><td>Render a spinner → <code>{ el, remove }</code>.</td></tr>
+        <tr><td><code>Progress.skeleton(target, opts)</code></td><td>Render a skeleton → <code>{ el, release }</code> (idempotent per target).</td></tr>
+        <tr><td><code>Progress.skeleton.release(target)</code></td><td>Release a target's skeleton without the handle.</td></tr>
+        <tr><td><code>Progress.autoInit(root?)</code></td><td>Initialize every <code>[data-vpg]</code> under <code>root</code> (default: <code>document</code>); returns the created handles. Runs automatically on <code>DOMContentLoaded</code>; already-initialized elements (stamped <code>data-vpg-ready</code>) are skipped.</td></tr>
+        <tr><td><code>Progress.defaults</code></td><td>The live shared defaults object (see above).</td></tr>
+        <tr><td><code>Progress.css</code></td><td>The full stylesheet as a string (rendered with the current salt) — a starting point for headless styling.</td></tr>
+        <tr><td><code>Progress.salt</code></td><td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first render.</td></tr>
+        <tr><td><code>Progress.version</code></td><td>Version string, <code>'1.0.0'</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p><code>data-vpg="bar" | "spinner" | "skeleton"</code> on any element makes it
+  the target container, initialized on <code>DOMContentLoaded</code> (or call
+  <code>Progress.autoInit(root)</code> / <code>VC.autoInit()</code> after
+  inserting markup).</p>
+  <pre><code>&lt;div data-vpg="bar" data-vpg-value="30" data-vpg-label="Importing" data-vpg-show-value&gt;&lt;/div&gt;
+&lt;span data-vpg="spinner" data-vpg-size="16"&gt;&lt;/span&gt;
+&lt;div data-vpg="skeleton" data-vpg-lines="4" data-vpg-avatar&gt;&lt;/div&gt;</code></pre>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="Progress data attributes">
+    <table class="api-table">
+      <thead>
+        <tr><th>Attribute</th><th>Applies to</th><th>Maps to</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vpg-label</code></td><td>all</td><td><code>label</code></td></tr>
+        <tr><td><code>data-vpg-theme</code></td><td>all</td><td><code>theme</code></td></tr>
+        <tr><td><code>data-vpg-value</code> / <code>data-vpg-max</code></td><td>bar</td><td><code>value</code> / <code>max</code></td></tr>
+        <tr><td><code>data-vpg-size</code></td><td>bar, spinner</td><td><code>size</code> (<code>'sm'|'md'</code> for bars; px → <code>spinnerSize</code> for spinners)</td></tr>
+        <tr><td><code>data-vpg-color</code></td><td>bar</td><td><code>color</code></td></tr>
+        <tr><td><code>data-vpg-indeterminate</code> / <code>data-vpg-show-value</code></td><td>bar</td><td><code>indeterminate</code> / <code>showValue</code> (boolean; present = true, <code>"false"</code> = false)</td></tr>
+        <tr><td><code>data-vpg-inline</code></td><td>spinner</td><td><code>inline</code> (boolean)</td></tr>
+        <tr><td><code>data-vpg-lines</code> / <code>data-vpg-height</code></td><td>skeleton</td><td><code>lines</code> / <code>height</code></td></tr>
+        <tr><td><code>data-vpg-avatar</code> / <code>data-vpg-header</code></td><td>skeleton</td><td><code>avatar</code> / <code>header</code> (boolean)</td></tr>
+        <tr><td><code>data-vpg-widths</code></td><td>skeleton</td><td><code>widths</code> (comma-separated CSS widths)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+  <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live.
+  Pin it with <code>Progress.defaults.theme = 'dark'</code>. All colors are CSS
+  custom properties on <code>.vpg</code>:</p>
+  <pre><code>.vpg {
+  --vpg-accent: #b45309;   /* bar fill, spinner */
+  --vpg-success: …;        /* done() fill */
+  --vpg-bg: …; --vpg-text: …; --vpg-muted: …;
+  --vpg-faint: …;          /* track + skeleton base */
+  --vpg-shimmer: …;        /* skeleton highlight */
+  --vpg-radius: 12px; --vpg-font: …;
+}</code></pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  progress and every other family component in one call. Roots render as
+  <code>class="vpg vpg-bar vc1"</code>; structural rules ship salted so host
+  design systems can't override the widgets, while the unsalted
+  <code>--vpg-*</code> variable definitions keep page overrides working. Change
+  the token with <code>Progress.salt = 'acme'</code> (or <code>false</code>)
+  before the first render.</p>
+  <p><strong>Headless:</strong> <code>Progress.defaults.styles = false</code>
+  injects no CSS — you keep values, ARIA and hide/restore behavior, and style
+  this markup contract yourself (<code>Progress.css</code> is the reference
+  stylesheet as a string):</p>
+  <pre><code>.vpg.vpg-bar[.vpg-sm][.vpg-success][.vpg-ind][data-theme=dark]
+  .vpg-top                        ← only when label/showValue
+    .vpg-labeltext
+    .vpg-value                    ← only when showValue
+  .vpg-track[role=progressbar]
+    .vpg-fill
+
+.vpg.vpg-spinner[.vpg-block][role=status]
+  svg.vpg-spin
+  .vpg-sr                         ← visually-hidden label
+
+.vpg.vpg-skeleton[aria-hidden]
+  .vpg-avatar                     ← only when avatar
+  .vpg-lines
+    .vpg-line[.vpg-head]          ← .vpg-head on header first line</code></pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <ul>
+    <li><strong>Bars:</strong> the track is <code>role="progressbar"</code> with
+    <code>aria-valuemin/max/now</code> and an <code>aria-label</code> (the label
+    text, or <code>'Loading…'</code>). <code>aria-valuenow</code> is
+    <strong>omitted</strong> while indeterminate, per the ARIA spec, and set as
+    soon as <code>set()</code> or <code>done()</code> promotes the bar to
+    determinate.</li>
+    <li><strong>Spinners:</strong> <code>role="status"</code> (a polite live
+    region) with visually-hidden text (<code>.vpg-sr</code>) — screen readers
+    hear the label, sighted users see the arc.</li>
+    <li><strong>Skeletons:</strong> the placeholder itself is
+    <code>aria-hidden="true"</code>; the target gets
+    <code>aria-busy="true"</code> instead, restored to its previous value on
+    <code>release()</code>.</li>
+    <li><strong>Reduced motion:</strong> shimmer, the indeterminate sweep and the
+    spinner rotation are all replaced by calm states — the sweep becomes a
+    full-width bar, and activity is shown with a slow opacity pulse instead of
+    movement.</li>
+  </ul>
+</div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> Progress injects no CSS at all — the full
+  behavior (value updates, promotion to determinate, hide/restore), the ARIA
+  contract and the stable <code>.vpg-*</code> class hooks all remain; you bring
+  the stylesheet. The demos below each run in their own
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected
+  the component stylesheet into this page, so only a separate, clean document
+  can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>Bar, spinner and skeleton with zero injected CSS — label text, a live
+      <code>role="progressbar"</code>, a static SVG arc and bare skeleton boxes.
+      The frame adds three lines of its own CSS purely so the empty
+      <code>&lt;div&gt;</code>s are visible at all.</p>
+      <iframe id="hl-raw" class="hl-frame" title="Progress with styles: false — unstyled bar, spinner and skeleton" height="240"></iframe>
+      <pre>Progress.bar('#bar', { label: 'Uploading…', showValue: true,
+                       value: 42, styles: false })
+Progress.spinner('#spin', { label: 'Loading…', styles: false })
+Progress.skeleton('#skel', { lines: 3, avatar: true, styles: false })
+
+/* the component injected nothing — this baseline is the page's,
+   so the bare boxes show up: */
+.vpg-fill   { height: 8px; background: #888; }
+.vpg-line   { background: #ddd; }
+.vpg-avatar { width: 40px; height: 40px; background: #ddd; }</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — gradient fill, pulsing skeleton, spinning arc.
+      Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="Progress styled with Tailwind" height="360" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vpg-bar       { @apply w-full; }
+  .vpg-top       { @apply mb-2 flex items-baseline justify-between; }
+  .vpg-labeltext { @apply text-sm font-semibold text-slate-700; }
+  .vpg-value     { @apply text-xs font-bold tabular-nums text-purple-600; }
+  .vpg-track     { @apply h-3 overflow-hidden rounded-full bg-slate-100
+                   shadow-inner; }
+  .vpg-fill      { @apply h-full rounded-full bg-gradient-to-r
+                   from-fuchsia-500 via-purple-500 to-indigo-500
+                   transition-all duration-300; }
+  .vpg-spinner   { @apply inline-flex text-purple-600; }
+  .vpg-spin      { @apply h-6 w-6 animate-spin; }
+  .vpg-sr        { @apply sr-only; }
+  .vpg-skeleton  { @apply flex items-start gap-4; }
+  .vpg-avatar    { @apply h-12 w-12 flex-none animate-pulse rounded-2xl
+                   bg-slate-200; }
+  .vpg-lines     { @apply flex-1 space-y-2.5; }
+  .vpg-line      { @apply animate-pulse rounded-full bg-slate-200; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'progress.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<style>',
+    'body{margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui}',
+    '/* the page\'s own baseline — the component injected nothing: */',
+    '.vpg-fill{height:8px;background:#888}',
+    '.vpg-line{background:#ddd}',
+    '.vpg-avatar{width:40px;height:40px;background:#ddd}',
+    '</style>',
+    '<body>',
+    '<div id="bar"></div>',
+    '<div id="spin" style="margin-top:14px"></div>',
+    '<div id="skel" style="margin-top:14px"></div>',
+    '<script src="progress.js"><\/script>',
+    '<script>',
+    'Progress.bar("#bar", { label: "Uploading…", showValue: true, value: 42, styles: false });',
+    'Progress.spinner("#spin", { label: "Loading…", styles: false });',
+    'Progress.skeleton("#skel", { lines: 3, avatar: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="progress.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vpg-bar       { @apply w-full; }',
+    '  .vpg-top       { @apply mb-2 flex items-baseline justify-between; }',
+    '  .vpg-labeltext { @apply text-sm font-semibold text-slate-700; }',
+    '  .vpg-value     { @apply text-xs font-bold tabular-nums text-purple-600; }',
+    '  .vpg-track     { @apply h-3 overflow-hidden rounded-full bg-slate-100 shadow-inner; }',
+    '  .vpg-fill      { @apply h-full rounded-full bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 transition-all duration-300; }',
+    '  .vpg-spinner   { @apply inline-flex text-purple-600; }',
+    '  .vpg-spin      { @apply h-6 w-6 animate-spin; }',
+    '  .vpg-sr        { @apply sr-only; }',
+    '  .vpg-skeleton  { @apply flex items-start gap-4; }',
+    '  .vpg-avatar    { @apply h-12 w-12 flex-none animate-pulse rounded-2xl bg-slate-200; }',
+    '  .vpg-lines     { @apply flex-1 space-y-2.5; }',
+    '  .vpg-line      { @apply animate-pulse rounded-full bg-slate-200; }',
+    '</style>',
+    '<body class="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 p-6 font-sans">',
+    '<div class="mx-auto max-w-md space-y-5">',
+    '  <div class="rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><div id="bar"></div></div>',
+    '  <div class="flex items-center gap-3 rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><span id="spin"></span><span class="text-sm text-slate-500">Fetching workspace…</span></div>',
+    '  <div class="rounded-2xl bg-white p-5 shadow-lg shadow-purple-100"><div id="skel"></div></div>',
+    '</div>',
+    '<script>',
+    'var b = Progress.bar("#bar", { label: "Syncing library", showValue: true, value: 0, styles: false });',
+    'var v = 0;',
+    'setInterval(function () { v = v >= 100 ? 0 : v + 4; b.set(v); }, 400);',
+    'Progress.spinner("#spin", { label: "Loading…", styles: false });',
+    'Progress.skeleton("#skel", { lines: 3, avatar: true, header: true, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>

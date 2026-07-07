@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Toast Notifications — zero-dependency, one file · Vanilla UI Kit</title>
@@ -221,6 +222,288 @@ Toast.error('Could not reach the server',
       }
     });
   }
+</script>
+<!-- ======================= API reference ======================= -->
+<style>
+  .api-section { border-top: 1px solid var(--faint); margin-top: 88px; padding-top: 40px; }
+  .api-section > h2 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.005em; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .api-toc a { color: var(--accent); text-decoration: none; }
+  .api-toc a:hover { text-decoration: underline; }
+  .api-block { background: var(--surface); border: 1px solid var(--faint); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+  .api-block h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .api-block p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .api-block ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .api-block li { margin: 2px 0; }
+  .api-block code { font-family: var(--mono); font-size: 12.5px; }
+  .api-block pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  .api-scroll { overflow-x: auto; margin-top: 12px; }
+  .api-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+  .api-table th { text-align: left; font-weight: 650; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+  .api-table td { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--faint); vertical-align: top; }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table td:first-child code { white-space: nowrap; }
+  .api-table td:last-child { color: var(--muted); }
+</style>
+<section class="wrap api-section" aria-labelledby="api">
+  <h2 id="api">API reference</h2>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-methods">Handle methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-declarative">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <section class="api-block" id="api-usage">
+    <h3>Usage</h3>
+    <p>Toast is a static API — there is no constructor. Every call returns a <em>handle</em> for the toast it created.</p>
+    <pre>Toast.show(message, options?)          // → handle { el, dismiss(), update(message, options?) }
+Toast.info(message, options?)          // type shorthands — same signature,
+Toast.success(message, options?)      //   with `type` preset
+Toast.error(message, options?)
+Toast.warning(message, options?)
+Toast.loading(message, options?)       // sticky (duration 0) unless you set one
+Toast.promise(promise, msgs, options?) // loading → success | error; returns the promise
+Toast.dismissAll()</pre>
+    <p>Messages are <strong>text</strong> by default (rendered with <code>textContent</code>); pass <code>html: true</code> to opt in to trusted markup. Also works with CommonJS/AMD and is SSR-safe — without a DOM every call is a no-op returning a dummy handle.</p>
+  </section>
+
+  <section class="api-block" id="api-options">
+    <h3>Options</h3>
+    <p>Second argument to <code>Toast.show()</code> and the shorthands. The first eight are keys of <code>Toast.defaults</code> — change one there to affect every toast, e.g. <code>Toast.defaults.position = 'top-center'</code>. The rest are per-call only.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast options">
+      <table class="api-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>position</code></td><td><code>string</code></td><td><code>'bottom-right'</code></td><td><code>top</code>|<code>bottom</code> + <code>-left</code>|<code>-center</code>|<code>-right</code> — six stacks; unknown values fall back to <code>'bottom-right'</code>.</td></tr>
+          <tr><td><code>duration</code></td><td><code>number</code></td><td><code>4000</code></td><td>Milliseconds before auto-dismiss; <code>0</code> = sticky until dismissed.</td></tr>
+          <tr><td><code>type</code></td><td><code>string</code></td><td><code>'info'</code></td><td><code>'info' | 'success' | 'error' | 'warning' | 'loading'</code> — icon, color, and ARIA role.</td></tr>
+          <tr><td><code>dismissible</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Show the ✕ button.</td></tr>
+          <tr><td><code>max</code></td><td><code>number</code></td><td><code>5</code></td><td>Per-stack cap; the oldest toast is evicted beyond it.</td></tr>
+          <tr><td><code>styles</code></td><td><code>boolean</code></td><td><code>true</code></td><td><code>false</code> = headless, no CSS ever injected (see Theming).</td></tr>
+          <tr><td><code>theme</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'light' | 'dark'</code> — resolved page-wide from <code>Toast.defaults.theme</code> (see Theming).</td></tr>
+          <tr><td><code>labels</code></td><td><code>object</code></td><td><code>{ dismiss: 'Dismiss' }</code></td><td>Accessible name of the ✕ button (set via <code>Toast.defaults.labels</code>).</td></tr>
+          <tr><td><code>title</code></td><td><code>string</code></td><td>—</td><td>Optional bold title above the message.</td></tr>
+          <tr><td><code>action</code></td><td><code>object</code></td><td>—</td><td>One action button: <code>{ label, onClick(handle) }</code>. The toast dismisses after the click.</td></tr>
+          <tr><td><code>html</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Opt in to render the message as trusted markup (titles are always text).</td></tr>
+          <tr><td><code>onDismiss</code></td><td><code>function</code></td><td>—</td><td><code>fn(handle)</code> — see Events &amp; callbacks.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-methods">
+    <h3>Handle methods</h3>
+    <p>Every <code>Toast.show()</code>/shorthand call returns a handle:</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast handle members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>el</code></td><td><code>Element</code></td><td>The toast’s root <code>.vt</code> element (property, <code>null</code> in SSR).</td></tr>
+          <tr><td><code>dismiss()</code></td><td><code>undefined</code></td><td>Dismiss this toast (animates out, then fires <code>onDismiss</code>).</td></tr>
+          <tr><td><code>update(message, options?)</code></td><td>handle</td><td>Replace message and options in place — resets the timer; how <code>Toast.promise</code> turns a loading toast into success/error. No-op after dismissal.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-statics">
+    <h3>Statics &amp; helpers</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast static members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Toast.show(message, options?)</code></td><td>handle</td><td>Show a toast.</td></tr>
+          <tr><td><code>Toast.info / .success / .error / .warning(message, options?)</code></td><td>handle</td><td>Type shorthands for <code>show()</code>.</td></tr>
+          <tr><td><code>Toast.loading(message, options?)</code></td><td>handle</td><td>Spinner toast; sticky (<code>duration: 0</code>) unless a duration is given.</td></tr>
+          <tr><td><code>Toast.promise(promise, msgs, options?)</code></td><td>the promise</td><td>Loading toast that updates into success or error. <code>msgs</code>: <code>{ loading, success, error }</code> — <code>success</code>/<code>error</code> may be strings or <code>fn(result | reason) =&gt; string</code>. Returns the original promise.</td></tr>
+          <tr><td><code>Toast.dismissAll()</code></td><td><code>undefined</code></td><td>Dismiss every toast in every stack.</td></tr>
+          <tr><td><code>Toast.defaults</code></td><td><code>object</code></td><td>Global defaults — change any once, e.g. <code>Toast.defaults.duration = 6000</code>.</td></tr>
+          <tr><td><code>Toast.salt</code></td><td><code>string | false</code></td><td>CSS isolation namespace (default <code>'vc1'</code>). Set your own token before the first toast, or <code>false</code> to disable.</td></tr>
+          <tr><td><code>Toast.css</code></td><td><code>string</code></td><td>The full stylesheet, always rendered with the current salt — a starting point for headless styling.</td></tr>
+          <tr><td><code>Toast.version</code></td><td><code>string</code></td><td>Library version.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-events">
+    <h3>Events &amp; callbacks</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast callbacks">
+      <table class="api-table">
+        <thead><tr><th>Callback</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+          <tr><td><code>onDismiss</code></td><td><code>fn(handle)</code></td><td>When the toast is dismissed — timer, ✕ button, action click, eviction beyond <code>max</code>, or <code>dismissAll()</code>.</td></tr>
+          <tr><td><code>action.onClick</code></td><td><code>fn(handle)</code></td><td>When the action button is clicked; the toast dismisses right after.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Toast dispatches no <code>CustomEvent</code>s — the callbacks above are the whole event surface.</p>
+  </section>
+
+  <section class="api-block" id="api-declarative">
+    <h3>Declarative init</h3>
+    <p>None — toasts are inherently imperative (they exist only when your code shows one), so Toast has no <code>data-*</code> auto-init. Set global behavior once via <code>Toast.defaults</code> instead.</p>
+  </section>
+
+  <section class="api-block" id="api-theming">
+    <h3>Theming</h3>
+    <p>Auto light/dark with the family’s resolution order: <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live. Pin it with <code>Toast.defaults.theme = 'dark'</code>. All colors are CSS custom properties on <code>.vt</code> (dark values are defined on <code>.vt-stack[data-theme=dark] .vt</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast CSS custom properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--vt-accent</code></td><td>Info icon, action button.</td></tr>
+          <tr><td><code>--vt-success</code></td><td>Success icon.</td></tr>
+          <tr><td><code>--vt-error</code></td><td>Error icon.</td></tr>
+          <tr><td><code>--vt-warning</code></td><td>Warning icon.</td></tr>
+          <tr><td><code>--vt-bg</code></td><td>Toast background.</td></tr>
+          <tr><td><code>--vt-text</code></td><td>Text color.</td></tr>
+          <tr><td><code>--vt-muted</code></td><td>Secondary text (message under a title, ✕ button).</td></tr>
+          <tr><td><code>--vt-faint</code></td><td>Border and hover fills.</td></tr>
+          <tr><td><code>--vt-shadow</code></td><td>Toast shadow.</td></tr>
+          <tr><td><code>--vt-radius</code></td><td>Corner radius.</td></tr>
+          <tr><td><code>--vt-font</code></td><td>Font stack.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>CSS isolation</strong> — stacks render as <code>class="vt-stack vc1"</code> and structural rules ship salted, so host-page design systems can’t override the toasts; the <code>--vt-*</code> variable overrides above keep working (var definitions are deliberately unsalted). Custom token: <code>Toast.salt = 'acme'</code> before the first toast; disable with <code>Toast.salt = false</code>.</p>
+    <p><strong>Headless</strong> — <code>Toast.defaults.styles = false</code> injects no CSS, ever. You keep the full behavior (stacking, timers, pause-on-hover, ARIA) and the stable markup contract (<code>.vt-stack</code> → <code>.vt.vt-success.vt-in</code> → <code>.vt-icon</code> / <code>.vt-body</code> (<code>.vt-title</code>, <code>.vt-msg</code>) / <code>.vt-action</code> / <code>.vt-close</code>; <code>.vt-out</code> while leaving). Start from <code>Toast.css</code> (string) or <code>dist/toast.css</code>. With the VC core loaded, <code>VC.config({ accent: … })</code> themes toasts and every other family component in one call.</p>
+  </section>
+
+  <section class="api-block" id="api-a11y">
+    <h3>Accessibility</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Toast keyboard map">
+      <table class="api-table">
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>Tab</code> / <code>Shift+Tab</code></td><td>Move focus to a toast’s action and ✕ buttons (native buttons in the document order).</td></tr>
+          <tr><td><code>Enter</code> / <code>Space</code></td><td>Activate the focused action or dismiss button.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Errors and warnings render with <code>role="alert"</code> / <code>aria-live="assertive"</code>; info, success, and loading use <code>role="status"</code> / <code>aria-live="polite"</code>. Hovering a stack pauses <strong>all</strong> of its timers; they resume with the time they had left (minimum 400&nbsp;ms so nothing vanishes mid-read). <code>:focus-visible</code> outlines on buttons; all animation is disabled under <code>prefers-reduced-motion: reduce</code>.</p>
+  </section>
+</section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Set <code>Toast.defaults.styles = false</code> and no CSS is ever injected —
+  you keep the full behavior (stacking, timers, pause-on-hover, ARIA) and the stable
+  <code>.vt-*</code> markup contract to style however you like. Both demos below run in an
+  <code>&lt;iframe&gt;</code>: the styled examples above have already injected the stylesheet
+  into this page, so a headless toast out here would still match those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — a sticky toast is shown on load (unstyled stacks are not
+    <code>position: fixed</code>, so it simply flows in the document), and the button adds more.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="Toast with styles: false — raw browser rendering"
+      width="100%" style="height:200px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre>Toast.defaults.styles = false            // headless: zero CSS injected
+Toast.info('A raw toast', { duration: 0 })
+Toast.success('Changes saved', { title: 'All set' })</pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless calls with the <code>.vt-*</code> hooks mapped to Tailwind utilities via
+    <code>@apply</code> — including the <code>.vt-in</code>/<code>.vt-out</code> state classes, so the
+    enter/leave transitions are yours too. The button fetches <code>cdn.tailwindcss.com</code>,
+    so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="Toast with styles: false, styled with Tailwind"
+      width="100%" style="height:340px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre id="hl-tw-code"></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "toast.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<button id="go">Show another toast</button>' +
+    '<script src="toast.js"><\/script>' +
+    '<script>' +
+    'Toast.defaults.styles = false;' +
+    'Toast.info("A raw toast — zero CSS injected", { duration: 0 });' +
+    'document.getElementById("go").onclick = function () {' +
+    '  Toast.success("Changes saved", { title: "All set" });' +
+    '};' +
+    '<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vt-* hooks */\n' +
+'.vt-stack{@apply fixed z-50 flex flex-col gap-3 p-4 font-sans;}\n' +
+'.vt-stack[data-pos$="right"]{@apply bottom-0 right-0 items-end;}\n' +
+'.vt{@apply flex w-80 max-w-full translate-y-2 items-start gap-3 rounded-2xl bg-white p-4 opacity-0 shadow-2xl ring-1 ring-slate-900/10 transition-all duration-200;}\n' +
+'.vt.vt-in{@apply translate-y-0 opacity-100;}\n' +
+'.vt.vt-out{@apply scale-95 opacity-0;}\n' +
+'.vt-icon{@apply mt-0.5 h-5 w-5 shrink-0 text-sky-500;}\n' +
+'.vt-success .vt-icon{@apply text-emerald-600;}\n' +
+'.vt-error .vt-icon{@apply text-rose-600;}\n' +
+'.vt-warning .vt-icon{@apply text-amber-500;}\n' +
+'.vt-spin{@apply animate-spin;}\n' +
+'.vt-body{@apply min-w-0 flex-1 text-sm leading-snug text-slate-500;}\n' +
+'.vt-title{@apply mb-0.5 text-sm font-semibold text-slate-900;}\n' +
+'.vt-msg{@apply break-words;}\n' +
+'.vt-action{@apply shrink-0 cursor-pointer rounded-lg border-0 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100;}\n' +
+'.vt-close{@apply grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent p-0 text-slate-400 hover:bg-slate-100 hover:text-slate-600;}\n';
+
+  var BTN = 'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm ';
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="toast.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 font-sans">' +
+    '<div class="flex flex-wrap gap-2">' +
+    '<button id="b1" class="' + BTN + 'border-0 bg-emerald-600 text-white hover:bg-emerald-700">Save (success)</button>' +
+    '<button id="b2" class="' + BTN + 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100">Delete + Undo</button>' +
+    '<button id="b3" class="' + BTN + 'border border-rose-200 bg-white text-rose-600 hover:bg-rose-50">Fail (error)</button>' +
+    '</div>' +
+    '<script>' +
+    'Toast.defaults.styles = false;' +
+    'Toast.info("Same behavior, your design system", { title: "Headless toast", duration: 0 });' +
+    'document.getElementById("b1").onclick = function () { Toast.success("Changes saved", { title: "All set" }); };' +
+    'document.getElementById("b2").onclick = function () {' +
+    '  Toast.show("Message deleted", { action: { label: "Undo", onClick: function () { Toast.success("Restored"); } } });' +
+    '};' +
+    'document.getElementById("b3").onclick = function () { Toast.error("Could not reach the server", { title: "Save failed" }); };' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'Toast.defaults.styles = false    // headless — then style the hooks:\n' + TW_CSS;
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Custom Select / Combobox — zero-dependency, one file · Vanilla UI Kit</title>
@@ -334,6 +335,729 @@
     toggleBtn.textContent = off ? 'Disable' : 'Enable';
   });
 </script>
+<section class="api-doc" aria-labelledby="api">
+<style>
+  .api-doc { max-width: 1060px; margin: 0 auto; padding: 0 24px 96px; }
+  .api-doc .api-rule { border: 0; border-top: 1px solid var(--faint); margin: 0 0 56px; }
+  .api-doc h2 {
+    font-family: var(--display); font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600; line-height: 1.1; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-doc h3 {
+    font-family: var(--display); font-size: 23px; font-weight: 600;
+    line-height: 1.2; margin: 52px 0 10px;
+  }
+  .api-doc h4 { font-size: 15px; font-weight: 650; margin: 26px 0 8px; }
+  .api-doc p { margin: 0 0 14px; max-width: 78ch; }
+  .api-doc .api-note { color: var(--muted); font-size: 14px; }
+  .api-doc ul { margin: 0 0 14px; padding-left: 22px; max-width: 78ch; }
+  .api-doc li { margin: 0 0 6px; }
+  .api-doc a { color: var(--accent); }
+  .api-doc .api-toc { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; }
+  .api-doc .api-toc li { margin: 0; }
+  .api-doc .api-toc a {
+    display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface); border: 1px solid var(--faint); border-radius: 999px; padding: 5px 12px;
+  }
+  .api-doc .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-doc table {
+    width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5;
+    margin: 14px 0 6px; background: var(--surface);
+  }
+  .api-doc th {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--muted); text-align: left; background: var(--code-bg);
+  }
+  .api-doc th, .api-doc td { border: 1px solid var(--faint); padding: 8px 12px; vertical-align: top; }
+  .api-doc code {
+    font-family: var(--mono); font-size: .92em; color: var(--text);
+    background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 5px; padding: 1px 5px;
+  }
+  .api-doc pre {
+    margin: 12px 0 18px; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-doc pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .api-doc [role="region"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+</style>
+
+<hr class="api-rule">
+<h2 id="api">API reference</h2>
+<p class="api-note">The complete surface of <code>select.js</code> v1.0.0 — constructor, options,
+methods, statics, events, declarative attributes, theming and accessibility. Everything below is
+taken from the source; where the README summarises, the source is authoritative.</p>
+<nav aria-label="API reference contents">
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-methods">Methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-data">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+</nav>
+
+<h3 id="api-usage">Constructor &amp; usage</h3>
+<pre><code>new Select(target, options?)   // → Select instance
+Select.create(target, options?) // identical alias</code></pre>
+<p><code>target</code> is a CSS selector string or a DOM element. If no element matches, the
+constructor throws. Creating a second instance on the same element destroys the previous one
+first. Without a DOM (SSR), the constructor returns an inert instance whose public methods
+all no-op.</p>
+<p>There are two modes, decided by the target's tag:</p>
+<h4>1. Native <code>&lt;select&gt;</code> mode — progressive enhancement</h4>
+<p>Options, selection, <code>multiple</code> and <code>disabled</code> are read from the
+element. It stays in the DOM (hidden, <code>aria-hidden</code>, marked
+<code>data-vsel-bound</code>) and every change is mirrored back, so forms, validation and
+existing <code>change</code> listeners keep working. A leading empty-value option is treated
+as the placeholder: its label is adopted (when you didn't pass your own
+<code>placeholder</code>) and clearing re-selects it.</p>
+<pre><code>&lt;select id="fruit" name="fruit"&gt;
+  &lt;option value=""&gt;Choose a fruit…&lt;/option&gt;
+  &lt;option value="apple"&gt;Apple&lt;/option&gt;
+&lt;/select&gt;
+&lt;script&gt;new Select('#fruit', { searchable: true })&lt;/script&gt;</code></pre>
+<h4>2. Container mode — built from an array</h4>
+<p>Any non-<code>&lt;select&gt;</code> element becomes the host; options come from the
+<code>options</code> array. Pass <code>name</code> and the widget maintains a hidden
+<code>&lt;input type="hidden"&gt;</code> (single) or hidden <code>&lt;select multiple&gt;</code>
+(multiple) inside itself, so it submits like any form field.</p>
+<pre><code>&lt;div id="size"&gt;&lt;/div&gt;
+&lt;script&gt;
+new Select('#size', {
+  name: 'size',
+  options: ['S', 'M', 'L', { value: 'xl', label: 'XL', disabled: true }],
+  value: 'M',
+  onChange: function (v) { console.log(v) }
+})
+&lt;/script&gt;</code></pre>
+
+<h3 id="api-options">Options</h3>
+<p>Every option, with the exact default from the <code>Select.defaults</code> object in the
+source. Any default can be changed globally, once: <code>Select.defaults.placeholder = '…'</code>.</p>
+<div tabindex="0" role="region" aria-label="Constructor options" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>options</code></td>
+      <td>array</td>
+      <td><code>null</code></td>
+      <td>Container mode only. Array of option objects (shape below) and/or plain strings —
+      <code>'a'</code> is shorthand for <code>{ value: 'a', label: 'a' }</code>. In native
+      mode the options come from the element's <code>&lt;option&gt;</code>s instead.</td>
+    </tr>
+    <tr>
+      <td><code>value</code></td>
+      <td>string | array</td>
+      <td><code>null</code></td>
+      <td>Initial value; a string (single) or array of strings (multiple). Values with no
+      matching option are dropped; duplicates are deduped; in single mode only the first
+      survives; <code>maxItems</code> is enforced.</td>
+    </tr>
+    <tr>
+      <td><code>multiple</code></td>
+      <td>boolean</td>
+      <td><code>false</code></td>
+      <td>Multiple selection with removable tags. In native mode, when not passed explicitly,
+      inherited from the native element's <code>multiple</code>.</td>
+    </tr>
+    <tr>
+      <td><code>searchable</code></td>
+      <td>boolean</td>
+      <td><code>false</code></td>
+      <td>Adds a filter input at the top of the panel. Matching is case- and
+      diacritic-insensitive (<code>"zur"</code> finds <code>"Zürich"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>clearable</code></td>
+      <td>boolean</td>
+      <td><code>false</code></td>
+      <td>Shows a ✕ button in the control that resets the selection (to the placeholder
+      option, when the native select has one).</td>
+    </tr>
+    <tr>
+      <td><code>placeholder</code></td>
+      <td>string</td>
+      <td><code>'Select…'</code></td>
+      <td>Text shown when nothing is selected. In native single mode, a leading empty-value
+      <code>&lt;option&gt;</code>'s label overrides this default (only when you left
+      <code>placeholder</code> untouched).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td>string</td>
+      <td><code>null</code></td>
+      <td>Container mode only: form field name for the hidden carrier —
+      <code>&lt;input type="hidden"&gt;</code> (single) or hidden
+      <code>&lt;select multiple&gt;</code> (multiple).</td>
+    </tr>
+    <tr>
+      <td><code>maxItems</code></td>
+      <td>number</td>
+      <td><code>null</code></td>
+      <td>Cap for multiple selection. Extra initial values are trimmed; once the cap is
+      reached, further picks are ignored until a tag is removed.</td>
+    </tr>
+    <tr>
+      <td><code>noResultsText</code></td>
+      <td>string</td>
+      <td><code>'No results'</code></td>
+      <td>Empty-state text shown in the panel when the search filter matches nothing.</td>
+    </tr>
+    <tr>
+      <td><code>disabled</code></td>
+      <td>boolean</td>
+      <td><code>false</code></td>
+      <td>Start disabled. In native mode, when not passed explicitly, inherited from the
+      native element's <code>disabled</code>. Toggle later with
+      <code>enable()</code> / <code>disable()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>theme</code></td>
+      <td>string</td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto follows
+      <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+      <code>.dark</code>/<code>.light</code> class, then
+      <code>prefers-color-scheme</code> — re-resolved live on changes.</td>
+    </tr>
+    <tr>
+      <td><code>styles</code></td>
+      <td>boolean</td>
+      <td><code>true</code></td>
+      <td><code>false</code> = headless: no CSS is injected; you style the
+      <code>.vsel-*</code> markup yourself (see <a href="#api-theming">Theming</a>).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td>string</td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> | <code>'below'</code> | <code>'above'</code>. Auto opens below
+      and flips above when there is no room; the panel is clamped to the viewport
+      horizontally and repositioned on scroll/resize.</td>
+    </tr>
+    <tr>
+      <td><code>labels</code></td>
+      <td>object</td>
+      <td><code>{ remove: 'Remove', clear: 'Clear selection', search: 'Search', options: 'Options' }</code></td>
+      <td>UI / ARIA strings, merged shallowly over the defaults: <code>remove</code> (tag ✕
+      label prefix), <code>clear</code> (clear button), <code>search</code> (search field
+      label + placeholder), <code>options</code> (listbox label).</td>
+    </tr>
+    <tr>
+      <td><code>onChange</code></td>
+      <td>function</td>
+      <td><code>null</code></td>
+      <td><code>fn(value, select)</code> — called after the selection changes (see
+      <a href="#api-events">Events</a>).</td>
+    </tr>
+    <tr>
+      <td><code>onOpen</code></td>
+      <td>function</td>
+      <td><code>null</code></td>
+      <td><code>fn(select)</code> — called after the panel opens.</td>
+    </tr>
+    <tr>
+      <td><code>onClose</code></td>
+      <td>function</td>
+      <td><code>null</code></td>
+      <td><code>fn(select)</code> — called after the panel closes.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h4>Option item shape</h4>
+<p>Entries of the <code>options</code> array (and of <code>data-vsel-options</code> JSON) are
+normalized to this shape; a bare string <code>'a'</code> becomes
+<code>{ value: 'a', label: 'a' }</code>. Values are always coerced to strings.</p>
+<div tabindex="0" role="region" aria-label="Option item shape" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Property</th><th>Type</th><th>Default</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>value</code></td><td>string</td><td>falls back to <code>label</code></td>
+      <td>Submitted / returned value.</td></tr>
+    <tr><td><code>label</code></td><td>string</td><td>falls back to <code>value</code></td>
+      <td>Visible text. Rendered with <code>textContent</code> unless <code>html</code> is set.</td></tr>
+    <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+      <td>Not selectable; skipped by keyboard navigation and typeahead.</td></tr>
+    <tr><td><code>group</code></td><td>string</td><td><code>null</code></td>
+      <td>Options sharing a <code>group</code> render under a labelled group heading
+      (native <code>&lt;optgroup&gt;</code> maps to this).</td></tr>
+    <tr><td><code>html</code></td><td>boolean</td><td><code>false</code></td>
+      <td>Opt-in to render <code>label</code> as trusted HTML instead of text. Only use with
+      markup you control.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-methods">Methods</h3>
+<p>All methods return the instance (chainable) except <code>getValue()</code>. On an inert
+SSR instance every method is a safe no-op.</p>
+<div tabindex="0" role="region" aria-label="Instance methods" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>open()</code></td><td><code>this</code></td>
+      <td>Opens the panel (no-op if already open or disabled). Renders and positions the
+      list, focuses the search field when <code>searchable</code>, then fires
+      <code>onOpen</code> / <code>select:open</code>. Inside an open
+      <code>&lt;dialog&gt;</code> the panel joins the dialog in the top layer.</td>
+    </tr>
+    <tr>
+      <td><code>close(refocus?)</code></td><td><code>this</code></td>
+      <td>Closes the panel and fires <code>onClose</code> / <code>select:close</code>.
+      By default focus returns to the control when it was inside the panel; pass
+      <code>false</code> to leave focus alone (used internally when focus is moving on),
+      <code>true</code> to always refocus the control.</td>
+    </tr>
+    <tr>
+      <td><code>toggle()</code></td><td><code>this</code></td>
+      <td>Opens when closed, closes (refocusing the control) when open.</td>
+    </tr>
+    <tr>
+      <td><code>getValue()</code></td><td><code>string | null</code> or <code>string[]</code></td>
+      <td>Current value: a string or <code>null</code> in single mode, a copied array in
+      multiple mode.</td>
+    </tr>
+    <tr>
+      <td><code>setValue(value, config?)</code></td><td><code>this</code></td>
+      <td>Sets the value (string, array, or <code>null</code>/<code>[]</code> to clear).
+      Unknown values are dropped, <code>maxItems</code> enforced. Fires
+      <code>onChange</code> / <code>select:change</code> and the native
+      <code>change</code>; pass <code>{ silent: true }</code> to skip all of them.</td>
+    </tr>
+    <tr>
+      <td><code>enable()</code></td><td><code>this</code></td>
+      <td>Re-enables the control (restores <code>tabindex</code>, removes
+      <code>aria-disabled</code>) and clears the native element's <code>disabled</code>.</td>
+    </tr>
+    <tr>
+      <td><code>disable()</code></td><td><code>this</code></td>
+      <td>Closes the panel, disables the control and sets the native element's
+      <code>disabled</code>, so submit semantics stay native.</td>
+    </tr>
+    <tr>
+      <td><code>refresh()</code></td><td><code>this</code></td>
+      <td>Re-reads the options: from the native <code>&lt;select&gt;</code>'s current markup
+      (mutate its <code>&lt;option&gt;</code>s, then call this), or in container mode by
+      re-normalizing <code>opts.options</code> (mutate <code>sel.opts.options</code> first).
+      The current selection is pruned to values that still exist.</td>
+    </tr>
+    <tr>
+      <td><code>destroy()</code></td><td><code>this</code></td>
+      <td>Tears everything down — removes the widget and panel, unbinds all listeners and
+      theme watchers — and restores the native <code>&lt;select&gt;</code> exactly as it
+      was.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h4>Instance properties</h4>
+<p class="api-note">Also readable on the instance: <code>sel.el</code> (target element),
+<code>sel.native</code> (the native <code>&lt;select&gt;</code>, or <code>null</code> in
+container mode), <code>sel.isOpen</code>, and <code>sel.opts</code> (resolved options).</p>
+
+<h3 id="api-statics">Statics &amp; helpers</h3>
+<div tabindex="0" role="region" aria-label="Static properties and methods" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Static</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Select.create(target, options?)</code></td>
+      <td>Same as <code>new Select(target, options)</code>; returns the instance.</td></tr>
+    <tr><td><code>Select.get(target)</code></td>
+      <td>Returns the live instance bound to an element (selector or element), or
+      <code>null</code>.</td></tr>
+    <tr><td><code>Select.autoInit(root?)</code></td>
+      <td>Initializes every <code>[data-vsel]</code> element under <code>root</code>
+      (default: <code>document</code>) that doesn't already have an instance; returns the
+      array of created instances. One bad element logs an error without aborting the rest.</td></tr>
+    <tr><td><code>Select.defaults</code></td>
+      <td>The shared defaults object — mutate it to change any default for all future
+      instances, e.g. <code>Select.defaults.styles = false</code>.</td></tr>
+    <tr><td><code>Select.version</code></td>
+      <td>Library version string (<code>'1.0.0'</code>).</td></tr>
+    <tr><td><code>Select.salt</code></td>
+      <td>CSS isolation token, default <code>'vc1'</code>. Set your own token (e.g.
+      <code>Select.salt = 'acme'</code>) or <code>false</code> to disable salting —
+      before the first instance is created.</td></tr>
+    <tr><td><code>Select.css</code></td>
+      <td>The full embedded stylesheet as a string, rendered with the current salt — a
+      starting point for headless styling (also shipped as
+      <code>dist/select.css</code>).</td></tr>
+    <tr><td><code>Select.rootClass</code></td>
+      <td><code>'vsel'</code> — the widget's root class name.</td></tr>
+    <tr><td><code>Select.themeVars</code></td>
+      <td>Map of shared theme tokens to CSS custom properties:
+      <code>{ accent: '--vsel-accent', radius: '--vsel-radius', font: '--vsel-font' }</code>
+      (used by the VC core's <code>VC.config()</code> bridge).</td></tr>
+    <tr><td><code>Select.varScopes</code></td>
+      <td><code>['.vsel', '.vsel[data-theme=dark]']</code> — the selectors where theme
+      variables are defined (deliberately unsalted so page overrides work).</td></tr>
+    <tr><td><code>Select.displayName</code></td>
+      <td><code>'Select'</code> — family convergence contract; when the VC core is present
+      the component registers itself via <code>VC.register('select', Select)</code>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="api-events">Events &amp; callbacks</h3>
+<p>Each lifecycle moment is exposed twice: as a constructor callback and as a bubbling
+<code>CustomEvent</code> dispatched on the target element (the native
+<code>&lt;select&gt;</code> or the container), so you can also listen with delegation.</p>
+<div tabindex="0" role="region" aria-label="Events and callbacks" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>DOM event</th><th>Callback</th><th><code>event.detail</code></th><th>When</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>select:change</code></td>
+      <td><code>onChange(value, select)</code></td>
+      <td><code>{ value, select }</code></td>
+      <td>After the selection changes — via click, keyboard, tag removal, clear button or
+      <code>setValue()</code>. <code>value</code> matches <code>getValue()</code>. Skipped
+      entirely with <code>setValue(v, { silent: true })</code>.</td>
+    </tr>
+    <tr>
+      <td><code>select:open</code></td>
+      <td><code>onOpen(select)</code></td>
+      <td><code>{ select }</code></td>
+      <td>After the panel opens.</td>
+    </tr>
+    <tr>
+      <td><code>select:close</code></td>
+      <td><code>onClose(select)</code></td>
+      <td><code>{ select }</code></td>
+      <td>After the panel closes.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>In native mode, every non-silent change also dispatches a bubbling native
+<code>change</code> event on the hidden <code>&lt;select&gt;</code>, so pre-existing form
+listeners keep working untouched.</p>
+<pre><code>document.getElementById('city').addEventListener('select:change', function (e) {
+  console.log(e.detail.value, e.detail.select)
+})</code></pre>
+
+<h3 id="api-data">Declarative init (data attributes)</h3>
+<p>Every <code>[data-vsel]</code> element is auto-initialized on
+<code>DOMContentLoaded</code> (or immediately if the script loads later). Call
+<code>Select.autoInit(root)</code> yourself for content added afterwards — already-bound
+elements are skipped. For boolean attributes, presence means <code>true</code>; the values
+<code>"false"</code> and <code>"0"</code> mean <code>false</code>.</p>
+<div tabindex="0" role="region" aria-label="Data attributes for declarative initialization" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Attribute</th><th>Maps to</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>data-vsel</code></td><td>—</td>
+      <td>Marks the element for auto-init. Bound native selects also get a
+      <code>data-vsel-bound</code> attribute.</td></tr>
+    <tr><td><code>data-vsel-searchable</code></td><td><code>searchable</code></td>
+      <td>Boolean.</td></tr>
+    <tr><td><code>data-vsel-clearable</code></td><td><code>clearable</code></td>
+      <td>Boolean.</td></tr>
+    <tr><td><code>data-vsel-multiple</code></td><td><code>multiple</code></td>
+      <td>Boolean; for container mode (a native select uses its own
+      <code>multiple</code> attribute).</td></tr>
+    <tr><td><code>data-vsel-placeholder="…"</code></td><td><code>placeholder</code></td>
+      <td>String.</td></tr>
+    <tr><td><code>data-vsel-name="…"</code></td><td><code>name</code></td>
+      <td>String; container mode.</td></tr>
+    <tr><td><code>data-vsel-value="a"</code> / <code>"a,b"</code></td><td><code>value</code></td>
+      <td>A value containing a comma becomes an array (multiple).</td></tr>
+    <tr><td><code>data-vsel-max-items="3"</code></td><td><code>maxItems</code></td>
+      <td>Coerced to a number.</td></tr>
+    <tr><td><code>data-vsel-no-results="…"</code></td><td><code>noResultsText</code></td>
+      <td>String.</td></tr>
+    <tr><td><code>data-vsel-options='["a","b"]'</code></td><td><code>options</code></td>
+      <td>Parsed as JSON (strings or full option objects); a plain comma list like
+      <code>"a,b,c"</code> works as shorthand.</td></tr>
+    <tr><td><code>data-vsel-theme="dark"</code></td><td><code>theme</code></td>
+      <td><code>auto</code> | <code>light</code> | <code>dark</code>.</td></tr>
+    <tr><td><code>data-vsel-position="above"</code></td><td><code>position</code></td>
+      <td><code>auto</code> | <code>below</code> | <code>above</code>.</td></tr>
+    <tr><td><code>data-vsel-styles="false"</code></td><td><code>styles</code></td>
+      <td>Boolean; <code>"false"</code>/<code>"0"</code> for headless.</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><code>&lt;select data-vsel data-vsel-searchable data-vsel-clearable&gt;…&lt;/select&gt;
+
+&lt;div data-vsel data-vsel-name="size" data-vsel-placeholder="Pick a size…"
+     data-vsel-options='["S","M","L","XL"]'&gt;&lt;/div&gt;</code></pre>
+
+<h3 id="api-theming">Theming</h3>
+<p>Light/dark is automatic (see the <code>theme</code> option). All colors are CSS custom
+properties defined on <code>.vsel</code> — override them from your own stylesheet; the
+injected sheet is inserted <em>before</em> the page's first stylesheet precisely so your
+overrides win. The dark theme redefines them on <code>.vsel[data-theme=dark]</code>.</p>
+<div tabindex="0" role="region" aria-label="CSS custom properties" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Property</th><th>Default (light)</th><th>Default (dark)</th><th>Purpose</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--vsel-accent</code></td><td><code>#5b5bd6</code></td><td><code>#7b7bea</code></td>
+      <td>Focus ring, checkmarks, selected option, open border, tags.</td></tr>
+    <tr><td><code>--vsel-on-accent</code></td><td><code>#ffffff</code></td><td><code>#131418</code></td>
+      <td>Text/icon color on accent backgrounds (tag ✕ hover).</td></tr>
+    <tr><td><code>--vsel-bg</code></td><td><code>#ffffff</code></td><td><code>#1b1d24</code></td>
+      <td>Control and panel background.</td></tr>
+    <tr><td><code>--vsel-surface</code></td><td><code>#f2f2f5</code></td><td><code>#272a33</code></td>
+      <td>Active option highlight, search field, disabled control background.</td></tr>
+    <tr><td><code>--vsel-text</code></td><td><code>#1c1d21</code></td><td><code>#e9eaf0</code></td>
+      <td>Main text color.</td></tr>
+    <tr><td><code>--vsel-muted</code></td><td><code>#72747e</code></td><td><code>#989aa6</code></td>
+      <td>Placeholder, icons, group labels, empty-state text.</td></tr>
+    <tr><td><code>--vsel-faint</code></td><td><code>#e7e7ec</code></td><td><code>#31343f</code></td>
+      <td>Borders (control, panel, search field).</td></tr>
+    <tr><td><code>--vsel-accent-soft</code></td><td><code>rgba(91,91,214,.13)</code></td>
+      <td><em>derived</em></td>
+      <td>Focus-ring glow and tag background. Where <code>color-mix()</code> is supported it
+      is derived from <code>--vsel-accent</code> automatically
+      (<code>color-mix(in srgb, var(--vsel-accent) 14%, transparent)</code>).</td></tr>
+    <tr><td><code>--vsel-shadow</code></td>
+      <td><code>0 10px 28px rgba(24,25,32,.14), 0 2px 8px rgba(24,25,32,.08)</code></td>
+      <td><code>0 10px 28px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.35)</code></td>
+      <td>Panel drop shadow.</td></tr>
+    <tr><td><code>--vsel-radius</code></td><td><code>12px</code></td><td>same</td>
+      <td>Panel border radius.</td></tr>
+    <tr><td><code>--vsel-font</code></td>
+      <td><code>system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif</code></td>
+      <td>same</td>
+      <td>Font family for the control and panel.</td></tr>
+  </tbody>
+</table>
+</div>
+<pre><code>.vsel { --vsel-accent: #b45309; --vsel-radius: 8px; }</code></pre>
+<p><strong>CSS isolation:</strong> the control and panel render as
+<code>class="vsel vc1"</code> and all structural rules ship salted
+(<code>.vsel.vc1 .vsel-option { … }</code>), so host-page design systems can't accidentally
+override the widget — while the <code>--vsel-*</code> variable definitions stay unsalted so
+the overrides above keep working. Change the token with <code>Select.salt = 'acme'</code> or
+disable with <code>Select.salt = false</code>, before the first instance.</p>
+<p><strong>Headless:</strong> set <code>styles: false</code> per instance (or
+<code>Select.defaults.styles = false</code> globally, or <code>data-vsel-styles="false"</code>)
+and no CSS is injected — you keep the full behavior (selection, search, keyboard, ARIA, form
+sync) and style the <code>.vsel-*</code> markup contract yourself. The stock stylesheet is
+available as a starting point via <code>Select.css</code> (string) or
+<code>dist/select.css</code> (file). With the VC core loaded,
+<code>VC.config({ accent: '#b45309' })</code> themes selects and every other family component
+in one call.</p>
+
+<h3 id="api-a11y">Accessibility</h3>
+<h4>Keyboard</h4>
+<div tabindex="0" role="region" aria-label="Keyboard interaction" style="overflow-x:auto">
+<table>
+  <thead>
+    <tr><th>Key</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Enter</code> / <code>Space</code> / <code>↓</code> / <code>↑</code> / <code>Alt+↓</code></td>
+      <td>Open the list (when closed).</td></tr>
+    <tr><td><code>↓</code> / <code>↑</code></td>
+      <td>Move the active option — skips disabled options, wraps at the ends.</td></tr>
+    <tr><td><code>Home</code> / <code>End</code></td>
+      <td>First / last enabled option (moves the caret instead while there is text in the
+      search field).</td></tr>
+    <tr><td><code>Enter</code></td>
+      <td>Select the active option (closes the panel in single mode; toggles in multiple).</td></tr>
+    <tr><td><code>Space</code></td>
+      <td>Outside the search field: select the active option, or extend a pending typeahead
+      buffer.</td></tr>
+    <tr><td><code>Esc</code></td>
+      <td>Close, return focus to the control.</td></tr>
+    <tr><td><code>Tab</code></td>
+      <td>Close and move focus on naturally.</td></tr>
+    <tr><td><code>a</code>, <code>b</code>, <code>c</code>…</td>
+      <td>Typeahead by first letters when not <code>searchable</code> (also opens the list
+      when closed). The buffer resets after 500&nbsp;ms; repeating a letter cycles through
+      matches. Case- and diacritic-insensitive.</td></tr>
+    <tr><td><code>Backspace</code></td>
+      <td>Multiple mode with an empty search field: remove the last tag (works while closed,
+      too).</td></tr>
+  </tbody>
+</table>
+</div>
+<h4>ARIA &amp; behavior notes</h4>
+<ul>
+  <li>WAI-ARIA combobox pattern: the control is <code>role="combobox"</code> with
+  <code>aria-haspopup="listbox"</code>, <code>aria-expanded</code>,
+  <code>aria-controls</code> and <code>aria-activedescendant</code>; the panel is a
+  <code>role="listbox"</code> of <code>role="option"</code> items with
+  <code>aria-selected</code> / <code>aria-disabled</code>; groups are
+  <code>role="group"</code> with <code>aria-label</code>; the list gets
+  <code>aria-multiselectable="true"</code> in multiple mode.</li>
+  <li>Focus stays on the control (or the search field, itself a
+  <code>role="combobox"</code> with <code>aria-autocomplete="list"</code>) while
+  <code>↑</code>/<code>↓</code> move the active option — screen readers follow via
+  <code>aria-activedescendant</code>.</li>
+  <li>The accessible name is borrowed from a <code>&lt;label for="…"&gt;</code> pointing at
+  the native select; in container mode set <code>aria-label</code> /
+  <code>aria-labelledby</code> on the container or use the <code>labels</code> option.</li>
+  <li>Tag remove buttons are <code>tabindex="-1"</code> so the widget is one tab stop;
+  <code>Backspace</code> removes tags from the keyboard.</li>
+  <li>Option labels are rendered with <code>textContent</code>; <code>html: true</code> per
+  option is an explicit opt-in for trusted markup.</li>
+  <li><code>:focus-visible</code> outlines only; <code>prefers-reduced-motion</code>
+  disables all transitions and animations.</li>
+</ul>
+</section>
+
+<section class="headless-doc" aria-labelledby="headless">
+  <style>
+    .headless-doc { margin-top: 72px; }
+    .headless-doc > hr { border: 0; border-top: 1px solid var(--faint); margin: 0 0 48px; }
+    .headless-doc > h2 {
+      font-family: var(--display); font-size: clamp(26px, 3.5vw, 34px);
+      font-weight: 600; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 10px;
+    }
+    .headless-doc > p.headless-lede { color: var(--muted); font-size: 14px; max-width: 72ch; margin: 0 0 28px; }
+    .headless-doc > p.headless-lede code {
+      font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+      border: 1px solid var(--faint); border-radius: 5px; padding: 1px 5px;
+    }
+    .headless-doc iframe { display: block; width: 100%; border: 1px solid var(--faint); border-radius: 12px; background: #fff; }
+    .headless-doc .tw-load {
+      align-self: flex-start; font: inherit; font-size: 13.5px; font-weight: 600;
+      color: var(--accent); background: var(--surface-2); border: 1px solid var(--faint);
+      border-radius: 8px; padding: 7px 14px; cursor: pointer;
+    }
+    .headless-doc .tw-load:disabled { opacity: .55; cursor: default; }
+  </style>
+  <hr>
+  <h2 id="headless">Headless mode</h2>
+  <p class="headless-lede"><code>styles: false</code> injects nothing — selection, search,
+  keyboard, ARIA, form sync and the stable <code>.vsel-*</code> class hooks all remain; you
+  bring your own CSS. The demos above have already injected the kit stylesheet into this
+  page, so a headless instance here would still match those rules — each demo below
+  therefore runs inside its own <code>&lt;iframe&gt;</code>, a genuinely clean document.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (styles: false)</h3>
+      <p>Raw browser rendering, zero CSS — open it: search, arrow keys, typeahead and the
+      native-select sync all still work.</p>
+      <iframe id="hl-raw" title="Select with styles: false — completely unstyled" height="300"></iframe>
+      <pre>new Select('#city', {
+  searchable: true, clearable: true,
+  styles: false   // no CSS injected
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same hooks mapped to a rose checkout look with Tailwind <code>@apply</code>.
+      Loads <code>cdn.tailwindcss.com</code> only when you ask.</p>
+      <button type="button" class="tw-load" id="hl-tw-load">Load Tailwind demo</button>
+      <iframe id="hl-tw" title="Select styled from scratch with Tailwind" height="360" hidden></iframe>
+      <pre>.vsel-control { @apply flex w-full items-center gap-2
+  rounded-xl border-2 border-rose-200 bg-white px-3.5
+  py-2.5 text-sm shadow-sm cursor-pointer; }
+.vsel.is-open .vsel-control { @apply border-rose-500
+  ring-4 ring-rose-100; }
+.vsel-value.is-placeholder { @apply text-slate-400; }
+.vsel.is-open .vsel-arrow { @apply rotate-180 text-rose-500; }
+.vsel.vsel-panel { @apply z-50 mt-1.5 rounded-2xl border
+  border-rose-100 bg-white p-1.5 shadow-2xl; }
+.vsel-search input { @apply w-full rounded-lg border
+  border-slate-200 bg-slate-50 px-3 py-1.5 text-sm; }
+.vsel-option { @apply flex items-center gap-2 rounded-lg
+  px-3 py-2 text-sm cursor-pointer; }
+.vsel-option.is-active { @apply bg-rose-50 text-rose-700; }
+.vsel-option.is-selected { @apply font-semibold text-rose-600; }
+.vsel-option.is-disabled { @apply opacity-40 cursor-not-allowed; }
+.vsel-check { @apply w-4 text-rose-500 opacity-0; }
+.vsel-option.is-selected .vsel-check { @apply opacity-100; }
+.vsel-empty { @apply px-3 py-6 text-center text-slate-400; }</pre>
+    </div>
+  </div>
+  <script>
+  (function () {
+    // srcdoc documents inherit this page's URL as base, so the sibling
+    // "select.js" resolves to /select/select.js from inside the iframes.
+    var markup = [
+      '<label for="city">City</label>',
+      '<select id="city">',
+      '  <option value="">Choose a city…</option>',
+      '  <option value="ams">Amsterdam</option>',
+      '  <option value="ber">Berlin</option>',
+      '  <option value="lis">Lisbon</option>',
+      '  <option value="osl" disabled>Oslo (sold out)</option>',
+      '  <option value="zrh">Zürich</option>',
+      '</select>'
+    ].join('\n');
+    var init = '<script>new Select("#city", { searchable: true, clearable: true, styles: false })<\/script>';
+
+    var raw = [
+      '<meta charset="utf-8">',
+      markup,
+      '<script src="select.js"><\/script>',
+      init
+    ].join('\n');
+    document.getElementById('hl-raw').srcdoc = raw;
+
+    var tw = [
+      '<meta charset="utf-8">',
+      '<script src="https://cdn.tailwindcss.com"><\/script>',
+      '<script src="select.js"><\/script>',
+      '<style type="text/tailwindcss">',
+      '  body { @apply bg-rose-50/60 p-6 font-sans; }',
+      '  label { @apply mb-1.5 block text-[13px] font-semibold text-slate-600; }',
+      '  .vsel:not(.vsel-panel) { @apply relative inline-block w-72; }',
+      '  .vsel-control { @apply flex w-full items-center gap-2 rounded-xl border-2 border-rose-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm transition cursor-pointer; }',
+      '  .vsel.is-open .vsel-control, .vsel-control:focus-visible { @apply border-rose-500 outline-none ring-4 ring-rose-100; }',
+      '  .vsel.is-disabled .vsel-control { @apply cursor-not-allowed opacity-50; }',
+      '  .vsel-value { @apply flex-1 truncate text-left; }',
+      '  .vsel-value.is-placeholder { @apply text-slate-400; }',
+      '  .vsel-clear { @apply grid h-5 w-5 flex-none cursor-pointer place-items-center rounded-full border-0 bg-slate-100 p-0 text-slate-500 hover:bg-rose-100 hover:text-rose-600; }',
+      '  .vsel-clear svg, .vsel-arrow svg, .vsel-check svg { @apply block; }',
+      '  .vsel-arrow { @apply flex-none text-slate-400 transition-transform; }',
+      '  .vsel.is-open .vsel-arrow { @apply rotate-180 text-rose-500; }',
+      '  .vsel.vsel-panel { @apply z-50 mt-1.5 w-72 rounded-2xl border border-rose-100 bg-white p-1.5 font-sans shadow-2xl; }',
+      '  .vsel-search { @apply p-1 pb-2; }',
+      '  .vsel-search input { @apply w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm outline-none focus:border-rose-400; }',
+      '  .vsel-list { @apply max-h-52 overflow-y-auto; }',
+      '  .vsel-group-label { @apply px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400; }',
+      '  .vsel-option { @apply flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700; }',
+      '  .vsel-option.is-active { @apply bg-rose-50 text-rose-700; }',
+      '  .vsel-option.is-selected { @apply font-semibold text-rose-600; }',
+      '  .vsel-option.is-disabled { @apply cursor-not-allowed opacity-40; }',
+      '  .vsel-check { @apply w-4 flex-none text-rose-500 opacity-0; }',
+      '  .vsel-option.is-selected .vsel-check { @apply opacity-100; }',
+      '  .vsel-empty { @apply px-3 py-6 text-center text-sm text-slate-400; }',
+      '</style>',
+      markup,
+      init
+    ].join('\n');
+
+    var btn = document.getElementById('hl-tw-load');
+    btn.addEventListener('click', function () {
+      var f = document.getElementById('hl-tw');
+      f.hidden = false;
+      f.srcdoc = tw; // cdn.tailwindcss.com is fetched only now
+      btn.disabled = true;
+      btn.textContent = 'Tailwind demo loaded';
+    });
+  })();
+  </script>
+</section>
+
 <script src="../site-nav.js" defer></script>
 </body>
 </html>

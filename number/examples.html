@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Number / Currency Input — zero-dependency, one file · Vanilla UI Kit</title>
@@ -245,6 +246,422 @@
       }
     });
   }
+</script>
+<style>
+  /* ---- API reference ---- */
+  .api-sec { border-top: 1px solid var(--faint); margin-top: 72px; padding-top: 48px; }
+  .api-sec h2 {
+    font-family: var(--display); font-size: clamp(26px, 4vw, 34px);
+    font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+  }
+  .api-sec h3 { font-size: 18px; font-weight: 650; margin: 44px 0 8px; }
+  .api-sec h4 { font-size: 15px; font-weight: 650; margin: 26px 0 6px; }
+  .api-sec p { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; }
+  .api-sec ul { color: var(--muted); font-size: 14px; max-width: 76ch; margin: 8px 0; padding-left: 22px; }
+  .api-sec code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--code-bg);
+    border: 1px solid var(--faint); border-radius: 6px; padding: 1px 5px;
+  }
+  .api-sec pre {
+    margin: 12px 0; background: var(--code-bg); border: 1px solid var(--faint);
+    border-radius: 10px; padding: 12px 14px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.55; overflow-x: auto;
+  }
+  .api-sec pre code { background: none; border: 0; padding: 0; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  .api-toc a {
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    background: var(--surface-2); border: 1px solid var(--faint);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .api-toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .api-table-wrap {
+    overflow-x: auto; margin: 12px 0; border: 1px solid var(--faint);
+    border-radius: 10px; background: var(--surface);
+  }
+  .api-table-wrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  table.api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.api-table th {
+    text-align: left; font-weight: 600; padding: 8px 12px; white-space: nowrap;
+    border-bottom: 1px solid var(--faint); background: var(--surface-2);
+  }
+  table.api-table td {
+    padding: 8px 12px; border-bottom: 1px solid var(--faint); vertical-align: top;
+  }
+  table.api-table tr:last-child td { border-bottom: 0; }
+  table.api-table td:first-child { white-space: nowrap; }
+</style>
+<div class="wrap api-sec">
+  <h2 id="api">API reference</h2>
+  <p>The complete <code>NumberInput</code> API — constructor modes, every option,
+  instance methods, pure static helpers, declarative attributes, theming and
+  accessibility.</p>
+  <nav class="api-toc" aria-label="API reference contents">
+    <a href="#api-usage">Constructor &amp; usage</a>
+    <a href="#api-options">Options</a>
+    <a href="#api-methods">Methods</a>
+    <a href="#api-statics">Statics &amp; helpers</a>
+    <a href="#api-events">Callbacks</a>
+    <a href="#api-declarative">Declarative init</a>
+    <a href="#api-theming">Theming</a>
+    <a href="#api-a11y">Accessibility</a>
+  </nav>
+
+  <h3 id="api-usage">Constructor &amp; usage</h3>
+  <pre><code>new NumberInput(target, options?)   // → instance
+NumberInput.create(target, options?) // same as new</code></pre>
+  <p><code>target</code> is a selector string or an element, in one of two modes:</p>
+  <ul>
+    <li><strong>Enhance mode</strong> — an existing <code>&lt;input&gt;</code> is
+    enhanced in place: its <code>type</code> is coerced to <code>text</code> with
+    <code>inputmode="decimal"</code>, and everything is restored by
+    <code>destroy()</code>. A <code>name</code> on the original input migrates to
+    the hidden raw-value carrier for the widget's lifetime (and back on
+    <code>destroy()</code>), so the server never sees the formatted text.</li>
+    <li><strong>Container mode</strong> — any other element: the input is built
+    inside it. Use the <code>value</code> option for the initial value and set
+    <code>ariaLabel</code> (no external <code>&lt;label&gt;</code> can point at
+    the generated input).</li>
+  </ul>
+  <pre><code>&lt;input id="price" value="1234.5"&gt;
+new NumberInput('#price', { prefix: '$', precision: 2, min: 0 })
+
+&lt;div id="amount"&gt;&lt;/div&gt;
+new NumberInput('#amount', { ariaLabel: 'Amount', value: 1234.5, name: 'amount' })</code></pre>
+  <p>Constructing on an element that already has an instance? Use
+  <code>NumberInput.get(el)</code> to retrieve the existing one. SSR-safe: without
+  a DOM the constructor is a no-op and the pure helpers still work in Node.</p>
+
+  <h3 id="api-options">Options</h3>
+  <p>Every key of <code>NumberInput.defaults</code>, with its default value.
+  Options are merged over the defaults; <code>undefined</code> values are ignored.</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="NumberInput options">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>min</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Lower clamp bound, applied on commit. A <code>min ≥ 0</code> also auto-disables negative input.</td></tr>
+        <tr><td><code>max</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Upper clamp bound, applied on commit.</td></tr>
+        <tr><td><code>step</code></td><td>number</td><td><code>1</code></td>
+          <td>Increment for <kbd>ArrowUp</kbd>/<kbd>ArrowDown</kbd> and the stepper buttons. <kbd>Shift</kbd>+Arrow steps by 10&nbsp;×&nbsp;<code>step</code>.</td></tr>
+        <tr><td><code>precision</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Decimal places used on commit. When <code>null</code>, inferred from <code>step</code>'s decimals (<code>1</code> → 0, <code>0.5</code> → 1). Clamped to 0–20.</td></tr>
+        <tr><td><code>thousands</code></td><td>string | false</td><td><code>','</code></td>
+          <td>Grouping separator: <code>','</code> | <code>'.'</code> | <code>' '</code> | <code>false</code> (none). Silently swapped to the other separator when it would collide with <code>decimal</code>.</td></tr>
+        <tr><td><code>decimal</code></td><td>string</td><td><code>'.'</code></td>
+          <td><code>'.'</code> or <code>','</code> — must differ from <code>thousands</code>. Both the <kbd>.</kbd> and <kbd>,</kbd> keys insert the configured separator.</td></tr>
+        <tr><td><code>prefix</code></td><td>string</td><td><code>''</code></td>
+          <td>Non-editable adornment before the text, e.g. <code>'$'</code>. Never part of the value.</td></tr>
+        <tr><td><code>suffix</code></td><td>string</td><td><code>''</code></td>
+          <td>Non-editable adornment after the text, e.g. <code>' kg'</code>.</td></tr>
+        <tr><td><code>steppers</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Show the +/− buttons. Hold to repeat: 500&nbsp;ms delay, then every 60&nbsp;ms, ×10 speed after 2&nbsp;s.</td></tr>
+        <tr><td><code>allowNegative</code></td><td>boolean</td><td><code>true</code></td>
+          <td>Permit a leading minus. Auto-disabled when <code>min ≥ 0</code>.</td></tr>
+        <tr><td><code>placeholder</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Placeholder text for the empty input.</td></tr>
+        <tr><td><code>ariaLabel</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Accessible name for the input — required in container mode, where no <code>&lt;label&gt;</code> can point inside the widget.</td></tr>
+        <tr><td><code>value</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Initial value (container mode; in enhance mode the input's own value seeds the widget).</td></tr>
+        <tr><td><code>name</code></td><td>string | null</td><td><code>null</code></td>
+          <td>Adds a hidden input carrying the RAW numeric value for form submission (e.g. <code>amount=1234.5</code>, never <code>'$1,234.50'</code>).</td></tr>
+        <tr><td><code>disabled</code></td><td>boolean</td><td><code>false</code></td>
+          <td>Start disabled. Toggle later with <code>enable()</code> / <code>disable()</code>.</td></tr>
+        <tr><td><code>theme</code></td><td>string</td><td><code>'auto'</code></td>
+          <td><code>'auto'</code> | <code>'light'</code> | <code>'dark'</code>. Auto re-resolves live against the page theme.</td></tr>
+        <tr><td><code>styles</code></td><td>boolean</td><td><code>true</code></td>
+          <td><code>false</code> = headless: no CSS is injected — style the <code>.vnum-*</code> markup yourself.</td></tr>
+        <tr><td><code>labels</code></td><td>object</td><td><code>{ increment: 'Increase value', decrement: 'Decrease value' }</code></td>
+          <td>Accessible labels for the stepper buttons (i18n). Merged key-by-key over the defaults.</td></tr>
+        <tr><td><code>onChange</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value | null)</code> — the committed value, fired on blur, step or <kbd>Enter</kbd>. Empty input commits <code>null</code>, not 0.</td></tr>
+        <tr><td><code>onInput</code></td><td>function | null</td><td><code>null</code></td>
+          <td><code>fn(value | null)</code> — the live value while typing.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-methods">Methods</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="NumberInput instance methods">
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>getValue()</code></td><td>number | null</td>
+          <td>The committed value. An empty input is <code>null</code>, not 0.</td></tr>
+        <tr><td><code>setValue(v, {silent}?)</code></td><td>instance</td>
+          <td>Accepts a number or a string (<code>'1.234,5'</code> parses with the instance's separators). Clamps to <code>min</code>/<code>max</code> and rounds to <code>precision</code>. <code>{silent: true}</code> skips <code>onChange</code>.</td></tr>
+        <tr><td><code>stepUp()</code> / <code>stepDown()</code></td><td>instance</td>
+          <td>± one <code>step</code>, committed (fires <code>onChange</code> on a real change).</td></tr>
+        <tr><td><code>enable()</code> / <code>disable()</code></td><td>instance</td>
+          <td>Toggle the input and stepper buttons.</td></tr>
+        <tr><td><code>focus()</code></td><td>instance</td>
+          <td>Focus the inner text input.</td></tr>
+        <tr><td><code>destroy()</code></td><td>instance</td>
+          <td>Remove the widget. In enhance mode the original input is restored exactly as found, carrying the RAW committed value in <code>.value</code> (and its original <code>name</code> back).</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-statics">Statics &amp; helpers</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="NumberInput static members">
+    <table class="api-table">
+      <thead>
+        <tr><th>Static</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>NumberInput.parse(str, opts?)</code></td>
+          <td>Pure, DOM-free. Lenient extraction: <code>NumberInput.parse('$1,234.50')</code> → <code>1234.5</code>; <code>null</code> when the string has no digits. Never clamps, never rounds.</td></tr>
+        <tr><td><code>NumberInput.format(num, opts?)</code></td>
+          <td>Pure, DOM-free. <code>NumberInput.format(1234.5, { precision: 2 })</code> → <code>'1,234.50'</code>. A string first goes through <code>parse</code>. Output includes <code>prefix</code>/<code>suffix</code> when given; <code>null</code>/non-finite input formats to <code>''</code>.</td></tr>
+        <tr><td><code>NumberInput.get(el)</code></td>
+          <td>The live instance bound to an element (or <code>null</code>).</td></tr>
+        <tr><td><code>NumberInput.create(target, opts)</code></td>
+          <td>Alias of <code>new NumberInput(target, opts)</code>.</td></tr>
+        <tr><td><code>NumberInput.autoInit(root?)</code></td>
+          <td>Initialize every <code>[data-vnum]</code> under <code>root</code> (default: <code>document</code>); returns the created instances. Runs automatically on <code>DOMContentLoaded</code>.</td></tr>
+        <tr><td><code>NumberInput.defaults</code></td>
+          <td>The live defaults object — mutate before constructing (e.g. <code>NumberInput.defaults.styles = false</code>).</td></tr>
+        <tr><td><code>NumberInput.css</code></td>
+          <td>The full stylesheet as a string (rendered with the current salt) — a starting point for headless styling.</td></tr>
+        <tr><td><code>NumberInput.salt</code></td>
+          <td>CSS isolation token, default <code>'vc1'</code>. Set your own token or <code>false</code> before the first instance.</td></tr>
+        <tr><td><code>NumberInput.version</code></td>
+          <td>Version string, <code>'1.0.0'</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>FormatOptions — the <code>opts</code> for <code>parse</code>/<code>format</code></h4>
+  <p>Both helpers normalize the same formatting-relevant subset of the constructor
+  options. All keys are optional:</p>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="FormatOptions for parse and format">
+    <table class="api-table">
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>precision</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Decimals for <code>format</code>; when <code>null</code>, inferred from <code>step</code>'s decimals, otherwise the number's natural decimals.</td></tr>
+        <tr><td><code>step</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Only used to infer <code>precision</code> when that is not set.</td></tr>
+        <tr><td><code>decimal</code></td><td>string</td><td><code>'.'</code></td>
+          <td><code>'.'</code> or <code>','</code> — anything else falls back to <code>'.'</code>.</td></tr>
+        <tr><td><code>thousands</code></td><td>string | false</td><td><code>','</code></td>
+          <td><code>','</code> | <code>'.'</code> | <code>' '</code> | <code>false</code>; swapped when it collides with <code>decimal</code>.</td></tr>
+        <tr><td><code>prefix</code> / <code>suffix</code></td><td>string</td><td><code>''</code></td>
+          <td>Appended around <code>format</code> output; stripped as junk by <code>parse</code>.</td></tr>
+        <tr><td><code>allowNegative</code></td><td>boolean</td><td><code>true</code></td>
+          <td>When <code>false</code> (or <code>min ≥ 0</code>) a leading minus is ignored by <code>parse</code>.</td></tr>
+        <tr><td><code>min</code> / <code>max</code></td><td>number | null</td><td><code>null</code></td>
+          <td>Not used to clamp by the pure helpers — but <code>min ≥ 0</code> disables negative parsing.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code>NumberInput.parse('$1,234.50')                        // → 1234.5
+NumberInput.format(1234.5,  { precision: 2 })         // → '1,234.50'
+NumberInput.format(1234.56, { decimal: ',', thousands: '.', precision: 2 })
+                                                      // → '1.234,56'</code></pre>
+
+  <h3 id="api-events">Callbacks</h3>
+  <p>NumberInput reports through the two option callbacks (it dispatches no
+  custom DOM events):</p>
+  <ul>
+    <li><code>onChange(value | null)</code> — the committed value: parse → clamp
+    to <code>min</code>/<code>max</code> → round to <code>precision</code>. Fires
+    on blur, <kbd>Enter</kbd>, arrow-key steps and the stepper buttons.</li>
+    <li><code>onInput(value | null)</code> — the live value on every keystroke,
+    before any clamping.</li>
+  </ul>
+  <p>On <kbd>Enter</kbd> the commit happens first and the hidden form field is
+  already synced before a surrounding form submits. Paste is sanitized
+  (<code>'$1,234.50'</code> becomes <code>1234.5</code>), and out-of-range text
+  shows a danger border while typing until the commit clamps it.</p>
+
+  <h3 id="api-declarative">Declarative init</h3>
+  <p>Add <code>data-vnum</code> to an <code>&lt;input&gt;</code> or container —
+  instances are built on <code>DOMContentLoaded</code> (or call
+  <code>NumberInput.autoInit(root)</code> after inserting markup).</p>
+  <pre><code>&lt;input data-vnum data-prefix="$" data-precision="2" data-min="0"&gt;</code></pre>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="NumberInput data attributes">
+    <table class="api-table">
+      <thead>
+        <tr><th>Attribute</th><th>Maps to</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>data-vnum</code></td><td>—</td><td>Marks the element; an optional numeric value (<code>data-vnum="42"</code>) is a shorthand for <code>value</code>.</td></tr>
+        <tr><td><code>data-min</code> / <code>data-max</code> / <code>data-step</code> / <code>data-precision</code></td><td><code>min</code>/<code>max</code>/<code>step</code>/<code>precision</code></td><td>Numbers.</td></tr>
+        <tr><td><code>data-thousands</code></td><td><code>thousands</code></td><td>Separator character, or the keywords <code>space</code> / <code>none</code> (<code>false</code> also disables grouping).</td></tr>
+        <tr><td><code>data-decimal</code></td><td><code>decimal</code></td><td><code>.</code> or <code>,</code></td></tr>
+        <tr><td><code>data-prefix</code> / <code>data-suffix</code></td><td><code>prefix</code>/<code>suffix</code></td><td>Strings.</td></tr>
+        <tr><td><code>data-steppers</code> / <code>data-allow-negative</code> / <code>data-disabled</code> / <code>data-styles</code></td><td><code>steppers</code>/<code>allowNegative</code>/<code>disabled</code>/<code>styles</code></td><td>Booleans; <code>"false"</code> and <code>"0"</code> are false.</td></tr>
+        <tr><td><code>data-name</code> / <code>data-placeholder</code> / <code>data-value</code> / <code>data-theme</code></td><td><code>name</code>/<code>placeholder</code>/<code>value</code>/<code>theme</code></td><td>As the options.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="api-theming">Theming</h3>
+  <p>Auto light/dark with the family's resolution order:
+  <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> /
+  <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live.
+  Pin per instance with <code>theme: 'dark'</code>. All colors are CSS custom
+  properties on <code>.vnum</code>:</p>
+  <pre><code>.vnum {
+  --vnum-accent: #b45309;  /* focus ring, active stepper */
+  --vnum-bg: …; --vnum-text: …; --vnum-muted: …; --vnum-faint: …;
+  --vnum-danger: …;        /* out-of-range warning border */
+  --vnum-radius: 10px; --vnum-font: …; --vnum-shadow: …;
+}</code></pre>
+  <p>With the VC core loaded, <code>VC.config({ accent: '#b45309' })</code> themes
+  this and every other family component in one call. The widget renders as
+  <code>class="vnum vc1"</code>; structural rules ship salted so host design
+  systems can't override them, while the unsalted <code>--vnum-*</code> variable
+  definitions keep page overrides working. Change the token with
+  <code>NumberInput.salt = 'acme'</code> (or <code>false</code>) before the first
+  instance.</p>
+  <p><strong>Headless:</strong> <code>NumberInput.defaults.styles = false</code>
+  (or per instance) injects no CSS at all — you keep formatting, caret math,
+  steppers and ARIA, and style this markup contract yourself
+  (<code>NumberInput.css</code> is the reference stylesheet as a string):</p>
+  <pre><code>.vnum[data-theme=light|dark]          ← .vnum-invalid while out of range,
+  .vnum-affix.vnum-prefix               .vnum-disabled when disabled
+  .vnum-input                         ← role=spinbutton, inputmode=decimal
+  .vnum-affix.vnum-suffix
+  .vnum-steps                         ← aria-hidden
+    .vnum-btn.vnum-up
+    .vnum-btn.vnum-down
+  input[type=hidden]                  ← raw value, when `name` given</code></pre>
+
+  <h3 id="api-a11y">Accessibility</h3>
+  <div class="api-table-wrap" tabindex="0" role="region" aria-label="NumberInput keyboard map">
+    <table class="api-table">
+      <thead>
+        <tr><th>Key</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td><td>± <code>step</code> (commits)</td></tr>
+        <tr><td><kbd>Shift</kbd> + Arrow</td><td>± 10 × <code>step</code></td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Commit (then the form may submit — the hidden field is already synced)</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Revert to the last committed value</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The input is <code>role="spinbutton"</code> with
+  <code>aria-valuemin/max/now</code> and <code>aria-valuetext</code> (the fully
+  formatted text, e.g. <code>$1,234.50</code>). The stepper buttons are
+  <code>aria-hidden</code> and out of the tab order — they duplicate the arrow
+  keys — but stay fully clickable with hold-to-repeat. Keystrokes that can't lead
+  to a valid number are rejected; <code>-</code> is allowed only when
+  <code>allowNegative</code> and only leading. Reduced motion is respected.</p>
+</div>
+<style>
+  /* ---- Headless demo ---- */
+  .hl-frame {
+    display: block; width: 100%; border: 1px solid var(--faint);
+    border-radius: 10px; background: #fff;
+  }
+</style>
+<div class="wrap api-sec">
+  <h2 id="headless">Headless mode</h2>
+  <p>With <code>styles: false</code> NumberInput injects no CSS at all — the full
+  behavior (formatting, caret math, steppers), the ARIA contract and the stable
+  <code>.vnum-*</code> class hooks all remain; you bring the stylesheet. The demos
+  below each run in their own <code>&lt;iframe&gt;</code>: the styled examples
+  above have already injected the component stylesheet into this page, so only a
+  separate, clean document can show what headless truly looks like.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Unstyled (<code>styles: false</code>)</h3>
+      <p>The raw markup contract — a native input with
+      <code>role="spinbutton"</code>, two real stepper buttons, prefix adornment.
+      Zero CSS was injected, yet typing, arrows, steppers and Enter-to-commit all
+      work.</p>
+      <iframe id="hl-raw" class="hl-frame" title="NumberInput with styles: false — unstyled" height="140"></iframe>
+      <pre>new NumberInput('#demo', {
+  ariaLabel: 'Amount', value: 1234.5,
+  prefix: '$', precision: 2, min: 0,
+  styles: false   // ← zero CSS injected
+})</pre>
+    </div>
+    <div class="card">
+      <h3>Bring your own design (Tailwind)</h3>
+      <p>The same class hooks mapped to a deliberately different design with
+      Tailwind utilities — solid stepper column, soft ring, its own palette.
+      Nothing loads from the CDN until you click.</p>
+      <div class="demo"><button type="button" class="demo-btn" id="hl-tw-load">Load Tailwind demo</button></div>
+      <iframe id="hl-tw" class="hl-frame" title="NumberInput styled with Tailwind" height="180" hidden></iframe>
+      <pre>&lt;style type="text/tailwindcss"&gt;
+  .vnum        { @apply inline-flex items-stretch overflow-hidden rounded-2xl
+                 bg-white ring-2 ring-emerald-200 shadow-lg shadow-emerald-100
+                 focus-within:ring-emerald-500; }
+  .vnum-affix  { @apply flex items-center bg-emerald-50 px-3 text-sm
+                 font-bold text-emerald-600; }
+  .vnum-input  { @apply w-32 border-0 bg-transparent px-3 py-2.5 text-right
+                 text-base font-semibold text-slate-800 outline-none; }
+  .vnum-steps  { @apply flex flex-col; }
+  .vnum-btn    { @apply flex flex-1 cursor-pointer items-center justify-center
+                 border-0 bg-emerald-500 px-3 text-white hover:bg-emerald-600
+                 active:bg-emerald-700; }
+  .vnum-down   { @apply border-t border-emerald-400; }
+  .vnum.vnum-invalid  { @apply ring-rose-400; }
+  .vnum.vnum-disabled { @apply opacity-40; }
+&lt;/style&gt;</pre>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  // Both srcdocs inherit THIS page's URL as base, so 'number.js' resolves to
+  // the sibling script — a clean document, no styles leaked from this page.
+  var rawDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<body style="margin:16px;background:#fff;color:#16171c;font:14px/1.5 system-ui">',
+    '<div id="demo"></div>',
+    '<p id="out" style="font:12px ui-monospace,monospace;color:#666">committed: 1234.5</p>',
+    '<script src="number.js"><\/script>',
+    '<script>',
+    'new NumberInput("#demo", { ariaLabel: "Amount", value: 1234.5,',
+    '  prefix: "$", precision: 2, min: 0, styles: false,',
+    '  onChange: function (v) { document.getElementById("out").textContent = "committed: " + v; } });',
+    '<\/script>'
+  ].join('\n');
+  document.getElementById('hl-raw').srcdoc = rawDoc;
+
+  var twDoc = [
+    '<!doctype html><meta charset="utf-8">',
+    '<script src="https://cdn.tailwindcss.com"><\/script>',
+    '<script src="number.js"><\/script>',
+    '<style type="text/tailwindcss">',
+    '  .vnum        { @apply inline-flex items-stretch overflow-hidden rounded-2xl bg-white ring-2 ring-emerald-200 shadow-lg shadow-emerald-100 focus-within:ring-emerald-500; }',
+    '  .vnum-affix  { @apply flex items-center bg-emerald-50 px-3 text-sm font-bold text-emerald-600; }',
+    '  .vnum-input  { @apply w-32 border-0 bg-transparent px-3 py-2.5 text-right text-base font-semibold text-slate-800 outline-none; }',
+    '  .vnum-steps  { @apply flex flex-col; }',
+    '  .vnum-btn    { @apply flex flex-1 cursor-pointer items-center justify-center border-0 bg-emerald-500 px-3 text-white hover:bg-emerald-600 active:bg-emerald-700; }',
+    '  .vnum-down   { @apply border-t border-emerald-400; }',
+    '  .vnum.vnum-invalid  { @apply ring-rose-400; }',
+    '  .vnum.vnum-disabled { @apply opacity-40; }',
+    '</style>',
+    '<body class="grid min-h-screen place-items-center bg-gradient-to-br from-emerald-50 to-teal-100 font-sans">',
+    '<div id="demo"></div>',
+    '<script>',
+    'new NumberInput("#demo", { ariaLabel: "Price", value: 1234.5,',
+    '  prefix: "$", precision: 2, min: 0, styles: false });',
+    '<\/script>'
+  ].join('\n');
+
+  var btn = document.getElementById('hl-tw-load');
+  var frame = document.getElementById('hl-tw');
+  btn.addEventListener('click', function () {
+    frame.hidden = false;
+    frame.srcdoc = twDoc; // Tailwind CDN loads only now
+    btn.disabled = true;
+    btn.textContent = 'Tailwind demo loaded';
+  });
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>

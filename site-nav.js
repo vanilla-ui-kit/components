@@ -57,6 +57,14 @@
     '.vkn-brand svg{flex:none;border-radius:7px;}' +
     '.vkn-h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;' +
       'color:var(--vkn-muted);padding:14px 10px 4px;}' +
+    '.vkn-theme{display:flex;gap:4px;padding:2px 10px 6px;}' +
+    '.vkn-theme button{flex:1;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;' +
+      'padding:5px 0;border-radius:8px;border:1px solid var(--vkn-faint);' +
+      'background:transparent;color:var(--vkn-muted);}' +
+    '.vkn-theme button:hover{background:var(--vkn-hover);}' +
+    '.vkn-theme button:focus-visible{outline:2px solid var(--vkn-accent);outline-offset:1px;}' +
+    '.vkn-theme button[aria-pressed=true]{color:var(--vkn-accent);border-color:var(--vkn-accent);' +
+      'background:var(--vkn-hover);}' +
     '.vkn-toggle{position:fixed;top:14px;left:14px;z-index:9002;display:none;' +
       'align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;' +
       'border:1px solid var(--vkn-faint);background:var(--vkn-bg);color:var(--vkn-text);' +
@@ -123,9 +131,57 @@
   h2.textContent = 'More';
   nav.appendChild(h2);
   nav.appendChild(link(up, 'Home'));
+  nav.appendChild(link(up + 'install.html', 'Installation'));
   nav.appendChild(link(up + 'theme.html', 'Theme builder'));
   nav.appendChild(link(up + 'demo/admin.html', 'Demo app'));
   nav.appendChild(link('https://github.com/vanilla-ui-kit/components', 'GitHub'));
+
+  // Theme — persisted in localStorage ('vuk-theme'); the head snippet on
+  // every page applies it before first paint.
+  var h3 = document.createElement('div');
+  h3.className = 'vkn-h';
+  h3.textContent = 'Theme';
+  nav.appendChild(h3);
+  var themeRow = document.createElement('div');
+  themeRow.className = 'vkn-theme';
+  themeRow.setAttribute('role', 'group');
+  themeRow.setAttribute('aria-label', 'Color theme');
+  var MODES = [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']];
+
+  function storedTheme() {
+    try { var t = localStorage.getItem('vuk-theme'); return t === 'dark' || t === 'light' ? t : 'auto'; }
+    catch (e) { return 'auto'; }
+  }
+  function applyStoredThemeState() {
+    var active = storedTheme();
+    var btns = themeRow.children;
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute('aria-pressed', String(btns[i].getAttribute('data-mode') === active));
+    }
+  }
+  function setTheme(mode) {
+    var d = document.documentElement;
+    try {
+      if (mode === 'auto') { localStorage.removeItem('vuk-theme'); d.removeAttribute('data-theme'); }
+      else { localStorage.setItem('vuk-theme', mode); d.setAttribute('data-theme', mode); }
+    } catch (e) { /* private mode: still apply for this page */
+      if (mode === 'auto') d.removeAttribute('data-theme');
+      else d.setAttribute('data-theme', mode);
+    }
+    applyStoredThemeState();
+  }
+  for (var m = 0; m < MODES.length; m++) {
+    (function (mode, label) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.setAttribute('data-mode', mode);
+      b.addEventListener('click', function () { setTheme(mode); });
+      themeRow.appendChild(b);
+    })(MODES[m][0], MODES[m][1]);
+  }
+  nav.appendChild(themeRow);
+  applyStoredThemeState();
 
   var scrim = document.createElement('div');
   scrim.className = 'vkn-scrim';

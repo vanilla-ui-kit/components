@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var d=document.documentElement,t=localStorage.getItem('vuk-theme');if(t==='dark'||t==='light')d.setAttribute('data-theme',t);new MutationObserver(function(){var v=d.getAttribute('data-theme');try{if(v==='dark'||v==='light')localStorage.setItem('vuk-theme',v);else localStorage.removeItem('vuk-theme')}catch(e){}}).observe(d,{attributes:true,attributeFilter:['data-theme']});}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JavaScript Modal Dialogs — zero-dependency, one file · Vanilla UI Kit</title>
@@ -276,6 +277,347 @@ Modal.prompt({ message: 'New name:',
       }
     });
   }
+</script>
+<!-- ======================= API reference ======================= -->
+<style>
+  .api-section { border-top: 1px solid var(--faint); margin-top: 88px; padding-top: 40px; }
+  .api-section > h2 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0 0 10px; letter-spacing: -.005em; }
+  .api-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+  .api-toc a { color: var(--accent); text-decoration: none; }
+  .api-toc a:hover { text-decoration: underline; }
+  .api-block { background: var(--surface); border: 1px solid var(--faint); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+  .api-block h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .api-block p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+  .api-block ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .api-block li { margin: 2px 0; }
+  .api-block code { font-family: var(--mono); font-size: 12.5px; }
+  .api-block pre { margin: 12px 0 0; background: var(--code-bg); border: 1px solid var(--faint); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.55; }
+  .api-scroll { overflow-x: auto; margin-top: 12px; }
+  .api-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .api-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+  .api-table th { text-align: left; font-weight: 650; padding: 6px 14px 6px 0; border-bottom: 1px solid var(--faint); white-space: nowrap; }
+  .api-table td { padding: 7px 14px 7px 0; border-bottom: 1px solid var(--faint); vertical-align: top; }
+  .api-table tbody tr:last-child td { border-bottom: 0; }
+  .api-table td:first-child code { white-space: nowrap; }
+  .api-table td:last-child { color: var(--muted); }
+</style>
+<section class="wrap api-section" aria-labelledby="api">
+  <h2 id="api">API reference</h2>
+  <ul class="api-toc">
+    <li><a href="#api-usage">Constructor &amp; usage</a></li>
+    <li><a href="#api-options">Options</a></li>
+    <li><a href="#api-methods">Methods</a></li>
+    <li><a href="#api-statics">Statics &amp; helpers</a></li>
+    <li><a href="#api-events">Events &amp; callbacks</a></li>
+    <li><a href="#api-declarative">Declarative init</a></li>
+    <li><a href="#api-theming">Theming</a></li>
+    <li><a href="#api-a11y">Accessibility</a></li>
+  </ul>
+
+  <section class="api-block" id="api-usage">
+    <h3>Constructor &amp; usage</h3>
+    <pre>Modal.open(opts)                 // build from options → handle { el, close(result), update(opts) }
+new Modal(target, options?)      // enhance existing (hidden) markup; also callable without `new`
+Modal.alert(message | opts)      // → Promise&lt;void&gt;
+Modal.confirm(message | opts)    // → Promise&lt;boolean&gt;
+Modal.prompt(message | opts)     // → Promise&lt;string | null&gt;</pre>
+    <ul>
+      <li><strong><code>Modal.open(opts)</code></strong> — build a dialog from options; returns a handle immediately.</li>
+      <li><strong><code>new Modal(target, options?)</code></strong> — turn an existing hidden element into a dialog: on <code>open()</code> it is adopted into the dialog body and put back exactly where it came from on close (<code>hidden</code> / <code>display:none</code> restored too).</li>
+      <li><strong>Promise helpers</strong> — one-line <code>alert</code>/<code>confirm</code>/<code>prompt</code> (see Statics &amp; helpers).</li>
+      <li><strong>Declarative</strong> — <code>data-vmd-open="#selector"</code> triggers, no JS (see Declarative init).</li>
+    </ul>
+    <p>Built on the native <code>&lt;dialog&gt;</code> element (top layer, real inertness) with a transparent <code>role="dialog"</code> fallback. Multiple modals may be open at once; body scroll stays locked until the last one closes. CommonJS/AMD supported; SSR-safe — without a DOM, <code>open()</code> returns a dummy handle and the promise helpers resolve immediately (<code>undefined</code> / <code>false</code> / <code>null</code>).</p>
+  </section>
+
+  <section class="api-block" id="api-options">
+    <h3>Options</h3>
+    <p>Accepted by <code>Modal.open()</code>, the constructor, and the promise helpers. The first five are keys of <code>Modal.defaults</code> — change one there to affect every modal, e.g. <code>Modal.defaults.size = 'lg'</code>.</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal options">
+      <table class="api-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>size</code></td><td><code>string</code></td><td><code>'md'</code></td><td><code>'sm'</code> 360px · <code>'md'</code> 480px · <code>'lg'</code> 720px · <code>'full'</code> (takes over the viewport).</td></tr>
+          <tr><td><code>dismissible</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Allow <kbd>Esc</kbd>, backdrop click, and the ✕ button.</td></tr>
+          <tr><td><code>styles</code></td><td><code>boolean</code></td><td><code>true</code></td><td><code>false</code> = headless, no CSS ever injected (see Theming).</td></tr>
+          <tr><td><code>theme</code></td><td><code>string</code></td><td><code>'auto'</code></td><td><code>'auto' | 'light' | 'dark'</code> — per call or via defaults (see Theming).</td></tr>
+          <tr><td><code>labels</code></td><td><code>object</code></td><td><code>{ ok: 'OK', cancel: 'Cancel', close: 'Close', dialog: 'Dialog' }</code></td><td>Overridable UI strings (globally via <code>Modal.defaults.labels</code> or per call); partial overrides merge.</td></tr>
+          <tr><td><code>title</code></td><td><code>string</code></td><td>—</td><td>Heading text (rendered with <code>textContent</code>).</td></tr>
+          <tr><td><code>content</code></td><td><code>string | Element</code></td><td>—</td><td>String (text by default, markup with <code>html: true</code>) or a DOM element — adopted into the dialog and put back on close.</td></tr>
+          <tr><td><code>html</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Opt-in to render string content as trusted markup.</td></tr>
+          <tr><td><code>buttons</code></td><td><code>array</code></td><td>—</td><td>Footer buttons: <code>[{ label, variant: 'primary' | 'default' | 'danger', onClick(handle), close }]</code>. Return <code>false</code> from <code>onClick</code> to keep the modal open; <code>close</code> is the value passed to <code>onClose</code>.</td></tr>
+          <tr><td><code>onOpen</code></td><td><code>function</code></td><td>—</td><td><code>fn(handle)</code> after the dialog is shown.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>function</code></td><td>—</td><td><code>fn(result)</code> — result is the closing button’s <code>close</code> value, else <code>undefined</code>.</td></tr>
+          <tr><td><code>ariaLabel</code></td><td><code>string</code></td><td>—</td><td>Accessible name when there is no <code>title</code>.</td></tr>
+          <tr><td><code>opener</code></td><td><code>Element</code></td><td>—</td><td>Element to return focus to on close (defaults to <code>document.activeElement</code> at open time).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Helper-only options — <code>message</code> (the body text; alias of <code>content</code>) on all three helpers; <code>danger</code> (red confirm button) and <code>okLabel</code> on <code>Modal.confirm</code>; <code>value</code>, <code>placeholder</code>, and <code>required</code> (OK/Enter refuse an empty value) on <code>Modal.prompt</code>.</p>
+  </section>
+
+  <section class="api-block" id="api-methods">
+    <h3>Methods</h3>
+    <p>Instance methods (from <code>new Modal(target, options?)</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal instance methods">
+      <table class="api-table">
+        <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>open(extra?)</code></td><td><code>this</code></td><td>Open the dialog, adopting the target element as its body (its <code>data-vmd-title</code> is used when no title is set). <code>extra</code> merges over the constructor options for this open, e.g. <code>{ opener: buttonEl }</code>. No-op while already open.</td></tr>
+          <tr><td><code>close(result?)</code></td><td><code>this</code></td><td>Close the dialog; <code>result</code> is passed to <code>onClose</code>. The adopted element is put back (re-hidden) where it came from.</td></tr>
+          <tr><td><code>isOpen()</code></td><td><code>boolean</code></td><td>Whether this instance’s dialog is currently open.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Handle members (returned by <code>Modal.open()</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal handle members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>el</code></td><td><code>Element</code></td><td>The root <code>&lt;dialog class="vmd"&gt;</code> (or fallback <code>&lt;div role="dialog"&gt;</code>) element.</td></tr>
+          <tr><td><code>close(result?)</code></td><td><code>undefined</code></td><td>Close the dialog; <code>result</code> is passed to <code>onClose</code>.</td></tr>
+          <tr><td><code>update(opts)</code></td><td>handle</td><td>Merge new options and rebuild title/content/buttons in place; focus is re-seated only if the rebuild dropped it out of the dialog. No-op after close.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-statics">
+    <h3>Statics &amp; helpers</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal static members">
+      <table class="api-table">
+        <thead><tr><th>Member</th><th>Returns</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>Modal.open(opts)</code></td><td>handle</td><td>Build and show a dialog from options.</td></tr>
+          <tr><td><code>Modal.alert(message | opts)</code></td><td><code>Promise&lt;void&gt;</code></td><td>One button (<code>labels.ok</code>); resolves when closed, however it closes.</td></tr>
+          <tr><td><code>Modal.confirm(message | opts)</code></td><td><code>Promise&lt;boolean&gt;</code></td><td>Cancel + confirm buttons. <code>true</code> ONLY on the explicit confirm — <kbd>Esc</kbd> / backdrop / ✕ resolve <code>false</code>. Extra options: <code>danger</code> (red confirm), <code>okLabel</code>.</td></tr>
+          <tr><td><code>Modal.prompt(message | opts)</code></td><td><code>Promise&lt;string | null&gt;</code></td><td>Text input, auto-focused (an existing default <code>value</code> is pre-selected); <kbd>Enter</kbd> submits; <code>null</code> on cancel/<kbd>Esc</kbd>/backdrop. Extra options: <code>value</code>, <code>placeholder</code>, <code>required</code>.</td></tr>
+          <tr><td><code>Modal.get(target)</code></td><td><code>Modal | null</code></td><td>The instance bound to an element (or selector), or <code>null</code>.</td></tr>
+          <tr><td><code>Modal.autoInit(root?)</code></td><td><code>Modal[]</code></td><td>Wire every <code>[data-vmd-open]</code> trigger under <code>root</code> (default: <code>document</code>). Runs automatically on <code>DOMContentLoaded</code> (and via <code>VC.autoInit()</code> when the core is loaded); call it for content added later.</td></tr>
+          <tr><td><code>Modal.defaults</code></td><td><code>object</code></td><td>Global defaults — change any once, e.g. <code>Modal.defaults.size = 'lg'</code>.</td></tr>
+          <tr><td><code>Modal.salt</code></td><td><code>string | false</code></td><td>CSS isolation namespace (default <code>'vc1'</code>). Set your own token before the first modal, or <code>false</code> to disable.</td></tr>
+          <tr><td><code>Modal.css</code></td><td><code>string</code></td><td>The full stylesheet, always rendered with the current salt — a starting point for headless styling.</td></tr>
+          <tr><td><code>Modal.version</code></td><td><code>string</code></td><td>Library version.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="api-block" id="api-events">
+    <h3>Events &amp; callbacks</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal callbacks">
+      <table class="api-table">
+        <thead><tr><th>Callback</th><th>Signature</th><th>Fires</th></tr></thead>
+        <tbody>
+          <tr><td><code>onOpen</code></td><td><code>fn(handle)</code></td><td>After the dialog is shown.</td></tr>
+          <tr><td><code>onClose</code></td><td><code>fn(result)</code></td><td>When the dialog closes — <code>result</code> is the closing button’s <code>close</code> value, else <code>undefined</code> (<kbd>Esc</kbd>, backdrop, ✕, <code>data-vmd-close</code>).</td></tr>
+          <tr><td>button <code>onClick</code></td><td><code>fn(handle)</code></td><td>When that footer button is clicked; return <code>false</code> to keep the modal open (validation etc.), otherwise it closes with the button’s <code>close</code> value.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Modal dispatches no public <code>CustomEvent</code>s; the native <code>&lt;dialog&gt;</code>’s <code>cancel</code>/<code>close</code> events are handled internally so <kbd>Esc</kbd> respects <code>dismissible</code> and the exit animation still plays.</p>
+  </section>
+
+  <section class="api-block" id="api-declarative">
+    <h3>Declarative init</h3>
+    <p>No JS required — a trigger points at a hidden element, which is adopted into a dialog and put back (re-hidden) on close:</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal data attributes">
+      <table class="api-table">
+        <thead><tr><th>Attribute</th><th>Where</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>data-vmd-open="#terms"</code></td><td>trigger</td><td>Opens the referenced element as a modal on click; focus returns to the trigger on close.</td></tr>
+          <tr><td><code>data-vmd-close</code></td><td>inside any modal</td><td>Any element with this attribute closes its modal on click.</td></tr>
+          <tr><td><code>data-vmd-title</code></td><td>target element</td><td>Dialog heading (maps to <code>title</code>).</td></tr>
+          <tr><td><code>data-vmd-size</code></td><td>target element</td><td><code>sm</code> / <code>md</code> / <code>lg</code> / <code>full</code> (maps to <code>size</code>).</td></tr>
+          <tr><td><code>data-vmd-dismissible="false"</code></td><td>target element</td><td>Disable <kbd>Esc</kbd> / backdrop / ✕ (<code>"false"</code> or <code>"0"</code> = false).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <pre>&lt;button data-vmd-open="#terms"&gt;Show terms&lt;/button&gt;
+
+&lt;div id="terms" hidden data-vmd-title="Terms of Service"&gt;
+  …any markup…
+  &lt;button data-vmd-close&gt;Got it&lt;/button&gt;
+&lt;/div&gt;</pre>
+    <p><code>Modal.autoInit(root?)</code> wires triggers added after page load.</p>
+  </section>
+
+  <section class="api-block" id="api-theming">
+    <h3>Theming</h3>
+    <p>Auto light/dark with the family’s resolution order: <code>&lt;html data-theme&gt;</code> / <code>data-bs-theme</code> / <code>.dark</code> class → <code>prefers-color-scheme</code>, re-resolved live. Pin it with <code>Modal.defaults.theme = 'dark'</code> or per call. All colors are CSS custom properties on <code>.vmd</code> (dark values on <code>.vmd[data-theme=dark]</code>):</p>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal CSS custom properties">
+      <table class="api-table">
+        <thead><tr><th>Property</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><code>--vmd-accent</code></td><td>Primary buttons, focus rings.</td></tr>
+          <tr><td><code>--vmd-on-accent</code></td><td>Text on primary/danger buttons.</td></tr>
+          <tr><td><code>--vmd-danger</code></td><td>Danger buttons.</td></tr>
+          <tr><td><code>--vmd-bg</code></td><td>Panel background.</td></tr>
+          <tr><td><code>--vmd-surface</code></td><td>Plain button hover fill.</td></tr>
+          <tr><td><code>--vmd-text</code></td><td>Text color.</td></tr>
+          <tr><td><code>--vmd-muted</code></td><td>Body text, ✕ button.</td></tr>
+          <tr><td><code>--vmd-faint</code></td><td>Borders, plain buttons.</td></tr>
+          <tr><td><code>--vmd-backdrop</code></td><td>Backdrop scrim color.</td></tr>
+          <tr><td><code>--vmd-shadow</code></td><td>Panel shadow.</td></tr>
+          <tr><td><code>--vmd-radius</code></td><td>Panel corner radius.</td></tr>
+          <tr><td><code>--vmd-font</code></td><td>Font stack.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>CSS isolation</strong> — dialogs render as <code>class="vmd vc1"</code> and structural rules ship salted, so host-page design systems can’t override them; the <code>--vmd-*</code> variable overrides above keep working (var definitions are deliberately unsalted). Custom token: <code>Modal.salt = 'acme'</code> before the first modal; disable with <code>Modal.salt = false</code>.</p>
+    <p><strong>Headless</strong> — <code>Modal.defaults.styles = false</code> (or per call <code>styles: false</code>) injects no CSS, ever. You keep the full behavior (native <code>&lt;dialog&gt;</code>/fallback, focus management, scroll lock, promises, ARIA) and the markup contract: <code>dialog.vmd.vmd-md.vmd-has-title[data-theme=dark]</code> → <code>.vmd-panel</code> → <code>.vmd-head</code> (<code>.vmd-title</code> or <code>.vmd-head-spacer</code>, <code>.vmd-x</code> when dismissible), <code>.vmd-body</code> (<code>.vmd-msg</code> for string content, <code>.vmd-input</code> for <code>Modal.prompt</code>), <code>.vmd-foot</code> with <code>.vmd-btn</code> / <code>.vmd-btn-primary</code> / <code>.vmd-btn-danger</code>. Start from <code>Modal.css</code> (string) or <code>dist/modal.css</code>. With the VC core loaded, <code>VC.config({ accent: … })</code> themes modals and every other family component in one call.</p>
+  </section>
+
+  <section class="api-block" id="api-a11y">
+    <h3>Accessibility</h3>
+    <div class="api-scroll" tabindex="0" role="region" aria-label="Modal keyboard map">
+      <table class="api-table">
+        <thead><tr><th>Key</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>Esc</code></td><td>Closes the dialog — only when <code>dismissible</code> (prevented cleanly on the native path so the exit animation still plays).</td></tr>
+          <tr><td><code>Tab</code> / <code>Shift+Tab</code></td><td>Cycle focus inside the dialog — the native top layer makes the rest of the page inert; the fallback uses a manual Tab trap.</td></tr>
+          <tr><td><code>Enter</code> (in a prompt’s input)</td><td>Submits the prompt (refused while empty when <code>required</code>).</td></tr>
+          <tr><td><code>Enter</code> / <code>Space</code></td><td>Activate the focused footer, ✕, or <code>data-vmd-close</code> button.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Native <code>&lt;dialog&gt;</code> + <code>showModal()</code> where supported; fallback is a <code>role="dialog"</code> overlay. <code>aria-modal="true"</code> and <code>aria-labelledby</code> point at the title (or <code>aria-label</code> when there is none). Focus moves into the dialog on open — <code>[autofocus]</code> first, then the body’s first field, then the primary button — and <strong>returns to the opener</strong> on close. <code>:focus-visible</code> outlines on every control; animations are disabled under <code>prefers-reduced-motion: reduce</code>. All UI strings are overridable via <code>defaults.labels</code> for localisation.</p>
+  </section>
+</section>
+<!-- ======================= Headless mode ======================= -->
+<style>
+  .hl-lede { color: var(--muted); font-size: 14px; margin: 10px 0 0; max-width: 76ch; }
+  .hl-frame {
+    display: block; width: 100%; margin-top: 14px;
+    border: 1px solid var(--faint); border-radius: 12px; background: #fff;
+  }
+  .hl-load {
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--faint); border-radius: 10px;
+    padding: 8px 14px; cursor: pointer; margin-top: 14px; align-self: flex-start;
+  }
+  .hl-load:hover { border-color: var(--accent); }
+  .hl-load[disabled] { opacity: .55; cursor: default; }
+</style>
+<section class="wrap api-section" aria-labelledby="headless">
+  <h2 id="headless">Headless mode</h2>
+  <p class="hl-lede">Set <code>Modal.defaults.styles = false</code> and no CSS is ever injected —
+  you keep the full behavior (native <code>&lt;dialog&gt;</code> top layer, focus management,
+  scroll lock, promises, ARIA) and the stable <code>.vmd-*</code> markup contract to style however
+  you like. Both demos below run in an <code>&lt;iframe&gt;</code>: the styled examples above have
+  already injected the stylesheet into this page, so a headless dialog out here would still match
+  those rules.</p>
+
+  <section class="api-block">
+    <h3>Unstyled (styles: false)</h3>
+    <p>The raw browser rendering — click the button and you get the user-agent's own
+    <code>&lt;dialog&gt;</code> look: centered box, default border, dimmed backdrop. Esc, backdrop
+    click, and the footer buttons all still work.</p>
+    <iframe class="hl-frame" id="hl-raw-frame" title="Modal with styles: false — raw browser rendering"
+      width="100%" style="height:240px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre>Modal.defaults.styles = false            // headless: zero CSS injected
+Modal.open({
+  title: 'Raw dialog',
+  content: 'A native &lt;dialog&gt; in the top layer.',
+  buttons: [{ label: 'Cancel' }, { label: 'OK', variant: 'primary' }]
+})</pre>
+  </section>
+
+  <section class="api-block">
+    <h3>Bring your own design (Tailwind)</h3>
+    <p>The same headless calls with every structural <code>.vmd-*</code> hook mapped to Tailwind
+    utilities via <code>@apply</code> — scrim, panel, head/body/foot, the prompt input, and all
+    three button variants; the <code>.vmd-in</code>/<code>.vmd-out</code> state classes drive the
+    transitions. The button fetches <code>cdn.tailwindcss.com</code>, so nothing loads until you ask.</p>
+    <button type="button" class="hl-load" id="hl-tw-load">Load Tailwind demo</button>
+    <iframe class="hl-frame" id="hl-tw-frame" hidden title="Modal with styles: false, styled with Tailwind"
+      width="100%" style="height:420px;border:1px solid var(--faint);border-radius:12px;background:#fff;"></iframe>
+    <pre id="hl-tw-code"></pre>
+  </section>
+</section>
+<script>
+(function () {
+  // Card A — raw, unstyled. srcdoc resolves relative URLs against this page,
+  // so "modal.js" is the sibling file. Loaded immediately (local, no network).
+  document.getElementById('hl-raw-frame').srcdoc =
+    '<!doctype html><meta charset="utf-8">' +
+    '<body style="margin:24px">' +
+    '<button id="open">Open dialog</button>' +
+    '<script src="modal.js"><\/script>' +
+    '<script>' +
+    'Modal.defaults.styles = false;' +
+    'document.getElementById("open").onclick = function () {' +
+    '  Modal.open({' +
+    '    title: "Raw dialog",' +
+    '    content: "A native dialog in the top layer — focus, Esc, and backdrop still work. Zero CSS.",' +
+    '    buttons: [{ label: "Cancel" }, { label: "OK", variant: "primary" }]' +
+    '  });' +
+    '};' +
+    '<\/script>';
+
+  // Card B — the @apply mapping, shared by the iframe and the copyable snippet below it.
+  var TW_CSS = '\n' +
+'/* in a <style type="text/tailwindcss"> block: map the .vmd-* hooks */\n' +
+'.vmd{@apply fixed inset-0 z-50 grid h-full w-full max-h-none max-w-none place-items-center border-0 bg-slate-900/50 p-6 font-sans opacity-0 transition-opacity duration-150;}\n' +
+'.vmd::backdrop{background:transparent;}   /* the root itself is the scrim */\n' +
+'.vmd.vmd-in{@apply opacity-100;}\n' +
+'.vmd.vmd-out{@apply opacity-0;}\n' +
+'.vmd-panel{@apply flex max-h-full w-full max-w-sm translate-y-2 scale-[.98] flex-col rounded-3xl bg-white shadow-2xl transition-transform duration-150;}\n' +
+'.vmd.vmd-in .vmd-panel{@apply translate-y-0 scale-100;}\n' +
+'.vmd-head{@apply flex items-start gap-3 px-6 pt-5;}\n' +
+'.vmd-title{@apply m-0 flex-1 text-base font-semibold leading-snug text-slate-900;}\n' +
+'.vmd-head-spacer{@apply flex-1;}\n' +
+'.vmd-x{@apply -mr-1.5 grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-transparent p-0 text-slate-400 hover:bg-slate-100 hover:text-slate-600;}\n' +
+'.vmd-body{@apply min-h-0 flex-1 overflow-auto px-6 pb-1 pt-2 text-sm leading-relaxed text-slate-500;}\n' +
+'.vmd-input{@apply mt-3 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100;}\n' +
+'.vmd-foot{@apply flex flex-wrap justify-end gap-2 px-6 pb-5 pt-4;}\n' +
+'.vmd-btn{@apply cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50;}\n' +
+'.vmd-btn-primary{@apply border-transparent bg-emerald-600 text-white hover:bg-emerald-700;}\n' +
+'.vmd-btn-danger{@apply border-transparent bg-rose-600 text-white hover:bg-rose-700;}\n';
+
+  var BTN = 'rounded-xl px-4 py-2 text-sm font-semibold shadow-sm ';
+  var TW_DOC =
+    '<!doctype html><meta charset="utf-8">' +
+    '<script src="https://cdn.tailwindcss.com"><\/script>' +
+    '<script src="modal.js"><\/script>' +
+    '<style type="text/tailwindcss">' + TW_CSS + '</style>' +
+    '<body class="bg-slate-50 p-6 font-sans">' +
+    '<div class="flex flex-wrap gap-2">' +
+    '<button id="b1" class="' + BTN + 'border-0 bg-emerald-600 text-white hover:bg-emerald-700">Open dialog</button>' +
+    '<button id="b2" class="' + BTN + 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-100">Prompt</button>' +
+    '</div>' +
+    '<p id="out" class="mt-3 text-sm text-slate-500"></p>' +
+    '<script>' +
+    'Modal.defaults.styles = false;' +
+    'var out = document.getElementById("out");' +
+    'document.getElementById("b1").onclick = function () {' +
+    '  Modal.open({' +
+    '    title: "Move to trash?",' +
+    '    content: "Same focus management and promises — the design is 100% Tailwind.",' +
+    '    buttons: [' +
+    '      { label: "Cancel" },' +
+    '      { label: "Move to trash", variant: "danger", close: "trashed" }' +
+    '    ],' +
+    '    onClose: function (r) { out.textContent = "closed with: " + JSON.stringify(r); }' +
+    '  });' +
+    '};' +
+    'document.getElementById("b2").onclick = function () {' +
+    '  Modal.prompt({ title: "Rename file", message: "New name:", value: "untitled.txt" })' +
+    '    .then(function (name) { out.textContent = "prompt → " + JSON.stringify(name); });' +
+    '};' +
+    '<\/script>';
+
+  var loadBtn = document.getElementById('hl-tw-load');
+  var twFrame = document.getElementById('hl-tw-frame');
+  loadBtn.addEventListener('click', function () {
+    twFrame.srcdoc = TW_DOC;          // cdn.tailwindcss.com is fetched only now
+    twFrame.hidden = false;
+    loadBtn.disabled = true;
+    loadBtn.textContent = 'Tailwind demo loaded';
+  });
+  document.getElementById('hl-tw-code').textContent =
+    'Modal.defaults.styles = false    // headless — then style the hooks:\n' + TW_CSS;
+})();
 </script>
 <script src="../site-nav.js" defer></script>
 </body>
