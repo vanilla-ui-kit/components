@@ -41,6 +41,7 @@ const FAMILY = [
   ['Autocomplete', 'autocomplete/autocomplete.js', 'vac', ['create', 'get', 'autoInit']],
   ['Upload', 'upload/upload.js', 'vup', ['create', 'get', 'autoInit', 'formatBytes']],
   ['Slider', 'slider/slider.js', 'vsld', ['create', 'get', 'autoInit']],
+  ['NumberInput', 'number/number.js', 'vnum', ['create', 'get', 'autoInit', 'parse', 'format']],
 ];
 const components = FAMILY.map(([name, file, root, api]) =>
   ({ name, file, root, api, mod: require(path.join(ROOT, file)) }));
@@ -281,6 +282,17 @@ test('Slider specifics: SSR no-op instance', () => {
     assert.doesNotThrow(() => s[fn](), `slider.${fn} in Node`);
   }
   assert.doesNotThrow(() => s.setValue([10, 90]));
+});
+
+test('NumberInput specifics: pure parse/format helpers', () => {
+  const NumberInput = components[18].mod;
+  assert.equal(NumberInput.parse('1,234.5'), 1234.5);
+  assert.equal(NumberInput.format(1234.5, { precision: 2 }), '1,234.50');
+  const n = NumberInput.create(null, { min: 0, max: 10 });
+  for (const fn of ['getValue', 'stepUp', 'stepDown', 'enable', 'disable', 'destroy']) {
+    assert.doesNotThrow(() => n[fn](), `number.${fn} in Node`);
+  }
+  assert.doesNotThrow(() => n.setValue(5));
 });
 
 test('SSR: VC registry and injectStyles are safe without a DOM', () => {

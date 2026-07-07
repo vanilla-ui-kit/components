@@ -24,6 +24,7 @@
     "./autocomplete": "./autocomplete/autocomplete.js",
     "./upload": "./upload/upload.js",
     "./slider": "./slider/slider.js",
+    "./number": "./number/number.js",
     "./datepicker.css": "./dist/datepicker.css",
     "./toast.css": "./dist/toast.css",
     "./tooltip.css": "./dist/tooltip.css",
@@ -42,6 +43,7 @@
     "./autocomplete.css": "./dist/autocomplete.css",
     "./upload.css": "./dist/upload.css",
     "./slider.css": "./dist/slider.css",
+    "./number.css": "./dist/number.css",
     "./vanilla-ui-kit.css": "./dist/vanilla-ui-kit.css",
     "./package.json": "./package.json"
   },
@@ -65,6 +67,7 @@
     "autocomplete",
     "upload",
     "slider",
+    "number",
     "dist"
   ],
   "scripts": {
